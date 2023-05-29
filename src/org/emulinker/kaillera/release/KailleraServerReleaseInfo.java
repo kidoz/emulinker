@@ -2,11 +2,13 @@ package org.emulinker.kaillera.release;
 
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuUtil;
+import org.springframework.stereotype.Component;
 
 /**
  * Provides release and build information for the EmuLinker project.
  * This class also formats a welcome message for printing at server startup.
  */
+@Component
 public final class KailleraServerReleaseInfo implements ReleaseInfo
 {
 	private final String	productName		= "EmuLinker Kaillera Server BETA";

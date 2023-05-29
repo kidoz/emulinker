@@ -1,40 +1,53 @@
 package org.emulinker.kaillera.controller.connectcontroller;
 
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import org.apache.commons.configuration.*;
-import org.apache.commons.logging.*;
+import jakarta.annotation.PostConstruct;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
-import org.emulinker.kaillera.controller.messaging.*;
-import org.emulinker.kaillera.model.exception.*;
-import org.emulinker.net.*;
+import org.emulinker.kaillera.controller.messaging.ByteBufferMessage;
+import org.emulinker.kaillera.controller.messaging.MessageFormatException;
+import org.emulinker.kaillera.model.exception.NewConnectionException;
+import org.emulinker.kaillera.model.exception.ServerFullException;
+import org.emulinker.net.BindException;
+import org.emulinker.net.UDPServer;
 import org.emulinker.util.EmuUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ThreadPoolExecutor;
+
+@Component
 public class ConnectController extends UDPServer
 {
-	private static Log						log						= LogFactory.getLog(ConnectController.class);
+	private static Log log = LogFactory.getLog(ConnectController.class);
 
-	private ThreadPoolExecutor				threadPool;
-	private AccessManager					accessManager;
-	private Map<String, KailleraServerController>	controllersMap;
+	private ThreadPoolExecutor                    threadPool;
+	private AccessManager                         accessManager;
+	private Map<String, KailleraServerController> controllersMap;
 
-	private int								bufferSize				= 0;
+	private int bufferSize = 0;
 
-	private long							startTime;
-	private int								requestCount			= 0;
-	private int								messageFormatErrorCount	= 0;
-	private int								protocolErrorCount		= 0;
-	private int								deniedServerFullCount	= 0;
-	private int								deniedOtherCount		= 0;
-	private int								failedToStartCount		= 0;
-	private int								connectedCount			= 0;
-	private int								pingCount				= 0;
+	private long startTime;
+	private int  requestCount            = 0;
+	private int  messageFormatErrorCount = 0;
+	private int  protocolErrorCount      = 0;
+	private int  deniedServerFullCount   = 0;
+	private int  deniedOtherCount        = 0;
+	private int  failedToStartCount      = 0;
+	private int  connectedCount          = 0;
+	private int  pingCount               = 0;
 
+	@Autowired
 	public ConnectController(ThreadPoolExecutor threadPool, KailleraServerController[] controllersArray, AccessManager accessManager, Configuration config) throws NoSuchElementException, ConfigurationException, BindException
 	{
 		super(true);
@@ -144,6 +157,7 @@ public class ConnectController extends UDPServer
 			return "ConnectController(unbound)";
 	}
 
+	@PostConstruct
 	public synchronized void start()
 	{
 		startTime = System.currentTimeMillis();

@@ -1,12 +1,16 @@
 package org.emulinker.kaillera.master;
 
-import java.util.*;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.springframework.stereotype.Component;
 
-import org.emulinker.kaillera.model.*;
+import java.util.ArrayList;
+import java.util.List;
 
+@Component
 public class MasterListStatsCollector implements StatsCollector
 {
-	private ArrayList<String>	startedGamesList	= new ArrayList<String>();
+	private ArrayList<String> startedGamesList = new ArrayList<String>();
 
 	public synchronized void gameStarted(KailleraServer server, KailleraGame game)
 	{

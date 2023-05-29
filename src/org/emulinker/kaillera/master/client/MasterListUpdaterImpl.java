@@ -1,43 +1,45 @@
 package org.emulinker.kaillera.master.client;
 
-import java.util.*;
+import jakarta.annotation.PostConstruct;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
+import org.emulinker.kaillera.master.PublicServerInformation;
+import org.emulinker.kaillera.master.StatsCollector;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.release.ReleaseInfo;
+import org.emulinker.util.Executable;
+import org.picocontainer.Startable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.picocontainer.Startable;
-
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.*;
-
-import org.emulinker.kaillera.master.*;
-import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
-import org.emulinker.kaillera.master.StatsCollector;
-import org.emulinker.kaillera.model.*;
-import org.emulinker.util.Executable;
-import org.emulinker.release.*;
-
+@Component
 public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Startable
 {
-	private static Log					log				= LogFactory.getLog(MasterListUpdaterImpl.class);
+	private static Log log = LogFactory.getLog(MasterListUpdaterImpl.class);
 
-	private ThreadPoolExecutor			threadPool;
-	private ConnectController			connectController;
-	private KailleraServer				kailleraServer;
-	private StatsCollector				statsCollector;
-	private ReleaseInfo					releaseInfo;
+	private ThreadPoolExecutor threadPool;
+	private ConnectController  connectController;
+	private KailleraServer     kailleraServer;
+	private StatsCollector     statsCollector;
+	private ReleaseInfo        releaseInfo;
 
-	private PublicServerInformation		publicInfo;
+	private PublicServerInformation publicInfo;
 
-	private boolean						touchKaillera	= false;
-	private boolean						touchEmulinker	= false;
+	private boolean touchKaillera  = false;
+	private boolean touchEmulinker = false;
 
-	private EmuLinkerMasterUpdateTask	emulinkerMasterTask;
-	private KailleraMasterUpdateTask	kailleraMasterTask;
+	private EmuLinkerMasterUpdateTask emulinkerMasterTask;
+	private KailleraMasterUpdateTask  kailleraMasterTask;
 
-	private boolean						stopFlag		= false;
-	private boolean						isRunning		= false;
+	private boolean stopFlag  = false;
+	private boolean isRunning = false;
 
+	@Autowired
 	public MasterListUpdaterImpl(Configuration config, ThreadPoolExecutor threadPool, ConnectController connectController, KailleraServer kailleraServer, StatsCollector statsCollector, ReleaseInfo releaseInfo) throws Exception
 	{
 		this.threadPool = threadPool;
@@ -69,6 +71,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Sta
 		return "MasterListUpdaterImpl[touchKaillera=" + touchKaillera + " touchEmulinker=" + touchEmulinker + "]";
 	}
 
+	@PostConstruct
 	public synchronized void start()
 	{
 		if (publicInfo != null)

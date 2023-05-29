@@ -1,49 +1,69 @@
 package org.emulinker.kaillera.controller.v086;
 
-import java.net.InetSocketAddress;
-import java.nio.*;
-import java.util.*;
-import java.util.concurrent.*;
-
-import org.apache.commons.configuration.*;
-import org.apache.commons.logging.*;
+import jakarta.annotation.PostConstruct;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
-import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.controller.messaging.MessageFormatException;
+import org.emulinker.kaillera.controller.messaging.ParseException;
 import org.emulinker.kaillera.controller.v086.action.*;
 import org.emulinker.kaillera.controller.v086.protocol.*;
-import org.emulinker.kaillera.model.*;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
-import org.emulinker.kaillera.model.exception.*;
-import org.emulinker.net.*;
-import org.emulinker.util.*;
+import org.emulinker.kaillera.model.exception.NewConnectionException;
+import org.emulinker.kaillera.model.exception.ServerFullException;
+import org.emulinker.net.BindException;
+import org.emulinker.net.PrivateUDPServer;
+import org.emulinker.util.ClientGameDataCache;
+import org.emulinker.util.EmuUtil;
+import org.emulinker.util.GameDataCache;
+import org.emulinker.util.ServerGameDataCache;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+
+@Component
 public class V086Controller implements KailleraServerController
 {
-	private static Log							log					= LogFactory.getLog(V086Controller.class);
+	private static Log log = LogFactory.getLog(V086Controller.class);
 
-	private int									MAX_BUNDLE_SIZE		= 5;
+	private int MAX_BUNDLE_SIZE = 5;
 
-	private int									bufferSize			= 4096;
-	private boolean								isRunning			= false;
+	private int     bufferSize = 4096;
+	private boolean isRunning  = false;
 
-	private ThreadPoolExecutor					threadPool;
-	private KailleraServer						server;
-	private AccessManager						accessManager;
-	private String[]							clientTypes;
-	private Map<Integer, V086ClientHandler>		clientHandlers		= new ConcurrentHashMap<Integer, V086ClientHandler>();
+	private ThreadPoolExecutor              threadPool;
+	private KailleraServer                  server;
+	private AccessManager                   accessManager;
+	private String[]                        clientTypes;
+	private Map<Integer, V086ClientHandler> clientHandlers = new ConcurrentHashMap<Integer, V086ClientHandler>();
 
-	private int									portRangeStart;
-	private int									extraPorts;
-	private Queue<Integer>						portRangeQueue		= new ConcurrentLinkedQueue<Integer>();
+	private int            portRangeStart;
+	private int            extraPorts;
+	private Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
 
 	// shouldn't need to use a synchronized or concurrent map since all thread access will be read only
-	private Map<Class, V086ServerEventHandler>	serverEventHandlers	= new HashMap<Class, V086ServerEventHandler>();
-	private Map<Class, V086GameEventHandler>	gameEventHandlers	= new HashMap<Class, V086GameEventHandler>();
-	private Map<Class, V086UserEventHandler>	userEventHandlers	= new HashMap<Class, V086UserEventHandler>();
+	private Map<Class, V086ServerEventHandler> serverEventHandlers = new HashMap<Class, V086ServerEventHandler>();
+	private Map<Class, V086GameEventHandler>   gameEventHandlers   = new HashMap<Class, V086GameEventHandler>();
+	private Map<Class, V086UserEventHandler>   userEventHandlers   = new HashMap<Class, V086UserEventHandler>();
 
-	private V086Action[]						actions				= new V086Action[25];
+	private V086Action[] actions = new V086Action[25];
 
+	@Autowired
 	public V086Controller(KailleraServer server, ThreadPoolExecutor threadPool, AccessManager accessManager, Configuration config) throws NoSuchElementException, ConfigurationException
 	{
 		this.threadPool = threadPool;
@@ -61,7 +81,7 @@ public class V086Controller implements KailleraServerController
 			portRangeQueue.add(i);
 			maxPort = i;
 		}
-		
+
 		log.warn("Listening on UDP ports: " + portRangeStart + " to " + maxPort + ".  Make sure these ports are open in your firewall!");
 
 		if (bufferSize <= 0)
@@ -228,6 +248,7 @@ public class V086Controller implements KailleraServerController
 		return boundPort;
 	}
 
+	@PostConstruct
 	public synchronized void start()
 	{
 		isRunning = true;
@@ -245,30 +266,30 @@ public class V086Controller implements KailleraServerController
 
 	public class V086ClientHandler extends PrivateUDPServer implements KailleraEventListener
 	{
-		private KailleraUser		user;
-		private int					messageNumberCounter	= 0;
-		private int					prevMessageNumber		= -1;
-		private int					lastMessageNumber		= -1;
-		private GameDataCache		clientCache				= null;
-		private GameDataCache		serverCache				= null;
+		private KailleraUser  user;
+		private int           messageNumberCounter = 0;
+		private int           prevMessageNumber    = -1;
+		private int           lastMessageNumber    = -1;
+		private GameDataCache clientCache          = null;
+		private GameDataCache serverCache          = null;
 
 		//private LinkedList<V086Message>	lastMessages			= new LinkedList<V086Message>();
-		private LastMessageBuffer	lastMessageBuffer		= new LastMessageBuffer(MAX_BUNDLE_SIZE);
-		private V086Message[]		outMessages				= new V086Message[MAX_BUNDLE_SIZE];
+		private LastMessageBuffer lastMessageBuffer = new LastMessageBuffer(MAX_BUNDLE_SIZE);
+		private V086Message[]     outMessages       = new V086Message[MAX_BUNDLE_SIZE];
 
-		private ByteBuffer			inBuffer				= ByteBuffer.allocateDirect(bufferSize);
-		private ByteBuffer			outBuffer				= ByteBuffer.allocateDirect(bufferSize);
+		private ByteBuffer inBuffer  = ByteBuffer.allocateDirect(bufferSize);
+		private ByteBuffer outBuffer = ByteBuffer.allocateDirect(bufferSize);
 
-		private Object				inSynch					= new Object();
-		private Object				outSynch				= new Object();
+		private Object inSynch  = new Object();
+		private Object outSynch = new Object();
 
-		private long				testStart;
-		private long				lastMeasurement;
-		private int					measurementCount		= 0;
-		private int					bestTime				= Integer.MAX_VALUE;
+		private long testStart;
+		private long lastMeasurement;
+		private int  measurementCount = 0;
+		private int  bestTime         = Integer.MAX_VALUE;
 
-		private int					clientRetryCount		= 0;
-		private long				lastResend				= 0;
+		private int  clientRetryCount = 0;
+		private long lastResend       = 0;
 
 		private V086ClientHandler(InetSocketAddress remoteSocketAddress)
 		{
@@ -276,7 +297,7 @@ public class V086Controller implements KailleraServerController
 
 			inBuffer.order(ByteOrder.LITTLE_ENDIAN);
 			outBuffer.order(ByteOrder.LITTLE_ENDIAN);
-			
+
 			resetGameDataCache();
 		}
 
@@ -412,20 +433,20 @@ public class V086Controller implements KailleraServerController
 			{
 				if (getStopFlag())
 					return;
-	
+
 				int port = -1;
 				if (isBound())
 					port = getBindPort();
 				log.debug(this.toString() + " Stoping!");
 				super.stop();
-	
+
 				if (port > 0)
 				{
 					log.debug(toString() + " returning port " + port + " to available port queue: " + (portRangeQueue.size() + 1) + " available");
 					portRangeQueue.add(port);
 				}
 			}
-			
+
 			if (user != null)
 			{
 				clientHandlers.remove(user.getID());

@@ -1,14 +1,25 @@
 package org.emulinker.kaillera.access;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-
-import org.apache.commons.logging.*;
+import jakarta.annotation.PostConstruct;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.emulinker.util.WildcardStringPattern;
 import org.picocontainer.Startable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.io.*;
+import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
+
+@Component
 public class AccessManager2 implements AccessManager, Startable, Runnable
 {
 	static
@@ -16,24 +27,25 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		java.security.Security.setProperty("networkaddress.cache.ttl" , "60");
 		java.security.Security.setProperty("networkaddress.cache.negative.ttl" , "60");
 	}
-	
-	private static Log				log						= LogFactory.getLog(AccessManager2.class);
 
-	private ThreadPoolExecutor		threadPool;
-	private boolean					isRunning				= false;
-	private boolean					stopFlag				= false;
+	private static Log log = LogFactory.getLog(AccessManager2.class);
 
-	private File					accessFile;
-	private long					lastLoadModifiedTime	= -1;
+	private ThreadPoolExecutor threadPool;
+	private boolean            isRunning = false;
+	private boolean            stopFlag  = false;
 
-	private List<UserAccess>		userList				= new CopyOnWriteArrayList<UserAccess>();
-	private List<GameAccess>		gameList				= new CopyOnWriteArrayList<GameAccess>();
-	private List<EmulatorAccess>	emulatorList			= new CopyOnWriteArrayList<EmulatorAccess>();
-	private List<AddressAccess>		addressList				= new CopyOnWriteArrayList<AddressAccess>();
-	private List<TempBan>			tempBanList				= new CopyOnWriteArrayList<TempBan>();
-	private List<TempAdmin>			tempAdminList			= new CopyOnWriteArrayList<TempAdmin>();
-	private List<Silence>			silenceList				= new CopyOnWriteArrayList<Silence>();
+	private File accessFile;
+	private long lastLoadModifiedTime = -1;
 
+	private List<UserAccess>     userList      = new CopyOnWriteArrayList<UserAccess>();
+	private List<GameAccess>     gameList      = new CopyOnWriteArrayList<GameAccess>();
+	private List<EmulatorAccess> emulatorList  = new CopyOnWriteArrayList<EmulatorAccess>();
+	private List<AddressAccess>  addressList   = new CopyOnWriteArrayList<AddressAccess>();
+	private List<TempBan>        tempBanList   = new CopyOnWriteArrayList<TempBan>();
+	private List<TempAdmin>      tempAdminList = new CopyOnWriteArrayList<TempAdmin>();
+	private List<Silence>        silenceList   = new CopyOnWriteArrayList<Silence>();
+
+	@Autowired
 	public AccessManager2(ThreadPoolExecutor threadPool) throws NoSuchElementException, FileNotFoundException
 	{
 		this.threadPool = threadPool;
@@ -62,6 +74,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		threadPool.execute(this);
 	}
 
+	@PostConstruct
 	public synchronized void start()
 	{
 		log.debug("AccessManager2 thread received start request!");
@@ -136,7 +149,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 						if (silence.isExpired())
 							silenceList.remove(silence);
 					}
-					
+
 					for(UserAccess userAccess : userList)
 					{
 						userAccess.refreshDNS();
@@ -274,7 +287,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 		return ACCESS_NORMAL;
 	}
-	
+
 	public synchronized boolean clearTemp(InetAddress address)
 	{
 		String userAddress = address.getHostAddress();
@@ -288,7 +301,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 				found = true;
 			}
 		}
-		
+
 		for (TempBan tempBan : tempBanList)
 		{
 			if (tempBan.matches(userAddress) && !tempBan.isExpired())
@@ -374,12 +387,12 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 	protected class UserAccess
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected List<String>					hostNames;
-		protected List<String>					resolvedAddresses;
-		protected int							access;
-		protected String						message;
-		
+		protected List<WildcardStringPattern> patterns;
+		protected List<String>                hostNames;
+		protected List<String>                resolvedAddresses;
+		protected int                         access;
+		protected String                      message;
+
 		protected UserAccess(StringTokenizer st) throws Exception
 		{
 			if (st.countTokens() < 2 || st.countTokens() > 3)
@@ -425,7 +438,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 					patterns.add(new WildcardStringPattern(pat));
 				}
 			}
-			
+
 			refreshDNS();
 
 			if (st.hasMoreTokens())
@@ -471,23 +484,23 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 				if (pattern.match(address))
 					return true;
 			}
-			
+
 			for (String resolvedAddress : resolvedAddresses)
 			{
 				if (resolvedAddress.equals(address))
 					return true;
 			}
-			
+
 			return false;
 		}
 	}
 
 	protected class AddressAccess
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected List<String>					hostNames;
-		protected List<String>					resolvedAddresses;
-		protected boolean						access;
+		protected List<WildcardStringPattern> patterns;
+		protected List<String>                hostNames;
+		protected List<String>                resolvedAddresses;
+		protected boolean                     access;
 
 		protected AddressAccess(StringTokenizer st) throws Exception
 		{
@@ -505,7 +518,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 			hostNames = new ArrayList<String>();
 			resolvedAddresses = new ArrayList<String>();
 			patterns = new ArrayList<WildcardStringPattern>();
-			
+
 			String s = st.nextToken().toLowerCase();
 			StringTokenizer pt = new StringTokenizer(s, "|");
 			while (pt.hasMoreTokens())
@@ -532,10 +545,10 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 					patterns.add(new WildcardStringPattern(pat));
 				}
 			}
-			
+
 			refreshDNS();
 		}
-		
+
 		protected synchronized void refreshDNS()
 		{
 			resolvedAddresses.clear();
@@ -570,21 +583,21 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 				if (pattern.match(address))
 					return true;
 			}
-			
+
 			for (String resolvedAddress : resolvedAddresses)
 			{
 				if (resolvedAddress.equals(address))
 					return true;
 			}
-			
+
 			return false;
 		}
 	}
 
 	protected class EmulatorAccess
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected boolean						access;
+		protected List<WildcardStringPattern> patterns;
+		protected boolean                     access;
 
 		protected EmulatorAccess(StringTokenizer st) throws Exception
 		{
@@ -631,8 +644,8 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 	protected class GameAccess
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected boolean						access;
+		protected List<WildcardStringPattern> patterns;
+		protected boolean                     access;
 
 		protected GameAccess(StringTokenizer st) throws Exception
 		{
@@ -679,9 +692,9 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 	protected class TempBan
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected long						startTime;
-		protected int							minutes;
+		protected List<WildcardStringPattern> patterns;
+		protected long                        startTime;
+		protected int                         minutes;
 
 		protected TempBan(String accessStr, int minutes)
 		{
@@ -732,9 +745,9 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 	protected class TempAdmin
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected long							startTime;
-		protected int							minutes;
+		protected List<WildcardStringPattern> patterns;
+		protected long                        startTime;
+		protected int                         minutes;
 
 		protected TempAdmin(String accessStr, int minutes)
 		{
@@ -785,9 +798,9 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 
 	protected class Silence
 	{
-		protected List<WildcardStringPattern>	patterns;
-		protected long							startTime;
-		protected int							minutes;
+		protected List<WildcardStringPattern> patterns;
+		protected long                        startTime;
+		protected int                         minutes;
 
 		protected Silence(String accessStr, int minutes)
 		{
