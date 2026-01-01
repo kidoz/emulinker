@@ -32,7 +32,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Admin API requires authentication
                         .requestMatchers("/api/admin/**").authenticated()
-                        // Actuator endpoints - health is public, others require auth
+                        // Exposed actuator endpoints when base-path is "/"
+                        .requestMatchers("/metrics", "/healthz").permitAll()
+                        // Actuator endpoints - health/info are public, others require auth
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").authenticated()
                         // Static resources and other endpoints are public
