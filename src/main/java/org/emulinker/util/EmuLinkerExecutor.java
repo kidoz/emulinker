@@ -11,11 +11,14 @@ import org.slf4j.LoggerFactory;
 /**
  * ExecutorService implementation using Java 21 virtual threads (Project Loom).
  *
- * <p>Virtual threads enable high concurrency with low resource usage - each task gets its own
- * lightweight virtual thread that is scheduled by the JVM rather than the OS.
+ * <p>
+ * Virtual threads enable high concurrency with low resource usage - each task
+ * gets its own lightweight virtual thread that is scheduled by the JVM rather
+ * than the OS.
  *
- * <p>This class provides compatibility methods (getActiveCount, getPoolSize) for existing
- * debug logging that previously relied on ThreadPoolExecutor.
+ * <p>
+ * This class provides compatibility methods (getActiveCount, getPoolSize) for
+ * existing debug logging that previously relied on ThreadPoolExecutor.
  */
 public class EmuLinkerExecutor implements ExecutorService {
     private static final Logger log = LoggerFactory.getLogger(EmuLinkerExecutor.class);
@@ -38,8 +41,8 @@ public class EmuLinkerExecutor implements ExecutorService {
     }
 
     /**
-     * Returns the total number of tasks that have been submitted.
-     * Provided for compatibility with existing debug logging.
+     * Returns the total number of tasks that have been submitted. Provided for
+     * compatibility with existing debug logging.
      */
     public int getPoolSize() {
         return totalSubmitted.get();
@@ -54,8 +57,8 @@ public class EmuLinkerExecutor implements ExecutorService {
     }
 
     /**
-     * Returns the total number of tasks submitted (same as poolSize for virtual threads).
-     * Provided for compatibility with admin REST API.
+     * Returns the total number of tasks submitted (same as poolSize for virtual
+     * threads). Provided for compatibility with admin REST API.
      */
     public long getTaskCount() {
         return totalSubmitted.get();
@@ -145,9 +148,8 @@ public class EmuLinkerExecutor implements ExecutorService {
     }
 
     @Override
-    public <T> List<Future<T>> invokeAll(
-            Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
-            throws InterruptedException {
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout,
+            TimeUnit unit) throws InterruptedException {
         return delegate.invokeAll(tasks, timeout, unit);
     }
 

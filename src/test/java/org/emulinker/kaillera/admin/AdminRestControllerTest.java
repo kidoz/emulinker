@@ -1,0 +1,242 @@
+package org.emulinker.kaillera.admin;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.List;
+
+import org.emulinker.kaillera.controller.KailleraServerController;
+import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.kaillera.model.KailleraUser;
+import org.emulinker.release.ReleaseInfo;
+import org.emulinker.util.EmuLinkerExecutor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+/**
+ * Unit tests for AdminRestController using standalone MockMvc setup.
+ *
+ * <p>
+ * Uses MockitoExtension for mocking dependencies without loading Spring
+ * context.
+ */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AdminRestController Unit Tests")
+class AdminRestControllerTest {
+
+    private MockMvc mockMvc;
+
+    @Mock
+    private KailleraServer kailleraServer;
+
+    @Mock
+    private ConnectController connectController;
+
+    @Mock
+    private EmuLinkerExecutor executor;
+
+    @BeforeEach
+    void setUp() {
+        AdminRestController controller = new AdminRestController(kailleraServer, connectController,
+                executor);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
+
+    @Nested
+    @DisplayName("GET /api/admin/server-info")
+    class GetServerInfo {
+
+        @Test
+        @DisplayName("should return server information with all fields")
+        void shouldReturnServerInfo() throws Exception {
+            // Setup mocks
+            ReleaseInfo releaseInfo = mock(ReleaseInfo.class);
+            when(releaseInfo.getProductName()).thenReturn("EmuLinker");
+            when(releaseInfo.getVersionString()).thenReturn("1.0.2");
+            when(releaseInfo.getBuildNumber()).thenReturn(100);
+
+            when(kailleraServer.getReleaseInfo()).thenReturn(releaseInfo);
+            when(kailleraServer.getNumUsers()).thenReturn(5);
+            when(kailleraServer.getMaxUsers()).thenReturn(100);
+            when(kailleraServer.getNumGames()).thenReturn(2);
+            when(kailleraServer.getMaxGames()).thenReturn(50);
+
+            when(connectController.getBindPort()).thenReturn(27888);
+            when(connectController.getStartTime()).thenReturn(System.currentTimeMillis() - 60000);
+            when(connectController.getRequestCount()).thenReturn(1000);
+            when(connectController.getConnectCount()).thenReturn(500);
+            when(connectController.getProtocolErrorCount()).thenReturn(10);
+            when(connectController.getDeniedServerFullCount()).thenReturn(5);
+            when(connectController.getDeniedOtherCount()).thenReturn(3);
+
+            when(executor.getActiveCount()).thenReturn(10);
+            when(executor.getPoolSize()).thenReturn(50);
+            when(executor.getMaximumPoolSize()).thenReturn(Integer.MAX_VALUE);
+            when(executor.getTaskCount()).thenReturn(1000L);
+
+            // Execute and verify
+            mockMvc.perform(get("/api/admin/server-info").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.serverName").value("EmuLinker"))
+                    .andExpect(jsonPath("$.version").value("1.0.2"))
+                    .andExpect(jsonPath("$.build").value(100))
+                    .andExpect(jsonPath("$.running").value(true))
+                    .andExpect(jsonPath("$.connectPort").value(27888))
+                    .andExpect(jsonPath("$.userCount").value(5))
+                    .andExpect(jsonPath("$.maxUsers").value(100))
+                    .andExpect(jsonPath("$.gameCount").value(2))
+                    .andExpect(jsonPath("$.maxGames").value(50))
+                    .andExpect(jsonPath("$.stats.requestCount").value(1000))
+                    .andExpect(jsonPath("$.stats.connectCount").value(500))
+                    .andExpect(jsonPath("$.stats.protocolErrors").value(10))
+                    .andExpect(jsonPath("$.stats.deniedFull").value(5))
+                    .andExpect(jsonPath("$.stats.deniedOther").value(3))
+                    .andExpect(jsonPath("$.threadPool.active").value(10))
+                    .andExpect(jsonPath("$.threadPool.poolSize").value(50));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/admin/users")
+    class GetUsers {
+
+        @Test
+        @DisplayName("should return empty list when no users")
+        void shouldReturnEmptyListWhenNoUsers() throws Exception {
+            doReturn(Collections.emptyList()).when(kailleraServer).getUsers();
+
+            mockMvc.perform(get("/api/admin/users").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray()).andExpect(jsonPath("$.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("should return user list with details")
+        void shouldReturnUserListWithDetails() throws Exception {
+            KailleraUser user1 = mock(KailleraUser.class);
+            when(user1.getID()).thenReturn(1);
+            when(user1.getName()).thenReturn("Player1");
+            when(user1.getStatus()).thenReturn((int) KailleraUser.STATUS_IDLE);
+            when(user1.getConnectionType()).thenReturn(KailleraUser.CONNECTION_TYPE_LAN);
+            when(user1.getPing()).thenReturn(50);
+            when(user1.getSocketAddress())
+                    .thenReturn(new InetSocketAddress("192.168.1.100", 27889));
+            when(user1.getConnectTime()).thenReturn(System.currentTimeMillis());
+
+            KailleraUser user2 = mock(KailleraUser.class);
+            when(user2.getID()).thenReturn(2);
+            when(user2.getName()).thenReturn("Player2");
+            when(user2.getStatus()).thenReturn((int) KailleraUser.STATUS_PLAYING);
+            when(user2.getConnectionType()).thenReturn(KailleraUser.CONNECTION_TYPE_GOOD);
+            when(user2.getPing()).thenReturn(100);
+            when(user2.getSocketAddress()).thenReturn(new InetSocketAddress("10.0.0.50", 27890));
+            when(user2.getConnectTime()).thenReturn(System.currentTimeMillis());
+
+            doReturn(List.of(user1, user2)).when(kailleraServer).getUsers();
+
+            mockMvc.perform(get("/api/admin/users").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2))
+                    .andExpect(jsonPath("$[0].id").value(1))
+                    .andExpect(jsonPath("$[0].name").value("Player1"))
+                    .andExpect(jsonPath("$[0].status").value("Idle"))
+                    .andExpect(jsonPath("$[0].connectionType").value("Lan"))
+                    .andExpect(jsonPath("$[0].ping").value(50))
+                    .andExpect(jsonPath("$[0].address").value("192.168.1.100:27889"))
+                    .andExpect(jsonPath("$[1].id").value(2))
+                    .andExpect(jsonPath("$[1].name").value("Player2"))
+                    .andExpect(jsonPath("$[1].status").value("Playing"))
+                    .andExpect(jsonPath("$[1].connectionType").value("Good"));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/admin/games")
+    class GetGames {
+
+        @Test
+        @DisplayName("should return empty list when no games")
+        void shouldReturnEmptyListWhenNoGames() throws Exception {
+            doReturn(Collections.emptyList()).when(kailleraServer).getGames();
+
+            mockMvc.perform(get("/api/admin/games").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray()).andExpect(jsonPath("$.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("should return game list with details")
+        void shouldReturnGameListWithDetails() throws Exception {
+            KailleraUser owner = mock(KailleraUser.class);
+            when(owner.getName()).thenReturn("GameMaster");
+
+            KailleraGame game = mock(KailleraGame.class);
+            when(game.getID()).thenReturn(1);
+            when(game.getRomName()).thenReturn("Street Fighter II");
+            when(game.getOwner()).thenReturn(owner);
+            when(game.getStatus()).thenReturn((int) KailleraGame.STATUS_WAITING);
+            when(game.getNumPlayers()).thenReturn(2);
+
+            doReturn(Collections.singletonList(game)).when(kailleraServer).getGames();
+
+            mockMvc.perform(get("/api/admin/games").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].id").value(1))
+                    .andExpect(jsonPath("$[0].rom").value("Street Fighter II"))
+                    .andExpect(jsonPath("$[0].owner").value("GameMaster"))
+                    .andExpect(jsonPath("$[0].status").value("Waiting"))
+                    .andExpect(jsonPath("$[0].players").value(2));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/admin/controllers")
+    class GetControllers {
+
+        @Test
+        @DisplayName("should return empty list when no controllers")
+        void shouldReturnEmptyListWhenNoControllers() throws Exception {
+            when(connectController.getControllers()).thenReturn(Collections.emptyList());
+
+            mockMvc.perform(get("/api/admin/controllers").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray()).andExpect(jsonPath("$.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("should return controller list with details")
+        void shouldReturnControllerListWithDetails() throws Exception {
+            KailleraServerController controller = mock(KailleraServerController.class);
+            when(controller.getVersion()).thenReturn("0.86");
+            when(controller.getBufferSize()).thenReturn(4096);
+            when(controller.getNumClients()).thenReturn(10);
+            when(controller.getClientTypes()).thenReturn(new String[]{"v086"});
+
+            when(connectController.getControllers())
+                    .thenReturn(Collections.singletonList(controller));
+
+            mockMvc.perform(get("/api/admin/controllers").accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].version").value("0.86"))
+                    .andExpect(jsonPath("$[0].bufferSize").value(4096))
+                    .andExpect(jsonPath("$[0].numClients").value(10))
+                    .andExpect(jsonPath("$[0].clientTypes[0]").value("v086"));
+        }
+    }
+}
