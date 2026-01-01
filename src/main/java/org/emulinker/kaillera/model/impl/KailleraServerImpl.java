@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.config.GameConfig;
 import org.emulinker.config.MasterListConfig;
@@ -73,11 +74,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     protected final boolean allowSinglePlayer;
     protected final boolean allowMultipleConnections;
 
-    protected boolean stopFlag = false;
-    protected boolean isRunning = false;
+    protected volatile boolean stopFlag = false;
+    protected volatile boolean isRunning = false;
 
-    protected int connectionCounter = 1;
-    protected int gameCounter = 1;
+    protected final AtomicInteger connectionCounter = new AtomicInteger(1);
+    protected final AtomicInteger gameCounter = new AtomicInteger(1);
 
     protected final EmuLinkerExecutor threadPool;
     protected final AccessManager accessManager;
@@ -260,20 +261,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         games.clear();
     }
 
-    // not synchronized because I know the caller will be thread safe
     protected int getNextUserID() {
-        if (connectionCounter > 0xFFFF)
-            connectionCounter = 1;
-
-        return connectionCounter++;
+        return connectionCounter.getAndUpdate(val -> val >= 0xFFFF ? 1 : val + 1);
     }
 
-    // not synchronized because I know the caller will be thread safe
     protected int getNextGameID() {
-        if (gameCounter > 0xFFFF)
-            gameCounter = 1;
-
-        return gameCounter++;
+        return gameCounter.getAndUpdate(val -> val >= 0xFFFF ? 1 : val + 1);
     }
 
     protected StatsCollector getStatsCollector() {

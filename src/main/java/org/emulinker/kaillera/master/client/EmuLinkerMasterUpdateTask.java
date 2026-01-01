@@ -15,26 +15,27 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
     private static final Logger log = LoggerFactory.getLogger(EmuLinkerMasterUpdateTask.class);
-    private static final String EMULINKER_MASTER_URL = "http://master.emulinker.org/touch.php";
 
     private final PublicServerInformation publicInfo;
     private final ConnectController connectController;
     private final KailleraServer kailleraServer;
     private final ReleaseInfo releaseInfo;
     private final RestClient restClient;
+    private final String emulinkerMasterUrl;
 
     public EmuLinkerMasterUpdateTask(PublicServerInformation publicInfo,
             ConnectController connectController, KailleraServer kailleraServer,
-            ReleaseInfo releaseInfo, RestClient restClient) {
+            ReleaseInfo releaseInfo, RestClient restClient, String emulinkerMasterUrl) {
         this.publicInfo = publicInfo;
         this.connectController = connectController;
         this.kailleraServer = kailleraServer;
         this.releaseInfo = releaseInfo;
         this.restClient = restClient;
+        this.emulinkerMasterUrl = emulinkerMasterUrl;
     }
 
     public void touchMaster() {
-        String uri = UriComponentsBuilder.fromUriString(EMULINKER_MASTER_URL)
+        String uri = UriComponentsBuilder.fromUriString(emulinkerMasterUrl)
                 .queryParam("serverName", publicInfo.getServerName())
                 .queryParam("connectAddress", publicInfo.getConnectAddress())
                 .queryParam("location", publicInfo.getLocation())

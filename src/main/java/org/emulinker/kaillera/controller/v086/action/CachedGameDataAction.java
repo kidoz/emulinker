@@ -17,8 +17,6 @@ public class CachedGameDataAction implements V086Action {
     private static final String DESC = "CachedGameDataAction";
     private static CachedGameDataAction singleton = new CachedGameDataAction();
 
-    private static final Logger keyLog = LoggerFactory.getLogger("KEYLOG");
-
     public static CachedGameDataAction getInstance() {
         return singleton;
     }
@@ -39,16 +37,10 @@ public class CachedGameDataAction implements V086Action {
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
             throws FatalActionException {
-        // actionCount++;
-
         try {
             int key = ((CachedGameData) message).getKey();
             byte[] data = clientHandler.getClientGameDataCache().get(key);
-            // keyLog.debug(clientHandler.getUser() + " RCV CACH: oldkey=" + key + " data="
-            // + EmuUtil.bytesToHex(data));
             clientHandler.getUser().addGameData(data);
-            // clientHandler.getUser().addGameData(clientHandler.getClientGameDataCache().get(((CachedGameData)
-            // message).getKey()));
         } catch (GameDataException e) {
             log.debug("Game data error: " + e.getMessage());
 
@@ -60,21 +52,6 @@ public class CachedGameDataAction implements V086Action {
                     log.error("Failed to contruct GameData message: " + e2.getMessage(), e2);
                 }
             }
-
-            /*
-             * if (e.getReflectData()) { try { clientHandler.send(new
-             * CachedGameData(clientHandler.getNextMessageNumber(), ((CachedGameData)
-             * message).getKey())); } catch (MessageFormatException e2) {
-             * log.error("Failed to contruct CachedGameData message: " + e2.getMessage(),
-             * e2); } }
-             */
-            /*
-             * // This may not always be the best thing to do... try {
-             * clientHandler.send(new
-             * GameChat_Notification(clientHandler.getNextMessageNumber(), "Error",
-             * e.getMessage())); } catch (MessageFormatException e2) {
-             * log.error("Failed to contruct new GameChat_Notification", e); }
-             */
         } catch (IndexOutOfBoundsException e) {
             log.error("Game data error!  The client cached key "
                     + ((CachedGameData) message).getKey() + " was not found in the cache!", e);

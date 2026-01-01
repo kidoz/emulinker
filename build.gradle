@@ -1,3 +1,7 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
@@ -20,7 +24,7 @@ repositories {
     mavenCentral()
 }
 
-configurations.all {
+configurations.configureEach {
     // Exclude commons-logging to use SLF4J bridge instead
     exclude group: 'commons-logging', module: 'commons-logging'
 }
@@ -45,11 +49,18 @@ dependencies {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Exclude load tests by default
+        if (!System.getProperty('load.tests')?.equals('true')) {
+            excludeTags 'load'
+        }
+    }
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
     }
+    // Pass system properties to tests
+    systemProperty 'load.tests', System.getProperty('load.tests')
 }
 
 spotless {
@@ -69,7 +80,7 @@ checkstyle {
     maxWarnings = 100      // Gradually reduce as code is improved
 }
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
     reports {
         xml.required = false
         html.required = true
@@ -79,12 +90,12 @@ tasks.withType(Checkstyle) {
 spotbugs {
     toolVersion = '4.8.6'
     ignoreFailures = false
-    effort = 'default'
-    reportLevel = 'high' // Report only high priority bugs
+    effort.set(Effort.valueOf('DEFAULT'))
+    reportLevel.set(Confidence.valueOf('HIGH'))
     excludeFilter = file("${rootDir}/config/spotbugs/exclude.xml")
 }
 
-tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+tasks.withType(SpotBugsTask).configureEach {
     reports {
         xml.required = false
         html.required = true
@@ -100,7 +111,7 @@ bootJar {
     destinationDirectory = file('build')
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.debug = true
     options.compilerArgs << "-Werror"

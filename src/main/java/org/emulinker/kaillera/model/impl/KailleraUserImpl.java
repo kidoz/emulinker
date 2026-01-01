@@ -247,7 +247,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         this.playerNumber = playerNumber;
     }
 
-    public void updateLastActivity() {
+    public synchronized void updateLastActivity() {
         long now = System.currentTimeMillis();
         lastActivity = now;
         lastKeepAlive = now;

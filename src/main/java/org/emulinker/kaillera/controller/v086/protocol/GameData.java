@@ -13,18 +13,6 @@ public class GameData extends V086Message {
 
     private byte[] gameData;
 
-    public static void main(String[] args) throws Exception {
-        byte[] data = new byte[9];
-        long st = System.currentTimeMillis();
-        GameData msg = new GameData(0, data);
-        ByteBuffer byteByffer = ByteBuffer.allocateDirect(4096);
-        for (int i = 0; i < 0xFFFF; i++) {
-            msg.writeTo(byteByffer);
-            byteByffer.clear();
-        }
-        System.out.println("et=" + (System.currentTimeMillis() - st));
-    }
-
     public GameData(int messageNumber, byte[] gameData) throws MessageFormatException {
         super(messageNumber);
 

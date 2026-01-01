@@ -6,11 +6,7 @@ import java.util.HashMap;
 // Adapted from http://www.smotricz.com/kabutz/Issue027.html
 
 public class ServerGameDataCache implements GameDataCache {
-    // array holds the elements
     protected byte[][] array;
-
-    // hashmap for quicker indexOf access, but slows down inserts
-    // protected HashMap<byte[], Integer> map;
     protected HashMap<Integer, Integer> map;
 
     // head points to the first logical element in the array, and
@@ -49,7 +45,6 @@ public class ServerGameDataCache implements GameDataCache {
     }
 
     public int indexOf(byte[] data) {
-        // Integer i = map.get(Arrays.toString(data));
         Integer i = map.get(Arrays.hashCode(data));
         return (i == null ? -1 : unconvert(i));
     }
@@ -64,7 +59,6 @@ public class ServerGameDataCache implements GameDataCache {
         int convertedIndex = convert(index);
         byte[] oldValue = array[convertedIndex];
         array[convertedIndex] = data;
-        // map.put(Arrays.toString(data), convertedIndex);
         map.put(Arrays.hashCode(data), convertedIndex);
         return oldValue;
     }
@@ -78,9 +72,7 @@ public class ServerGameDataCache implements GameDataCache {
         int pos = convert(index);
 
         try {
-            // map.remove(array[pos]);
             map.remove(Arrays.hashCode(array[pos]));
-            // map.remove(Arrays.toString(array[pos]));
             return array[pos];
         } finally {
             array[pos] = null; // Let gc do its work
@@ -120,8 +112,6 @@ public class ServerGameDataCache implements GameDataCache {
 
         int pos = tail;
         array[tail] = data;
-        // map.put(Arrays.toString(data), tail);
-        // map.put(data, tail);
         map.put(Arrays.hashCode(data), tail);
         tail = ((tail + 1) % array.length);
         size++;

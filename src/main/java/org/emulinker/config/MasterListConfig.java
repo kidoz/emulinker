@@ -25,6 +25,8 @@ public class MasterListConfig {
 
     private boolean touchEmulinker = false;
 
+    private String emulinkerMasterUrl = "http://master.emulinker.org/touch.php";
+
     // Getters and setters
 
     public String getServerName() {
@@ -73,5 +75,13 @@ public class MasterListConfig {
 
     public void setTouchEmulinker(boolean touchEmulinker) {
         this.touchEmulinker = touchEmulinker;
+    }
+
+    public String getEmulinkerMasterUrl() {
+        return emulinkerMasterUrl;
+    }
+
+    public void setEmulinkerMasterUrl(String emulinkerMasterUrl) {
+        this.emulinkerMasterUrl = emulinkerMasterUrl;
     }
 }

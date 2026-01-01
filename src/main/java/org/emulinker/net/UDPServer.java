@@ -13,21 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class UDPServer implements Executable {
     private static final Logger log = LoggerFactory.getLogger(UDPServer.class);
-    /*
-     * private static int artificalPacketLossPercentage = 0; private static int
-     * artificalDelay = 0; private static Random random = new Random();
-     *
-     * static { try { artificalPacketLossPercentage =
-     * Integer.parseInt(System.getProperty("artificalPacketLossPercentage"));
-     * artificalDelay = Integer.parseInt(System.getProperty("artificalDelay")); }
-     * catch(Exception e) {}
-     *
-     * if(artificalPacketLossPercentage > 0) log.warn("Introducing " +
-     * artificalPacketLossPercentage + "% artifical packet loss!");
-     *
-     * if(artificalDelay > 0) log.warn("Introducing " + artificalDelay +
-     * "ms artifical delay!"); }
-     */
+
     private int bindPort;
     private DatagramChannel channel;
     private boolean isRunning = false;
@@ -129,12 +115,8 @@ public abstract class UDPServer implements Executable {
                     + ": UDPServer is not bound!");
             return;
         }
-        /*
-         * if(artificalPacketLossPercentage > 0 && Math.abs(random.nextInt()%100) <
-         * artificalPacketLossPercentage) { return; }
-         */
+
         try {
-            // log.debug("send("+EmuUtil.dumpBuffer(buffer, false)+")");
             channel.send(buffer, toSocketAddress);
         } catch (Exception e) {
             log.error("Failed to send on port " + getBindPort() + ": " + e.getMessage(), e);
@@ -158,15 +140,8 @@ public abstract class UDPServer implements Executable {
                     if (fromSocketAddress == null)
                         throw new IOException(
                                 "Failed to receive from DatagramChannel: fromSocketAddress == null");
-                    /*
-                     * if(artificalPacketLossPercentage > 0 && Math.abs(random.nextInt()%100) <
-                     * artificalPacketLossPercentage) { releaseBuffer(buffer); continue; }
-                     *
-                     * if(artificalDelay > 0) { try { Thread.sleep(artificalDelay); }
-                     * catch(Exception e) {} }
-                     */
+
                     buffer.flip();
-                    // log.debug("receive("+EmuUtil.dumpBuffer(buffer, false)+")");
                     handleReceived(buffer, fromSocketAddress);
                     releaseBuffer(buffer);
                 } catch (SocketException e) {

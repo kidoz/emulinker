@@ -18,8 +18,6 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
     private static final String DESC = "GameDataAction";
     private static GameDataAction singleton = new GameDataAction();
 
-    private static final Logger keyLog = LoggerFactory.getLogger("KEYLOG");
-
     public static GameDataAction getInstance() {
         return singleton;
     }
@@ -45,14 +43,9 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
             throws FatalActionException {
-        // actionCount++;
-
         try {
             byte[] data = ((GameData) message).getGameData();
-            // clientHandler.getClientGameDataCache().add(data);
-            int key = clientHandler.getClientGameDataCache().add(data);
-            // keyLog.debug(clientHandler.getUser() + " RCV DATA: newkey=" + key + " data="
-            // + EmuUtil.bytesToHex(data));
+            clientHandler.getClientGameDataCache().add(data);
             clientHandler.getUser().addGameData(data);
         } catch (GameDataException e) {
             log.debug("Game data error: " + e.getMessage());
@@ -65,32 +58,14 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
                     log.error("Failed to contruct GameData message: " + e2.getMessage(), e2);
                 }
             }
-
-            /*
-             * if (e.getReflectData()) { try { clientHandler.send(new
-             * GameData(clientHandler.getNextMessageNumber(), ((GameData)
-             * message).getGameData())); } catch (MessageFormatException e2) {
-             * log.error("Failed to contruct GameData message: " + e.getMessage(), e); } }
-             */
-            /*
-             * // This may not always be the best thing to do... try {
-             * clientHandler.send(new
-             * GameChat_Notification(clientHandler.getNextMessageNumber(), "Error",
-             * e.getMessage())); } catch (MessageFormatException e2) {
-             * log.error("Failed to contruct new GameChat_Notification", e); }
-             */
         }
     }
 
     public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
-        // handledCount++;
-
         byte[] data = ((GameDataEvent) event).getData();
         int key = clientHandler.getServerGameDataCache().indexOf(data);
         if (key < 0) {
-            key = clientHandler.getServerGameDataCache().add(data);
-            // keyLog.debug(clientHandler.getUser() + " SND DATA: newkey=" + key + " data="
-            // + EmuUtil.bytesToHex(data));
+            clientHandler.getServerGameDataCache().add(data);
 
             try {
                 clientHandler.send(new GameData(clientHandler.getNextMessageNumber(), data));
@@ -98,8 +73,6 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
                 log.error("Failed to contruct GameData message: " + e.getMessage(), e);
             }
         } else {
-            // keyLog.debug(clientHandler.getUser() + " SND CACH: oldkey=" + key + " data="
-            // + EmuUtil.bytesToHex(data));
             try {
                 clientHandler.send(new CachedGameData(clientHandler.getNextMessageNumber(), key));
             } catch (MessageFormatException e) {

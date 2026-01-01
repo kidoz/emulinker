@@ -104,7 +104,7 @@ public class V086Controller implements KailleraServerController {
     private static final int MAX_BUNDLE_SIZE = 5;
 
     private final int bufferSize;
-    private boolean isRunning = false;
+    private volatile boolean isRunning = false;
 
     private final EmuLinkerExecutor threadPool;
     private final KailleraServer server;

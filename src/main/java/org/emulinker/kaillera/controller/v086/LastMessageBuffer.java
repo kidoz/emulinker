@@ -7,13 +7,18 @@ import org.emulinker.kaillera.controller.v086.protocol.V086Message;
  * retrieve the last outbound messages sent to a client. It would be much easier
  * to use a simple LinkedList, but that means we have to use iterators and
  * create node objects, which causes large amounts of garbage collection
- * considering the rate at which messages flow through the server.<br>
- * <br>
+ * considering the rate at which messages flow through the server.
+ *
+ * <p>
  * This class operates like a circular buffer, but adds messages from back to
- * front. By doing this, we can use System.aray copy to efficiently copy
- * messages out, start with the newest first.
+ * front. By doing this, we can use System.arraycopy to efficiently copy
+ * messages out, starting with the newest first.
+ *
+ * <p>
+ * <b>Thread Safety:</b> This class is NOT thread-safe. All access must be
+ * externally synchronized. In V086ClientHandler, this is achieved via the
+ * {@code outSynch} lock.
  */
-
 public class LastMessageBuffer {
     private int max;
     private int next;

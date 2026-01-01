@@ -58,7 +58,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
 
         if (touchEmulinker)
             emulinkerMasterTask = new EmuLinkerMasterUpdateTask(publicInfo, connectController,
-                    kailleraServer, releaseInfo, restClient);
+                    kailleraServer, releaseInfo, restClient, config.getEmulinkerMasterUrl());
     }
 
     public synchronized boolean isRunning() {

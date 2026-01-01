@@ -8,9 +8,6 @@ import org.slf4j.LoggerFactory;
 
 public abstract class ByteBufferMessage {
     protected static final Logger log = LoggerFactory.getLogger(ByteBufferMessage.class);
-    // public static Charset charset = Charset.forName("US-ASCII");
-    // public static Charset charset = Charset.forName("ISO-8859-1");
-    // public static Charset charset = Charset.forName("UTF-8");
     public static Charset charset = Charset.defaultCharset();
 
     static {

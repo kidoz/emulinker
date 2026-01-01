@@ -10,6 +10,16 @@ import org.emulinker.kaillera.master.client.MasterListUpdaterImpl;
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import org.emulinker.kaillera.model.impl.KailleraServerImpl;
 import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
+import org.emulinker.kaillera.service.CommunicationService;
+import org.emulinker.kaillera.service.GameInputService;
+import org.emulinker.kaillera.service.GameService;
+import org.emulinker.kaillera.service.ServerAdminService;
+import org.emulinker.kaillera.service.UserService;
+import org.emulinker.kaillera.service.impl.CommunicationServiceImpl;
+import org.emulinker.kaillera.service.impl.GameInputServiceImpl;
+import org.emulinker.kaillera.service.impl.GameServiceImpl;
+import org.emulinker.kaillera.service.impl.ServerAdminServiceImpl;
+import org.emulinker.kaillera.service.impl.UserServiceImpl;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
@@ -90,5 +100,33 @@ public class EmuLinkerConfig {
             KailleraServerReleaseInfo releaseInfo, RestClient restClient) throws Exception {
         return new MasterListUpdaterImpl(masterListConfig, executor, connectController,
                 kailleraServer, statsCollector, releaseInfo, restClient);
+    }
+
+    // Service layer beans
+
+    @Bean
+    public UserService userService(KailleraServerImpl kailleraServer) {
+        return new UserServiceImpl(kailleraServer);
+    }
+
+    @Bean
+    public GameService gameService(KailleraServerImpl kailleraServer) {
+        return new GameServiceImpl(kailleraServer);
+    }
+
+    @Bean
+    public CommunicationService communicationService(KailleraServerImpl kailleraServer) {
+        return new CommunicationServiceImpl(kailleraServer);
+    }
+
+    @Bean
+    public GameInputService gameInputService() {
+        return new GameInputServiceImpl();
+    }
+
+    @Bean
+    public ServerAdminService serverAdminService(KailleraServerImpl kailleraServer,
+            FileBasedAccessManager accessManager) {
+        return new ServerAdminServiceImpl(kailleraServer, accessManager);
     }
 }

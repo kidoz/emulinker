@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.model.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -51,10 +50,10 @@ public final class KailleraGameImpl implements KailleraGame {
     private List<KailleraUserImpl> players = new CopyOnWriteArrayList<KailleraUserImpl>();
     private StatsCollector statsCollector;
 
-    private List<Integer> kickedUsers = new ArrayList<Integer>();
+    private List<Integer> kickedUsers = new CopyOnWriteArrayList<Integer>();
 
-    private int status = KailleraGame.STATUS_WAITING;
-    private boolean synched = false;
+    private volatile int status = KailleraGame.STATUS_WAITING;
+    private volatile boolean synched = false;
     private int actionsPerMessage;
     private PlayerActionQueue[] playerActionQueues;
     private AutoFireDetector autoFireDetector;
