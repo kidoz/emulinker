@@ -1,0 +1,2 @@
+# Create runtime directories for EmuLinker
+d /var/lib/emulinker 0750 emulinker emulinker -

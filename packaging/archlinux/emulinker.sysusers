@@ -1,0 +1,2 @@
+# Create emulinker system user and group
+u emulinker - "EmuLinker Kaillera Server" /var/lib/emulinker

@@ -1,0 +1,43 @@
+[Unit]
+Description=EmuLinker Kaillera Server
+Documentation=https://github.com/kidoz/emulinker
+After=network.target
+
+[Service]
+Type=simple
+User=emulinker
+Group=emulinker
+
+# Java options
+Environment="EMULINKER_OPTS=-Xms64m -Xmx256m"
+
+# Working directory for logs
+WorkingDirectory=/var/lib/emulinker
+
+# Start command
+ExecStart=/usr/bin/emulinker
+
+# Restart on failure
+Restart=on-failure
+RestartSec=10
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Allow write to working directory and logs
+ReadWritePaths=/var/lib/emulinker
+
+# Network access
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

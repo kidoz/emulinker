@@ -1,0 +1,73 @@
+# Maintainer: Your Name <your.email@example.com>
+pkgname=emulinker
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Kaillera network server for emulator-based online multiplayer gaming"
+arch=('any')
+url="https://github.com/kidoz/emulinker"
+license=('GPL-2.0-only')
+depends=('java-runtime>=21')
+makedepends=('java-environment>=21' 'git')
+backup=('etc/emulinker/application.properties'
+        'etc/emulinker/access.cfg'
+        'etc/emulinker/logback.xml')
+install=emulinker.install
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
+        'emulinker.service'
+        'emulinker.sysusers'
+        'emulinker.tmpfiles')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+# For local development, use this instead:
+# source=("git+file:///path/to/local/emulinker")
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # Build with Gradle (skip tests for packaging)
+    ./gradlew clean build -x test -x spotbugsMain -x spotbugsTest -x checkstyleMain -x checkstyleTest
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # Install JAR file
+    install -Dm644 "build/emulinker.jar" "${pkgdir}/usr/share/java/${pkgname}/${pkgname}.jar"
+
+    # Install configuration files
+    install -Dm644 "src/main/resources/application.properties" "${pkgdir}/etc/${pkgname}/application.properties"
+    install -Dm644 "src/main/resources/access.cfg" "${pkgdir}/etc/${pkgname}/access.cfg"
+    install -Dm644 "src/main/resources/logback.xml" "${pkgdir}/etc/${pkgname}/logback.xml"
+
+    # Install wrapper script
+    install -Dm755 /dev/stdin "${pkgdir}/usr/bin/${pkgname}" << 'EOF'
+#!/bin/bash
+# EmuLinker Kaillera Server launcher
+
+EMULINKER_JAR="/usr/share/java/emulinker/emulinker.jar"
+EMULINKER_CONF="/etc/emulinker"
+EMULINKER_OPTS="${EMULINKER_OPTS:--Xms64m -Xmx256m}"
+
+exec /usr/bin/java \
+    ${EMULINKER_OPTS} \
+    -jar "${EMULINKER_JAR}" \
+    --spring.config.location="file:${EMULINKER_CONF}/" \
+    "$@"
+EOF
+
+    # Install systemd service
+    install -Dm644 "${srcdir}/emulinker.service" "${pkgdir}/usr/lib/systemd/system/${pkgname}.service"
+
+    # Install sysusers.d configuration (creates emulinker user)
+    install -Dm644 "${srcdir}/emulinker.sysusers" "${pkgdir}/usr/lib/sysusers.d/${pkgname}.conf"
+
+    # Install tmpfiles.d configuration (creates /var/lib/emulinker)
+    install -Dm644 "${srcdir}/emulinker.tmpfiles" "${pkgdir}/usr/lib/tmpfiles.d/${pkgname}.conf"
+
+    # Install documentation
+    install -Dm644 "README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+    install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
