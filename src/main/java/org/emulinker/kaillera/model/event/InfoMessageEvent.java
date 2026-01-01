@@ -2,7 +2,7 @@ package org.emulinker.kaillera.model.event;
 
 import org.emulinker.kaillera.model.KailleraUser;
 
-public class InfoMessageEvent implements UserEvent {
+public final class InfoMessageEvent implements UserEvent {
     private KailleraUser user;
     private String message;
 

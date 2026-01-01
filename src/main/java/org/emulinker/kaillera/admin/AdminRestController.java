@@ -57,12 +57,18 @@ public class AdminRestController {
 
     @GetMapping("/users")
     public List<UserDTO> getUsers() {
-        return kailleraServer.getUsers().stream().map(user -> new UserDTO(user.getID(),
-                user.getName(), KailleraUser.STATUS_NAMES[user.getStatus()],
-                KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()], user.getPing(),
-                user.getSocketAddress().getAddress().getHostAddress() + ":"
-                        + user.getSocketAddress().getPort(),
-                user.getConnectTime())).collect(Collectors.toList());
+        return kailleraServer.getUsers().stream().map(user -> {
+            // Null-safe socket address handling for users that haven't fully connected
+            String address = "unknown";
+            var socketAddr = user.getSocketAddress();
+            if (socketAddr != null && socketAddr.getAddress() != null) {
+                address = socketAddr.getAddress().getHostAddress() + ":" + socketAddr.getPort();
+            }
+            return new UserDTO(user.getID(), user.getName(),
+                    KailleraUser.STATUS_NAMES[user.getStatus()],
+                    KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()], user.getPing(),
+                    address, user.getConnectTime());
+        }).collect(Collectors.toList());
     }
 
     @GetMapping("/games")

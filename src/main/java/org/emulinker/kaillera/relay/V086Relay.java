@@ -19,7 +19,8 @@ public class V086Relay extends UDPRelay {
     private int lastServerMessageNumber = -1;
     private int lastClientMessageNumber = -1;
 
-    public V086Relay(int listenPort, InetSocketAddress serverSocketAddress) throws Exception {
+    public V086Relay(final int listenPort, final InetSocketAddress serverSocketAddress)
+            throws Exception {
         super(listenPort, serverSocketAddress);
     }
 
@@ -27,8 +28,8 @@ public class V086Relay extends UDPRelay {
         return "Kaillera client datagram relay version 0.86 on port " + super.getListenPort();
     }
 
-    protected ByteBuffer processClientToServer(ByteBuffer receiveBuffer,
-            InetSocketAddress fromAddress, InetSocketAddress toAddress) {
+    protected ByteBuffer processClientToServer(final ByteBuffer receiveBuffer,
+            final InetSocketAddress fromAddress, final InetSocketAddress toAddress) {
         V086Bundle inBundle = null;
 
         log.debug("-> " + EmuUtil.dumpBuffer(receiveBuffer));
@@ -52,13 +53,13 @@ public class V086Relay extends UDPRelay {
 
         log.info("-> " + inBundle);
 
-        V086Message[] inMessages = inBundle.getMessages();
+        final V086Message[] inMessages = inBundle.getMessages();
         for (int i = 0; i < inBundle.getNumMessages(); i++) {
             if (inMessages[i].getNumber() > lastClientMessageNumber)
                 lastClientMessageNumber = inMessages[i].getNumber();
         }
 
-        ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
+        final ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
         receiveBuffer.rewind();
         sendBuffer.put(receiveBuffer);
         sendBuffer.flip();
@@ -66,8 +67,8 @@ public class V086Relay extends UDPRelay {
         return sendBuffer;
     }
 
-    protected ByteBuffer processServerToClient(ByteBuffer receiveBuffer,
-            InetSocketAddress fromAddress, InetSocketAddress toAddress) {
+    protected ByteBuffer processServerToClient(final ByteBuffer receiveBuffer,
+            final InetSocketAddress fromAddress, final InetSocketAddress toAddress) {
         V086Bundle inBundle = null;
 
         log.debug("<- " + EmuUtil.dumpBuffer(receiveBuffer));
@@ -91,13 +92,13 @@ public class V086Relay extends UDPRelay {
 
         log.info("<- " + inBundle);
 
-        V086Message[] inMessages = inBundle.getMessages();
+        final V086Message[] inMessages = inBundle.getMessages();
         for (int i = 0; i < inBundle.getNumMessages(); i++) {
             if (inMessages[i].getNumber() > lastServerMessageNumber)
                 lastServerMessageNumber = inMessages[i].getNumber();
         }
 
-        ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
+        final ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
         receiveBuffer.rewind();
         sendBuffer.put(receiveBuffer);
         sendBuffer.flip();

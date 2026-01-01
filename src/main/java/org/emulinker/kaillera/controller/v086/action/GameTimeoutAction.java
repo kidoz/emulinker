@@ -9,7 +9,7 @@ import org.emulinker.kaillera.model.event.GameTimeoutEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GameTimeoutAction implements V086GameEventHandler {
+public final class GameTimeoutAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameTimeoutAction.class);
     private static final String DESC = "GameTimeoutAction";
     private static GameTimeoutAction singleton = new GameTimeoutAction();

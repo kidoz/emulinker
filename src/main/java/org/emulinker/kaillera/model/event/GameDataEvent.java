@@ -2,7 +2,7 @@ package org.emulinker.kaillera.model.event;
 
 import org.emulinker.kaillera.model.KailleraGame;
 
-public class GameDataEvent implements GameEvent {
+public final class GameDataEvent implements GameEvent {
     private KailleraGame game;
     private byte[] data;
 

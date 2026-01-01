@@ -16,15 +16,16 @@ import org.emulinker.util.EmuUtil;
 public class KailleraRelay extends UDPRelay {
     private static final Logger log = LoggerFactory.getLogger(KailleraRelay.class);
 
-    public static void main(String[] args) throws Exception {
-        int localPort = Integer.parseInt(args[0]);
-        String serverIP = args[1];
-        int serverPort = Integer.parseInt(args[2]);
+    public static void main(final String[] args) throws Exception {
+        final int localPort = Integer.parseInt(args[0]);
+        final String serverIP = args[1];
+        final int serverPort = Integer.parseInt(args[2]);
 
         new KailleraRelay(localPort, new InetSocketAddress(serverIP, serverPort));
     }
 
-    public KailleraRelay(int listenPort, InetSocketAddress serverSocketAddress) throws Exception {
+    public KailleraRelay(final int listenPort, final InetSocketAddress serverSocketAddress)
+            throws Exception {
         super(listenPort, serverSocketAddress);
     }
 
@@ -32,8 +33,8 @@ public class KailleraRelay extends UDPRelay {
         return "Kaillera main datagram relay on port " + super.getListenPort();
     }
 
-    protected ByteBuffer processClientToServer(ByteBuffer receiveBuffer,
-            InetSocketAddress fromAddress, InetSocketAddress toAddress) {
+    protected ByteBuffer processClientToServer(final ByteBuffer receiveBuffer,
+            final InetSocketAddress fromAddress, final InetSocketAddress toAddress) {
         ConnectMessage inMessage = null;
 
         try {
@@ -46,23 +47,22 @@ public class KailleraRelay extends UDPRelay {
         log.debug(EmuUtil.formatSocketAddress(fromAddress) + " -> "
                 + EmuUtil.formatSocketAddress(toAddress) + ": " + inMessage);
 
-        if (inMessage instanceof ConnectMessage_HELLO) {
-            ConnectMessage_HELLO clientTypeMessage = (ConnectMessage_HELLO) inMessage;
+        if (inMessage instanceof ConnectMessage_HELLO clientTypeMessage) {
             log.info("Client version is " + clientTypeMessage.getProtocol());
         } else {
             log.warn("Client sent an invalid message: " + inMessage);
             return null;
         }
 
-        ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
+        final ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
         receiveBuffer.rewind();
         sendBuffer.put(receiveBuffer);
         sendBuffer.flip();
         return sendBuffer;
     }
 
-    protected ByteBuffer processServerToClient(ByteBuffer receiveBuffer,
-            InetSocketAddress fromAddress, InetSocketAddress toAddress) {
+    protected ByteBuffer processServerToClient(final ByteBuffer receiveBuffer,
+            final InetSocketAddress fromAddress, final InetSocketAddress toAddress) {
         ConnectMessage inMessage = null;
 
         try {
@@ -75,8 +75,7 @@ public class KailleraRelay extends UDPRelay {
         log.debug(EmuUtil.formatSocketAddress(fromAddress) + " -> "
                 + EmuUtil.formatSocketAddress(toAddress) + ": " + inMessage);
 
-        if (inMessage instanceof ConnectMessage_HELLOD00D) {
-            ConnectMessage_HELLOD00D portMsg = (ConnectMessage_HELLOD00D) inMessage;
+        if (inMessage instanceof ConnectMessage_HELLOD00D portMsg) {
             log.info("Starting client relay on port " + (portMsg.getPort() - 1));
 
             try {
@@ -93,7 +92,7 @@ public class KailleraRelay extends UDPRelay {
             return null;
         }
 
-        ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
+        final ByteBuffer sendBuffer = ByteBuffer.allocate(receiveBuffer.limit());
         receiveBuffer.rewind();
         sendBuffer.put(receiveBuffer);
         sendBuffer.flip();

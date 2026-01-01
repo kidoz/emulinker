@@ -26,19 +26,19 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     private final KailleraServer server;
     private final AccessManager accessManager;
 
-    public ServerAdminServiceImpl(KailleraServer server, AccessManager accessManager) {
+    public ServerAdminServiceImpl(final KailleraServer server, final AccessManager accessManager) {
         this.server = server;
         this.accessManager = accessManager;
     }
 
     @Override
-    public boolean kickUser(KailleraUser admin, int targetUserId, String reason) {
+    public boolean kickUser(final KailleraUser admin, final int targetUserId, final String reason) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to kick user {}", admin.getName(), targetUserId);
             return false;
         }
 
-        KailleraUser target = server.getUser(targetUserId);
+        final KailleraUser target = server.getUser(targetUserId);
         if (target == null) {
             return false;
         }
@@ -54,13 +54,14 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public boolean silenceUser(KailleraUser admin, int targetUserId, int durationMinutes) {
+    public boolean silenceUser(final KailleraUser admin, final int targetUserId,
+            final int durationMinutes) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to silence user {}", admin.getName(), targetUserId);
             return false;
         }
 
-        KailleraUser target = server.getUser(targetUserId);
+        final KailleraUser target = server.getUser(targetUserId);
         if (target == null) {
             return false;
         }
@@ -73,13 +74,14 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public boolean banUser(KailleraUser admin, int targetUserId, int durationMinutes) {
+    public boolean banUser(final KailleraUser admin, final int targetUserId,
+            final int durationMinutes) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to ban user {}", admin.getName(), targetUserId);
             return false;
         }
 
-        KailleraUser target = server.getUser(targetUserId);
+        final KailleraUser target = server.getUser(targetUserId);
         if (target == null) {
             return false;
         }
@@ -100,7 +102,7 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public boolean unbanIp(KailleraUser admin, String ipAddress) {
+    public boolean unbanIp(final KailleraUser admin, final String ipAddress) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to unban IP {}", admin.getName(), ipAddress);
             return false;
@@ -111,13 +113,13 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public List<KailleraUser> findUsers(KailleraUser admin, String namePattern) {
+    public List<KailleraUser> findUsers(final KailleraUser admin, final String namePattern) {
         if (!isAdmin(admin)) {
             return List.of();
         }
 
-        List<KailleraUser> results = new ArrayList<>();
-        String lowerPattern = namePattern.toLowerCase();
+        final List<KailleraUser> results = new ArrayList<>();
+        final String lowerPattern = namePattern.toLowerCase();
 
         for (KailleraUser user : server.getUsers()) {
             if (user.getName().toLowerCase().contains(lowerPattern)) {
@@ -129,12 +131,12 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public Optional<UserInfo> getUserInfo(KailleraUser admin, int targetUserId) {
+    public Optional<UserInfo> getUserInfo(final KailleraUser admin, final int targetUserId) {
         if (!isAdmin(admin)) {
             return Optional.empty();
         }
 
-        KailleraUser user = server.getUser(targetUserId);
+        final KailleraUser user = server.getUser(targetUserId);
         if (user == null) {
             return Optional.empty();
         }
@@ -158,13 +160,13 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public boolean clearGame(KailleraUser admin, int gameId) {
+    public boolean clearGame(final KailleraUser admin, final int gameId) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to clear game {}", admin.getName(), gameId);
             return false;
         }
 
-        var game = server.getGame(gameId);
+        final var game = server.getGame(gameId);
         if (game == null) {
             return false;
         }
@@ -179,7 +181,7 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public void announce(KailleraUser admin, String message) {
+    public void announce(final KailleraUser admin, final String message) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to announce", admin.getName());
             return;
@@ -192,19 +194,19 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     @Override
-    public ServerStats getServerStats(KailleraUser admin) {
+    public ServerStats getServerStats(final KailleraUser admin) {
         if (!isAdmin(admin)) {
             return new ServerStats(0, 0, 0, 0, 0, 0);
         }
 
-        long uptime = System.currentTimeMillis(); // Would need server start time.
-        long totalConnections = 0; // Would need connection counter.
+        final long uptime = System.currentTimeMillis(); // Would need server start time.
+        final long totalConnections = 0; // Would need connection counter.
 
         return new ServerStats(server.getNumUsers(), server.getMaxUsers(), server.getNumGames(),
                 server.getMaxGames(), uptime, totalConnections);
     }
 
-    private boolean isAdmin(KailleraUser user) {
+    private boolean isAdmin(final KailleraUser user) {
         if (user instanceof KailleraUserImpl userImpl) {
             return userImpl.getAccess() >= AccessManager.ACCESS_ADMIN;
         }

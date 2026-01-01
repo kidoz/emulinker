@@ -14,7 +14,7 @@ import org.emulinker.kaillera.model.exception.GameChatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GameChatAction implements V086Action, V086GameEventHandler {
+public final class GameChatAction implements V086Action, V086GameEventHandler {
     public static final String ADMIN_COMMAND_ESCAPE_STRING = "/";
 
     private static final Logger log = LoggerFactory.getLogger(GameChatAction.class);

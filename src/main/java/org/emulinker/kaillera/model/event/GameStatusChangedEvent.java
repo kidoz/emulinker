@@ -3,7 +3,7 @@ package org.emulinker.kaillera.model.event;
 import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraServer;
 
-public class GameStatusChangedEvent implements ServerEvent {
+public final class GameStatusChangedEvent implements ServerEvent {
     private KailleraServer server;
     private KailleraGame game;
 

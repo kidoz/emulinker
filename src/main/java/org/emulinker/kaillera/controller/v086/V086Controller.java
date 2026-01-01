@@ -98,7 +98,7 @@ import org.emulinker.util.ServerGameDataCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V086Controller implements KailleraServerController {
+public final class V086Controller implements KailleraServerController {
     private static final Logger log = LoggerFactory.getLogger(V086Controller.class);
 
     private static final int MAX_BUNDLE_SIZE = 5;
@@ -300,7 +300,7 @@ public class V086Controller implements KailleraServerController {
         clientHandlers.clear();
     }
 
-    public class V086ClientHandler extends PrivateUDPServer implements KailleraEventListener {
+    public final class V086ClientHandler extends PrivateUDPServer implements KailleraEventListener {
         private KailleraUser user;
         private int messageNumberCounter = 0;
         private int prevMessageNumber = -1;
@@ -540,7 +540,7 @@ public class V086Controller implements KailleraServerController {
         }
 
         public void actionPerformed(KailleraEvent event) {
-            if (event instanceof GameEvent) {
+            if (event instanceof GameEvent gameEvent) {
                 V086GameEventHandler eventHandler = gameEventHandlers.get(event.getClass());
                 if (eventHandler == null) {
                     log.error(toString()
@@ -549,8 +549,8 @@ public class V086Controller implements KailleraServerController {
                     return;
                 }
 
-                eventHandler.handleEvent((GameEvent) event, this);
-            } else if (event instanceof ServerEvent) {
+                eventHandler.handleEvent(gameEvent, this);
+            } else if (event instanceof ServerEvent serverEvent) {
                 V086ServerEventHandler eventHandler = serverEventHandlers.get(event.getClass());
                 if (eventHandler == null) {
                     log.error(toString()
@@ -559,8 +559,8 @@ public class V086Controller implements KailleraServerController {
                     return;
                 }
 
-                eventHandler.handleEvent((ServerEvent) event, this);
-            } else if (event instanceof UserEvent) {
+                eventHandler.handleEvent(serverEvent, this);
+            } else if (event instanceof UserEvent userEvent) {
                 V086UserEventHandler eventHandler = userEventHandlers.get(event.getClass());
                 if (eventHandler == null) {
                     log.error(toString()
@@ -569,7 +569,7 @@ public class V086Controller implements KailleraServerController {
                     return;
                 }
 
-                eventHandler.handleEvent((UserEvent) event, this);
+                eventHandler.handleEvent(userEvent, this);
             }
         }
 

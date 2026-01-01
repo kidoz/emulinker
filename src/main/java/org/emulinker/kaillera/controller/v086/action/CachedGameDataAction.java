@@ -12,7 +12,7 @@ import org.emulinker.kaillera.controller.v086.protocol.GameData;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.exception.GameDataException;
 
-public class CachedGameDataAction implements V086Action {
+public final class CachedGameDataAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(CachedGameDataAction.class);
     private static final String DESC = "CachedGameDataAction";
     private static CachedGameDataAction singleton = new CachedGameDataAction();

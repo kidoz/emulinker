@@ -31,14 +31,17 @@ public class PlayerTimeoutException extends Exception {
         this.timeoutNumber = timeoutNumber;
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o != null && o instanceof PlayerTimeoutException) {
-            PlayerTimeoutException e = (PlayerTimeoutException) o;
-            if (e.getPlayerNumber() == getPlayerNumber()
-                    && e.getTimeoutNumber() == getTimeoutNumber())
-                return true;
+        if (o instanceof PlayerTimeoutException e) {
+            return e.getPlayerNumber() == getPlayerNumber()
+                    && e.getTimeoutNumber() == getTimeoutNumber();
         }
-
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * playerNumber + timeoutNumber;
     }
 }

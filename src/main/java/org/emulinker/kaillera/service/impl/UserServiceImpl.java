@@ -26,18 +26,19 @@ public class UserServiceImpl implements UserService {
 
     private final KailleraServer server;
 
-    public UserServiceImpl(KailleraServer server) {
+    public UserServiceImpl(final KailleraServer server) {
         this.server = server;
     }
 
     @Override
-    public KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol,
-            KailleraEventListener listener) throws ServerFullException, NewConnectionException {
+    public KailleraUser newConnection(final InetSocketAddress clientSocketAddress,
+            final String protocol, final KailleraEventListener listener)
+            throws ServerFullException, NewConnectionException {
         return server.newConnection(clientSocketAddress, protocol, listener);
     }
 
     @Override
-    public void login(KailleraUser user) throws LoginException {
+    public void login(final KailleraUser user) throws LoginException {
         try {
             server.login(user);
         } catch (LoginException e) {
@@ -48,13 +49,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void quit(KailleraUser user, String message)
+    public void quit(final KailleraUser user, final String message)
             throws QuitException, DropGameException, QuitGameException, CloseGameException {
         server.quit(user, message);
     }
 
     @Override
-    public Optional<KailleraUser> findUser(int userId) {
+    public Optional<KailleraUser> findUser(final int userId) {
         return Optional.ofNullable(server.getUser(userId));
     }
 

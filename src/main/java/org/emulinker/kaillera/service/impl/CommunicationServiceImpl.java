@@ -23,23 +23,24 @@ public class CommunicationServiceImpl implements CommunicationService {
 
     private final KailleraServer server;
 
-    public CommunicationServiceImpl(KailleraServer server) {
+    public CommunicationServiceImpl(final KailleraServer server) {
         this.server = server;
     }
 
     @Override
-    public void serverChat(KailleraUser user, String message) throws ChatException, FloodException {
+    public void serverChat(final KailleraUser user, final String message)
+            throws ChatException, FloodException {
         server.chat(user, message);
     }
 
     @Override
-    public void gameChat(KailleraUser user, String message, int messageId)
+    public void gameChat(final KailleraUser user, final String message, final int messageId)
             throws GameChatException {
         user.gameChat(message, messageId);
     }
 
     @Override
-    public void announce(String message, boolean includeGames) {
+    public void announce(final String message, final boolean includeGames) {
         if (server instanceof KailleraServerImpl serverImpl) {
             serverImpl.announce(message, includeGames);
         } else {
@@ -48,8 +49,9 @@ public class CommunicationServiceImpl implements CommunicationService {
     }
 
     @Override
-    public boolean privateMessage(KailleraUser from, int toUserId, String message) {
-        KailleraUser target = server.getUser(toUserId);
+    public boolean privateMessage(final KailleraUser from, final int toUserId,
+            final String message) {
+        final KailleraUser target = server.getUser(toUserId);
         if (target == null) {
             return false;
         }

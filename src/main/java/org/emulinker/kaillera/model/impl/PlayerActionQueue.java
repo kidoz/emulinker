@@ -77,6 +77,16 @@ public class PlayerActionQueue {
 
     public synchronized void getAction(int playerNumber, byte[] actions, int location,
             int actionLength) throws PlayerTimeoutException {
+        // Validate array bounds to prevent ArrayIndexOutOfBoundsException
+        if (playerNumber < 1 || playerNumber > heads.length) {
+            throw new IllegalArgumentException(
+                    "Invalid playerNumber: " + playerNumber + ", max: " + heads.length);
+        }
+        if (location < 0 || actionLength < 0 || location + actionLength > actions.length) {
+            throw new IllegalArgumentException("Invalid array bounds: location=" + location
+                    + ", actionLength=" + actionLength + ", array.length=" + actions.length);
+        }
+
         if (getSize(playerNumber) < actionLength && synched) {
             try {
                 wait(gameTimeoutMillis);
@@ -86,9 +96,10 @@ public class PlayerActionQueue {
         }
 
         if (getSize(playerNumber) >= actionLength) {
+            int headIndex = playerNumber - 1;
             for (int i = 0; i < actionLength; i++) {
-                actions[(location + i)] = array[heads[(playerNumber - 1)]];
-                heads[(playerNumber - 1)] = ((heads[(playerNumber - 1)] + 1) % gameBufferSize);
+                actions[(location + i)] = array[heads[headIndex]];
+                heads[headIndex] = ((heads[headIndex] + 1) % gameBufferSize);
             }
             return;
         }

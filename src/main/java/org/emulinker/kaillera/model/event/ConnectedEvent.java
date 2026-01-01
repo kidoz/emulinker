@@ -3,7 +3,7 @@ package org.emulinker.kaillera.model.event;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
 
-public class ConnectedEvent implements UserEvent {
+public final class ConnectedEvent implements UserEvent {
     private KailleraUser user;
     private KailleraServer server;
 

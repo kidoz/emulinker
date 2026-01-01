@@ -19,7 +19,7 @@ import org.emulinker.kaillera.model.exception.LoginException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ACKAction implements V086Action, V086UserEventHandler {
+public final class ACKAction implements V086Action, V086UserEventHandler {
     private static final Logger log = LoggerFactory.getLogger(ACKAction.class);
     private static final String DESC = "ACKAction";
     private static ACKAction singleton = new ACKAction();

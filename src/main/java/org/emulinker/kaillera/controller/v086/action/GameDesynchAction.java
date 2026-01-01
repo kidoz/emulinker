@@ -11,7 +11,7 @@ import org.emulinker.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GameDesynchAction implements V086GameEventHandler {
+public final class GameDesynchAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameDesynchAction.class);
     private static final String DESC = "GameDesynchAction"; //$NON-NLS-1$
     private static GameDesynchAction singleton = new GameDesynchAction();

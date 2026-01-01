@@ -2,7 +2,7 @@ package org.emulinker.kaillera.model.event;
 
 import org.emulinker.kaillera.model.KailleraGame;
 
-public class GameStartedEvent implements GameEvent {
+public final class GameStartedEvent implements GameEvent {
     private KailleraGame game;
 
     public GameStartedEvent(KailleraGame game) {

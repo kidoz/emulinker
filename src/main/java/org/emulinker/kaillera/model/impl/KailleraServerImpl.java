@@ -760,7 +760,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 if (users.isEmpty())
                     continue;
 
-                for (KailleraUserImpl user : getUsers()) {
+                // Copy to avoid ConcurrentModificationException when removing during iteration
+                List<KailleraUserImpl> usersSnapshot = new ArrayList<>(getUsers());
+                List<Integer> usersToRemove = new ArrayList<>();
+
+                for (KailleraUserImpl user : usersSnapshot) {
                     synchronized (user) {
                         int access = accessManager
                                 .getAccess(user.getConnectSocketAddress().getAddress());
@@ -770,7 +774,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                                 - user.getConnectTime()) > (maxPing * 15)) {
                             log.info(user + " connection timeout!");
                             user.stop();
-                            users.remove(user.getID());
+                            usersToRemove.add(user.getID());
                         } else if (user.isLoggedIn() && (System.currentTimeMillis()
                                 - user.getLastKeepAlive()) > (keepAliveTimeout * 1000)) {
                             log.info(user + " keepalive timeout!");
@@ -812,6 +816,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                             }
                         }
                     }
+                }
+
+                // Remove users after iteration to avoid ConcurrentModificationException
+                for (Integer userId : usersToRemove) {
+                    users.remove(userId);
                 }
             }
         } catch (Throwable e) {

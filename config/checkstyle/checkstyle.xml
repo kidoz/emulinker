@@ -41,6 +41,13 @@
         <module name="OneTopLevelClass"/>
 
         <!-- Modifiers -->
+        <module name="FinalClass"/>
+        <module name="FinalLocalVariable">
+            <property name="severity" value="info"/>
+        </module>
+        <module name="FinalParameters">
+            <property name="severity" value="info"/>
+        </module>
         <module name="ModifierOrder"/>
         <module name="RedundantModifier"/>
 

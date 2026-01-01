@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EmuLang {
+public final class EmuLang {
     private static final Logger log = LoggerFactory.getLogger(EmuLang.class);
 
     private static final String BUNDLE_NAME = "language";

@@ -10,7 +10,7 @@ import org.emulinker.kaillera.model.event.UserEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InfoMessageAction implements V086UserEventHandler {
+public final class InfoMessageAction implements V086UserEventHandler {
     private static final Logger log = LoggerFactory.getLogger(InfoMessageAction.class);
     private static final String DESC = "InfoMessageAction";
     private static InfoMessageAction singleton = new InfoMessageAction();

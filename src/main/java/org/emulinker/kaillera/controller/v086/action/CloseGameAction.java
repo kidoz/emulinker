@@ -10,7 +10,7 @@ import org.emulinker.kaillera.model.event.ServerEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CloseGameAction implements V086ServerEventHandler {
+public final class CloseGameAction implements V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(CloseGameAction.class);
     private static final String DESC = "CloseGameAction";
     private static CloseGameAction singleton = new CloseGameAction();

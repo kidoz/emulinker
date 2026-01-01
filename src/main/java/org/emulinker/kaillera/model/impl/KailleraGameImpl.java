@@ -54,8 +54,8 @@ public final class KailleraGameImpl implements KailleraGame {
 
     private volatile int status = KailleraGame.STATUS_WAITING;
     private volatile boolean synched = false;
-    private int actionsPerMessage;
-    private PlayerActionQueue[] playerActionQueues;
+    private volatile int actionsPerMessage;
+    private volatile PlayerActionQueue[] playerActionQueues;
     private AutoFireDetector autoFireDetector;
 
     public KailleraGameImpl(int gameID, String romName, KailleraUserImpl owner,
@@ -493,34 +493,44 @@ public final class KailleraGameImpl implements KailleraGame {
     }
 
     public void addData(KailleraUser user, int playerNumber, byte[] data) throws GameDataException {
-        if (playerActionQueues == null)
+        PlayerActionQueue[] queues = playerActionQueues; // local copy for thread-safety
+        int actions = actionsPerMessage; // local copy for thread-safety
+
+        if (queues == null)
             return;
 
-        int bytesPerAction = (data.length / actionsPerMessage);
+        if (actions <= 0) {
+            log.error(this + ": addData failed: actionsPerMessage is " + actions);
+            return;
+        }
+
+        int bytesPerAction = (data.length / actions);
         int timeoutCounter = 0;
         int actionCounter;
         int playerCounter;
-        int arraySize = (playerActionQueues.length * actionsPerMessage * bytesPerAction);
+        int numPlayers = queues.length;
+        int arraySize = (numPlayers * actions * bytesPerAction);
 
         if (!synched) {
             throw new GameDataException(EmuLang.getString("KailleraGameImpl.DesynchedWarning"), //$NON-NLS-1$
-                    data, actionsPerMessage, playerNumber, playerActionQueues.length);
+                    data, actions, playerNumber, numPlayers);
         }
 
-        playerActionQueues[(playerNumber - 1)].addActions(data);
+        queues[(playerNumber - 1)].addActions(data);
 
         if (autoFireDetector != null)
             autoFireDetector.addData(playerNumber, data, bytesPerAction);
 
         byte[] response = new byte[arraySize];
-        for (actionCounter = 0; actionCounter < actionsPerMessage; actionCounter++) {
-            for (playerCounter = 0; playerCounter < playerActionQueues.length; playerCounter++) {
+        for (actionCounter = 0; actionCounter < actions; actionCounter++) {
+            for (playerCounter = 0; playerCounter < numPlayers; playerCounter++) {
                 while (synched) {
                     try {
-                        playerActionQueues[playerCounter].getAction(playerNumber, response,
-                                ((actionCounter * (playerActionQueues.length * bytesPerAction))
-                                        + (playerCounter * bytesPerAction)),
-                                bytesPerAction);
+                        queues[playerCounter]
+                                .getAction(playerNumber, response,
+                                        ((actionCounter * (numPlayers * bytesPerAction))
+                                                + (playerCounter * bytesPerAction)),
+                                        bytesPerAction);
                         break;
                     } catch (PlayerTimeoutException e) {
                         e.setTimeoutNumber(++timeoutCounter);
@@ -532,7 +542,7 @@ public final class KailleraGameImpl implements KailleraGame {
 
         if (!synched)
             throw new GameDataException(EmuLang.getString("KailleraGameImpl.DesynchedWarning"), //$NON-NLS-1$
-                    data, bytesPerAction, playerNumber, playerActionQueues.length);
+                    data, bytesPerAction, playerNumber, numPlayers);
 
         ((KailleraUserImpl) user).addEvent(new GameDataEvent(this, response));
     }

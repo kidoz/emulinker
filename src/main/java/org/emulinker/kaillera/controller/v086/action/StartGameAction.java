@@ -15,7 +15,7 @@ import org.emulinker.kaillera.model.exception.StartGameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StartGameAction implements V086Action, V086GameEventHandler {
+public final class StartGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(StartGameAction.class);
     private static final String DESC = "StartGameAction";
     private static StartGameAction singleton = new StartGameAction();

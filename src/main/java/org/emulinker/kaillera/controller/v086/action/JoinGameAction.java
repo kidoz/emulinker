@@ -21,7 +21,7 @@ import org.emulinker.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JoinGameAction implements V086Action, V086GameEventHandler {
+public final class JoinGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(JoinGameAction.class);
     private static final String DESC = "JoinGameAction";
     private static JoinGameAction singleton = new JoinGameAction();

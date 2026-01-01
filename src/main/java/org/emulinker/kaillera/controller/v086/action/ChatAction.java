@@ -16,7 +16,7 @@ import org.emulinker.kaillera.model.event.ServerEvent;
 import org.emulinker.kaillera.model.exception.ActionException;
 import org.emulinker.util.EmuLang;
 
-public class ChatAction implements V086Action, V086ServerEventHandler {
+public final class ChatAction implements V086Action, V086ServerEventHandler {
     public static final String ADMIN_COMMAND_ESCAPE_STRING = "/";
 
     private static final Logger log = LoggerFactory.getLogger(ChatAction.class);

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.util.EmuLang;
 
-public class GameOwnerCommandAction implements V086Action {
+public final class GameOwnerCommandAction implements V086Action {
     public static final String COMMAND_HELP = "/help"; //$NON-NLS-1$
     public static final String COMMAND_DETECTAUTOFIRE = "/detectautofire"; //$NON-NLS-1$
 

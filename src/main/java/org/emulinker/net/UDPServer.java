@@ -165,7 +165,7 @@ public abstract class UDPServer implements Executable {
         }
     }
 
-    private class ShutdownThread extends Thread {
+    private final class ShutdownThread extends Thread {
         private ShutdownThread() {
         }
 

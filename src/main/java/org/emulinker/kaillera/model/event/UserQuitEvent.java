@@ -3,7 +3,7 @@ package org.emulinker.kaillera.model.event;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
 
-public class UserQuitEvent implements ServerEvent {
+public final class UserQuitEvent implements ServerEvent {
     private KailleraServer server;
     private KailleraUser user;
     private String message;

@@ -24,7 +24,7 @@ import org.emulinker.util.WildcardStringPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AdminCommandAction implements V086Action {
+public final class AdminCommandAction implements V086Action {
     public static final String COMMAND_ANNOUNCE = "/announce"; //$NON-NLS-1$
     public static final String COMMAND_ANNOUNCEALL = "/announceall"; //$NON-NLS-1$
     public static final String COMMAND_ANNOUNCEGAME = "/announcegame"; //$NON-NLS-1$

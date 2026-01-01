@@ -11,7 +11,7 @@ import org.emulinker.kaillera.model.exception.UserReadyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserReadyAction implements V086Action, V086GameEventHandler {
+public final class UserReadyAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(UserReadyAction.class);
     private static final String DESC = "UserReadyAction";
     private static UserReadyAction singleton = new UserReadyAction();

@@ -14,7 +14,7 @@ import org.emulinker.kaillera.model.exception.ActionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QuitAction implements V086Action, V086ServerEventHandler {
+public final class QuitAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitAction.class);
     private static final String DESC = "QuitAction";
 

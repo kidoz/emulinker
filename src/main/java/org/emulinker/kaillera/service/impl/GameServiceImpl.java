@@ -26,39 +26,40 @@ public class GameServiceImpl implements GameService {
 
     private final KailleraServer server;
 
-    public GameServiceImpl(KailleraServer server) {
+    public GameServiceImpl(final KailleraServer server) {
         this.server = server;
     }
 
     @Override
-    public KailleraGame createGame(KailleraUser user, String romName)
+    public KailleraGame createGame(final KailleraUser user, final String romName)
             throws CreateGameException, FloodException {
         return server.createGame(user, romName);
     }
 
     @Override
-    public KailleraGame joinGame(KailleraUser user, int gameId) throws JoinGameException {
+    public KailleraGame joinGame(final KailleraUser user, final int gameId)
+            throws JoinGameException {
         return user.joinGame(gameId);
     }
 
     @Override
-    public void startGame(KailleraUser user) throws StartGameException {
+    public void startGame(final KailleraUser user) throws StartGameException {
         user.startGame();
     }
 
     @Override
-    public void quitGame(KailleraUser user)
+    public void quitGame(final KailleraUser user)
             throws DropGameException, QuitGameException, CloseGameException {
         user.quitGame();
     }
 
     @Override
-    public void dropGame(KailleraUser user) throws DropGameException {
+    public void dropGame(final KailleraUser user) throws DropGameException {
         user.dropGame();
     }
 
     @Override
-    public Optional<KailleraGame> findGame(int gameId) {
+    public Optional<KailleraGame> findGame(final int gameId) {
         return Optional.ofNullable(server.getGame(gameId));
     }
 

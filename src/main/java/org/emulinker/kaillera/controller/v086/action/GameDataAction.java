@@ -13,7 +13,7 @@ import org.emulinker.kaillera.model.exception.GameDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GameDataAction implements V086Action, V086GameEventHandler {
+public final class GameDataAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameDataAction.class);
     private static final String DESC = "GameDataAction";
     private static GameDataAction singleton = new GameDataAction();

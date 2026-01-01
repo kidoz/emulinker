@@ -10,7 +10,7 @@ import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
 import org.emulinker.kaillera.model.event.GameEvent;
 import org.emulinker.kaillera.model.event.GameInfoEvent;
 
-public class GameInfoAction implements V086GameEventHandler {
+public final class GameInfoAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameInfoAction.class);
     private static final String DESC = "GameInfoAction";
     private static GameInfoAction singleton = new GameInfoAction();

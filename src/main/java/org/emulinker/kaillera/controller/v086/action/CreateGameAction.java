@@ -20,7 +20,7 @@ import org.emulinker.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CreateGameAction implements V086Action, V086ServerEventHandler {
+public final class CreateGameAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(CreateGameAction.class);
     private static final String DESC = "CreateGameAction";
     private static CreateGameAction singleton = new CreateGameAction();

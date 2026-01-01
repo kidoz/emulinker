@@ -16,7 +16,7 @@ import org.emulinker.kaillera.model.exception.QuitGameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QuitGameAction implements V086Action, V086GameEventHandler {
+public final class QuitGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitGameAction.class);
     private static final String DESC = "QuitGameAction";
     private static QuitGameAction singleton = new QuitGameAction();

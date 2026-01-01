@@ -9,7 +9,7 @@ import org.emulinker.kaillera.model.exception.GameKickException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GameKickAction implements V086Action {
+public final class GameKickAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(GameKickAction.class);
     private static final String DESC = "GameKickAction";
     private static GameKickAction singleton = new GameKickAction();

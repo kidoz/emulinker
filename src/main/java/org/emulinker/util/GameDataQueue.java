@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GameDataQueue {
+public final class GameDataQueue {
     private static final Logger log = LoggerFactory.getLogger(GameDataQueue.class);
 
     private int gameID;
@@ -62,7 +62,7 @@ public class GameDataQueue {
         return playerQueues[(playerNumber - 1)].getData(byteCount, bytesPerAction);
     }
 
-    private class PlayerDataQueue {
+    private final class PlayerDataQueue {
         private int thisPlayerNumber;
         private CircularBlockingByteQueue[] queues;
         private int lastI = 0;
@@ -123,7 +123,7 @@ public class GameDataQueue {
         }
     }
 
-    public static class PlayerTimeoutException extends Exception {
+    public static final class PlayerTimeoutException extends Exception {
         private int playerNumber;
         private int timeoutNumber;
 
@@ -142,7 +142,7 @@ public class GameDataQueue {
         }
     }
 
-    public static class DesynchException extends Exception {
+    public static final class DesynchException extends Exception {
         private int playerNumber;
 
         private DesynchException(String msg, int playerNumber, TimeoutException e) {
