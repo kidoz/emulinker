@@ -13,7 +13,7 @@ import org.emulinker.kaillera.model.exception.StartGameException;
 
 public class StartGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(StartGameAction.class);
-    private static final String desc = "StartGameAction";
+    private static final String DESC = "StartGameAction";
     private static StartGameAction singleton = new StartGameAction();
 
     public static StartGameAction getInstance() {
@@ -36,7 +36,7 @@ public class StartGameAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

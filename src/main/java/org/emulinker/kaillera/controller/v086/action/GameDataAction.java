@@ -12,7 +12,7 @@ import org.emulinker.kaillera.model.exception.GameDataException;
 
 public class GameDataAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameDataAction.class);
-    private static final String desc = "GameDataAction";
+    private static final String DESC = "GameDataAction";
     private static GameDataAction singleton = new GameDataAction();
 
     private static final Logger keyLog = LoggerFactory.getLogger("KEYLOG");
@@ -37,7 +37,7 @@ public class GameDataAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

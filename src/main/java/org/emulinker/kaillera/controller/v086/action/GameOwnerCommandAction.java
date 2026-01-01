@@ -18,7 +18,7 @@ public class GameOwnerCommandAction implements V086Action {
     public static final String COMMAND_DETECTAUTOFIRE = "/detectautofire"; //$NON-NLS-1$
 
     private static final Logger log = LoggerFactory.getLogger(GameOwnerCommandAction.class);
-    private static final String desc = "GameOwnerCommandAction"; //$NON-NLS-1$
+    private static final String DESC = "GameOwnerCommandAction"; //$NON-NLS-1$
     private static GameOwnerCommandAction singleton = new GameOwnerCommandAction();
 
     public static GameOwnerCommandAction getInstance() {
@@ -36,7 +36,7 @@ public class GameOwnerCommandAction implements V086Action {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

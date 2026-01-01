@@ -32,7 +32,7 @@ public class AdminCommandAction implements V086Action {
     public static final String COMMAND_VERSION = "/version"; //$NON-NLS-1$
 
     private static final Logger log = LoggerFactory.getLogger(AdminCommandAction.class);
-    private static final String desc = "AdminCommandAction"; //$NON-NLS-1$
+    private static final String DESC = "AdminCommandAction"; //$NON-NLS-1$
     private static AdminCommandAction singleton = new AdminCommandAction();
 
     public static AdminCommandAction getInstance() {
@@ -50,7 +50,7 @@ public class AdminCommandAction implements V086Action {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

@@ -13,7 +13,7 @@ import org.emulinker.kaillera.model.exception.ActionException;
 
 public class QuitAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitAction.class);
-    private static final String desc = "QuitAction";
+    private static final String DESC = "QuitAction";
 
     private static QuitAction singleton = new QuitAction();
 
@@ -37,7 +37,7 @@ public class QuitAction implements V086Action, V086ServerEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

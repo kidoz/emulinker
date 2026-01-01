@@ -13,7 +13,7 @@ import org.emulinker.kaillera.model.exception.*;
 
 public class QuitGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitGameAction.class);
-    private static final String desc = "QuitGameAction";
+    private static final String DESC = "QuitGameAction";
     private static QuitGameAction singleton = new QuitGameAction();
 
     public static QuitGameAction getInstance() {
@@ -36,7 +36,7 @@ public class QuitGameAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

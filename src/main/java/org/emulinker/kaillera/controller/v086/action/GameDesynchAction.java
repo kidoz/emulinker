@@ -12,7 +12,7 @@ import org.emulinker.util.EmuLang;
 
 public class GameDesynchAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameDesynchAction.class);
-    private static final String desc = "GameDesynchAction"; //$NON-NLS-1$
+    private static final String DESC = "GameDesynchAction"; //$NON-NLS-1$
     private static GameDesynchAction singleton = new GameDesynchAction();
 
     public static GameDesynchAction getInstance() {
@@ -30,7 +30,7 @@ public class GameDesynchAction implements V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {

@@ -11,7 +11,7 @@ import org.emulinker.kaillera.model.event.*;
 
 public class GameInfoAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameInfoAction.class);
-    private static final String desc = "GameInfoAction";
+    private static final String DESC = "GameInfoAction";
     private static GameInfoAction singleton = new GameInfoAction();
 
     public static GameInfoAction getInstance() {
@@ -29,7 +29,7 @@ public class GameInfoAction implements V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {

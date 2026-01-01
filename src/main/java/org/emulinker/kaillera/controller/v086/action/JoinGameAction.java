@@ -15,7 +15,7 @@ import org.emulinker.util.EmuLang;
 
 public class JoinGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(JoinGameAction.class);
-    private static final String desc = "JoinGameAction";
+    private static final String DESC = "JoinGameAction";
     private static JoinGameAction singleton = new JoinGameAction();
 
     public static JoinGameAction getInstance() {
@@ -38,7 +38,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

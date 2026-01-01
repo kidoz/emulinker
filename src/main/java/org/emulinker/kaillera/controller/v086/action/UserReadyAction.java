@@ -12,7 +12,7 @@ import org.emulinker.kaillera.model.exception.UserReadyException;
 
 public class UserReadyAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(UserReadyAction.class);
-    private static final String desc = "UserReadyAction";
+    private static final String DESC = "UserReadyAction";
     private static UserReadyAction singleton = new UserReadyAction();
 
     public static UserReadyAction getInstance() {
@@ -35,7 +35,7 @@ public class UserReadyAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

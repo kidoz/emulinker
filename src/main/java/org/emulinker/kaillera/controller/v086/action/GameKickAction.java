@@ -10,7 +10,7 @@ import org.emulinker.kaillera.model.exception.GameKickException;
 
 public class GameKickAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(GameKickAction.class);
-    private static final String desc = "GameKickAction";
+    private static final String DESC = "GameKickAction";
     private static GameKickAction singleton = new GameKickAction();
 
     public static GameKickAction getInstance() {
@@ -28,7 +28,7 @@ public class GameKickAction implements V086Action {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

@@ -14,7 +14,7 @@ import org.emulinker.kaillera.model.exception.LoginException;
 
 public class ACKAction implements V086Action, V086UserEventHandler {
     private static final Logger log = LoggerFactory.getLogger(ACKAction.class);
-    private static final String desc = "ACKAction";
+    private static final String DESC = "ACKAction";
     private static ACKAction singleton = new ACKAction();
     private static int numAcksForSpeedTest = 3;
 
@@ -38,7 +38,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

@@ -13,7 +13,7 @@ import org.emulinker.kaillera.model.exception.DropGameException;
 
 public class DropGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(DropGameAction.class);
-    private static final String desc = "DropGameAction";
+    private static final String DESC = "DropGameAction";
     private static DropGameAction singleton = new DropGameAction();
 
     public static DropGameAction getInstance() {
@@ -36,7 +36,7 @@ public class DropGameAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

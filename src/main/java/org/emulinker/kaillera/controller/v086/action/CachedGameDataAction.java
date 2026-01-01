@@ -12,7 +12,7 @@ import org.emulinker.util.*;
 
 public class CachedGameDataAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(CachedGameDataAction.class);
-    private static final String desc = "CachedGameDataAction";
+    private static final String DESC = "CachedGameDataAction";
     private static CachedGameDataAction singleton = new CachedGameDataAction();
 
     private static final Logger keyLog = LoggerFactory.getLogger("KEYLOG");
@@ -32,7 +32,7 @@ public class CachedGameDataAction implements V086Action {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

@@ -15,7 +15,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
     public static final String ADMIN_COMMAND_ESCAPE_STRING = "/";
 
     private static final Logger log = LoggerFactory.getLogger(ChatAction.class);
-    private static final String desc = "ChatAction";
+    private static final String DESC = "ChatAction";
     private static ChatAction singleton = new ChatAction();
 
     public static ChatAction getInstance() {
@@ -38,7 +38,7 @@ public class ChatAction implements V086Action, V086ServerEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

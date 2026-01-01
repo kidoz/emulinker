@@ -14,7 +14,7 @@ import org.emulinker.kaillera.model.impl.*;
 
 public class LoginAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(LoginAction.class);
-    private static final String desc = "LoginAction";
+    private static final String DESC = "LoginAction";
     private static LoginAction singleton = new LoginAction();
 
     public static LoginAction getInstance() {
@@ -37,7 +37,7 @@ public class LoginAction implements V086Action, V086ServerEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

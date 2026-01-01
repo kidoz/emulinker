@@ -14,7 +14,7 @@ import org.emulinker.util.EmuLang;
 
 public class CreateGameAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(CreateGameAction.class);
-    private static final String desc = "CreateGameAction";
+    private static final String DESC = "CreateGameAction";
     private static CreateGameAction singleton = new CreateGameAction();
 
     public static CreateGameAction getInstance() {
@@ -38,7 +38,7 @@ public class CreateGameAction implements V086Action, V086ServerEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

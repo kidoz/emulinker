@@ -4,6 +4,6 @@ import org.emulinker.kaillera.model.*;
 
 public class AutoFireDetectorFactoryImpl implements AutoFireDetectorFactory {
     public AutoFireDetector getInstance(KailleraGame game, int defaultSensitivity) {
-        return new AutoFireScanner2(game, defaultSensitivity);
+        return new AutoFireScanner(game, defaultSensitivity);
     }
 }

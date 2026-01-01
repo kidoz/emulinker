@@ -8,7 +8,7 @@ import org.emulinker.kaillera.controller.v086.protocol.*;
 public class KeepAliveAction implements V086Action {
     // private static final Logger log =
     // LoggerFactory.getLogger(KeepAliveAction.class);
-    private static final String desc = "KeepAliveAction";
+    private static final String DESC = "KeepAliveAction";
     private static KeepAliveAction singleton = new KeepAliveAction();
 
     public static KeepAliveAction getInstance() {
@@ -26,7 +26,7 @@ public class KeepAliveAction implements V086Action {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

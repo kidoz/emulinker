@@ -10,7 +10,7 @@ import org.emulinker.kaillera.model.event.*;
 
 public class GameTimeoutAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameTimeoutAction.class);
-    private static final String desc = "GameTimeoutAction";
+    private static final String DESC = "GameTimeoutAction";
     private static GameTimeoutAction singleton = new GameTimeoutAction();
 
     public static GameTimeoutAction getInstance() {
@@ -28,7 +28,7 @@ public class GameTimeoutAction implements V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {

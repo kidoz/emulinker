@@ -14,7 +14,7 @@ import org.emulinker.util.*;
 public abstract class UDPRelay implements Runnable {
     protected static final Logger log = LoggerFactory.getLogger(UDPRelay.class);
 
-    protected static ExecutorService threadPool = Executors.newVirtualThreadPerTaskExecutor();
+    private static final ExecutorService THREAD_POOL = Executors.newVirtualThreadPerTaskExecutor();
 
     protected DatagramChannel listenChannel;
 
@@ -34,7 +34,7 @@ public abstract class UDPRelay implements Runnable {
 
         log.info("Bound to port " + listenPort);
 
-        threadPool.execute(this);
+        THREAD_POOL.execute(this);
     }
 
     public int getListenPort() {
@@ -71,7 +71,7 @@ public abstract class UDPRelay implements Runnable {
                     }
 
                     clients.put(clientAddress, clientHandler);
-                    threadPool.execute(clientHandler);
+                    THREAD_POOL.execute(clientHandler);
                 }
 
                 buffer.flip();
@@ -85,7 +85,7 @@ public abstract class UDPRelay implements Runnable {
             } catch (Exception e) {
             }
 
-            threadPool.shutdownNow();
+            THREAD_POOL.shutdownNow();
         }
 
         log.info("Main port " + listenPort + " thread exiting...");

@@ -10,13 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.WildcardStringPattern;
 
-public class AccessManager2 implements AccessManager, Runnable {
+public class FileBasedAccessManager implements AccessManager, Runnable {
     static {
         java.security.Security.setProperty("networkaddress.cache.ttl", "60");
         java.security.Security.setProperty("networkaddress.cache.negative.ttl", "60");
     }
 
-    private static final Logger log = LoggerFactory.getLogger(AccessManager2.class);
+    private static final Logger log = LoggerFactory.getLogger(FileBasedAccessManager.class);
 
     private EmuLinkerExecutor threadPool;
     private boolean isRunning = false;
@@ -33,11 +33,11 @@ public class AccessManager2 implements AccessManager, Runnable {
     private List<TempAdmin> tempAdminList = new CopyOnWriteArrayList<TempAdmin>();
     private List<Silence> silenceList = new CopyOnWriteArrayList<Silence>();
 
-    public AccessManager2(EmuLinkerExecutor threadPool)
+    public FileBasedAccessManager(EmuLinkerExecutor threadPool)
             throws NoSuchElementException, FileNotFoundException {
         this.threadPool = threadPool;
 
-        URL url = AccessManager2.class.getResource("/access.cfg");
+        URL url = FileBasedAccessManager.class.getResource("/access.cfg");
         if (url == null)
             throw new FileNotFoundException("Resource not found: /access.conf");
 
@@ -59,9 +59,9 @@ public class AccessManager2 implements AccessManager, Runnable {
     }
 
     public synchronized void start() {
-        log.debug("AccessManager2 thread received start request!");
-        log.debug("AccessManager2 thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
-                + threadPool.getPoolSize() + ")");
+        log.debug("FileBasedAccessManager thread received start request!");
+        log.debug("FileBasedAccessManager thread starting (ThreadPool:"
+                + threadPool.getActiveCount() + "/" + threadPool.getPoolSize() + ")");
         threadPool.execute(this);
         Thread.yield();
     }
@@ -71,7 +71,7 @@ public class AccessManager2 implements AccessManager, Runnable {
     }
 
     public synchronized void stop() {
-        log.debug("AccessManager2 thread received stop request!");
+        log.debug("FileBasedAccessManager thread received stop request!");
 
         if (!isRunning()) {
             log.debug("KailleraServer thread stop request ignored: not running!");
@@ -91,7 +91,7 @@ public class AccessManager2 implements AccessManager, Runnable {
 
     public void run() {
         isRunning = true;
-        log.debug("AccessManager2 thread running...");
+        log.debug("FileBasedAccessManager thread running...");
 
         try {
             while (!stopFlag) {
@@ -122,10 +122,10 @@ public class AccessManager2 implements AccessManager, Runnable {
             }
         } catch (Throwable e) {
             if (!stopFlag)
-                log.error("AccessManager2 thread caught unexpected exception: " + e, e);
+                log.error("FileBasedAccessManager thread caught unexpected exception: " + e, e);
         } finally {
             isRunning = false;
-            log.debug("AccessManager2 thread exiting...");
+            log.debug("FileBasedAccessManager thread exiting...");
         }
     }
 

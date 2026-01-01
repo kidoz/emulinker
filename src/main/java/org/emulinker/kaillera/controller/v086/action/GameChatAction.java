@@ -14,7 +14,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
     public static final String ADMIN_COMMAND_ESCAPE_STRING = "/";
 
     private static final Logger log = LoggerFactory.getLogger(GameChatAction.class);
-    private static final String desc = "GameChatAction";
+    private static final String DESC = "GameChatAction";
     private static GameChatAction singleton = new GameChatAction();
 
     public static GameChatAction getInstance() {
@@ -37,7 +37,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)

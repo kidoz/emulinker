@@ -12,7 +12,7 @@ import org.emulinker.kaillera.model.event.*;
 
 public class GameStatusAction implements V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameStatusAction.class);
-    private static final String desc = "GameStatusAction";
+    private static final String DESC = "GameStatusAction";
     private static GameStatusAction singleton = new GameStatusAction();
 
     public static GameStatusAction getInstance() {
@@ -30,7 +30,7 @@ public class GameStatusAction implements V086ServerEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {

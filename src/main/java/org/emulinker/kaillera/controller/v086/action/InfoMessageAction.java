@@ -11,7 +11,7 @@ import org.emulinker.kaillera.model.event.*;
 
 public class InfoMessageAction implements V086UserEventHandler {
     private static final Logger log = LoggerFactory.getLogger(InfoMessageAction.class);
-    private static final String desc = "InfoMessageAction";
+    private static final String DESC = "InfoMessageAction";
     private static InfoMessageAction singleton = new InfoMessageAction();
 
     public static InfoMessageAction getInstance() {
@@ -29,7 +29,7 @@ public class InfoMessageAction implements V086UserEventHandler {
     }
 
     public String toString() {
-        return desc;
+        return DESC;
     }
 
     public void handleEvent(UserEvent event, V086Controller.V086ClientHandler clientHandler) {

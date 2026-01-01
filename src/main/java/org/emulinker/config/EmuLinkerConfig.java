@@ -1,6 +1,6 @@
 package org.emulinker.config;
 
-import org.emulinker.kaillera.access.AccessManager2;
+import org.emulinker.kaillera.access.FileBasedAccessManager;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.master.MasterListStatsCollector;
@@ -34,14 +34,14 @@ public class EmuLinkerConfig {
     }
 
     @Bean
-    public AccessManager2 accessManager2(EmuLinkerExecutor executor,
+    public FileBasedAccessManager fileBasedAccessManager(EmuLinkerExecutor executor,
             EmuLinkerPropertiesConfig config) throws Exception {
-        return new AccessManager2(executor);
+        return new FileBasedAccessManager(executor);
     }
 
     @Bean
     public ConnectController connectController(EmuLinkerExecutor executor,
-            V086Controller v086Controller, AccessManager2 accessManager,
+            V086Controller v086Controller, FileBasedAccessManager accessManager,
             EmuLinkerPropertiesConfig config) throws Exception {
         KailleraServerController[] controllers = new KailleraServerController[]{v086Controller};
         return new ConnectController(executor, controllers, accessManager, config);
@@ -49,14 +49,14 @@ public class EmuLinkerConfig {
 
     @Bean
     public V086Controller v086Controller(KailleraServerImpl kailleraServer,
-            EmuLinkerExecutor executor, AccessManager2 accessManager,
+            EmuLinkerExecutor executor, FileBasedAccessManager accessManager,
             EmuLinkerPropertiesConfig config) throws Exception {
         return new V086Controller(kailleraServer, executor, accessManager, config);
     }
 
     @Bean
     public KailleraServerImpl kailleraServerImpl(EmuLinkerExecutor executor,
-            AccessManager2 accessManager, EmuLinkerPropertiesConfig config,
+            FileBasedAccessManager accessManager, EmuLinkerPropertiesConfig config,
             MasterListStatsCollector statsCollector, KailleraServerReleaseInfo releaseInfo,
             AutoFireDetectorFactoryImpl autoFireFactory) throws Exception {
         return new KailleraServerImpl(executor, accessManager, config, statsCollector, releaseInfo,
