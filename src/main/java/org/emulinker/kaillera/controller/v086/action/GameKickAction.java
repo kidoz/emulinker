@@ -1,13 +1,14 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.exception.GameKickException;
 
 public class GameKickAction implements V086Action
 {
-	private static Log				log			= LogFactory.getLog(GameKickAction.class);
+	private static final Logger log = LoggerFactory.getLogger(GameKickAction.class);
 	private static final String		desc		= "GameKickAction";
 	private static GameKickAction	singleton	= new GameKickAction();
 

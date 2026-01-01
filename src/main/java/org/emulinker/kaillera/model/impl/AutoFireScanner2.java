@@ -3,14 +3,14 @@ package org.emulinker.kaillera.model.impl;
 import java.util.*;
 import java.util.concurrent.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.util.*;
 
 public class AutoFireScanner2 implements AutoFireDetector
 {
-	protected static Log	log							= LogFactory.getLog(AutoFireScanner2.class);
+	protected static final Logger log = LoggerFactory.getLogger(AutoFireScanner2.class);
 	
 	// MAX DELAY, MIN REPEITIONS
 	private static int[][] SENSITIVITY_TABLE =

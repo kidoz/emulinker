@@ -1,13 +1,14 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 
 public class GameTimeoutAction implements V086GameEventHandler
 {
-	private static Log					log			= LogFactory.getLog(GameTimeoutAction.class);
+	private static final Logger log = LoggerFactory.getLogger(GameTimeoutAction.class);
 	private static final String			desc		= "GameTimeoutAction";
 	private static GameTimeoutAction	singleton	= new GameTimeoutAction();
 

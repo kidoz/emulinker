@@ -6,13 +6,14 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.util.*;
 import org.picocontainer.Startable;
 
 public abstract class UDPServer implements Executable, Startable
 {
-	private static Log		log			= LogFactory.getLog(UDPServer.class);
+	private static final Logger log = LoggerFactory.getLogger(UDPServer.class);
 /*
 	private static int		artificalPacketLossPercentage = 0;
 	private static int		artificalDelay = 0;
@@ -229,7 +230,7 @@ public abstract class UDPServer implements Executable, Startable
 		}
 		catch (Throwable e)
 		{
-			log.fatal("UDPServer on port " + getBindPort() + " caught unexpected exception!", e);
+			log.error("UDPServer on port " + getBindPort() + " caught unexpected exception!", e);
 			stop();
 		}
 		finally

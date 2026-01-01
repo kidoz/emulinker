@@ -3,7 +3,8 @@ package org.emulinker.kaillera.model.impl;
 import java.net.InetSocketAddress;
 import java.util.concurrent.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.emulinker.kaillera.access.*;
 import org.emulinker.kaillera.model.*;
@@ -13,7 +14,7 @@ import org.emulinker.util.*;
 
 public final class KailleraUserImpl implements KailleraUser, Executable
 {
-	private static Log						log						= LogFactory.getLog(KailleraUserImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(KailleraUserImpl.class);
 	private static final String				EMULINKER_CLIENT_NAME 	= "Emulinker Suprclient";
 
 	private KailleraServerImpl				server;
@@ -594,7 +595,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 		}
 		catch (Throwable e)
 		{
-			log.fatal(this + " thread caught unexpected exception!", e); //$NON-NLS-1$
+			log.error(this + " thread caught unexpected exception!", e); //$NON-NLS-1$
 		}
 		finally
 		{

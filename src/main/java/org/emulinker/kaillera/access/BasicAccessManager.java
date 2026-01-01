@@ -6,14 +6,15 @@
 
  import org.apache.commons.configuration.*;
  import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
- import org.apache.commons.logging.*;
+ import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
  import org.emulinker.kaillera.model.KailleraUser;
  import org.emulinker.util.EmuLinkerXMLConfig;
 
  public class BasicAccessManager implements AccessManager
  {
- private static Log			log				= LogFactory.getLog(BasicAccessManager.class);
+ private static final Logger log = LoggerFactory.getLogger(BasicAccessManager.class);
 
  private String				accessFileName;
  private XMLConfiguration	config;

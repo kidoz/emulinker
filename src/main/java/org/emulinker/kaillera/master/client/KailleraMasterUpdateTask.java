@@ -4,14 +4,15 @@ import java.util.*;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.model.*;
 
 public class KailleraMasterUpdateTask implements MasterListUpdateTask
 {
-	private static Log				log	= LogFactory.getLog(KailleraMasterUpdateTask.class);
+	private static final Logger log = LoggerFactory.getLogger(KailleraMasterUpdateTask.class);
 
 	private PublicServerInformation	publicInfo;
 	private ConnectController		connectController;

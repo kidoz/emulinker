@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
@@ -9,7 +10,7 @@ import org.emulinker.util.EmuLang;
 
 public class GameDesynchAction implements V086GameEventHandler
 {
-	private static Log					log			= LogFactory.getLog(GameDesynchAction.class);
+	private static final Logger log = LoggerFactory.getLogger(GameDesynchAction.class);
 	private static final String			desc		= "GameDesynchAction"; //$NON-NLS-1$
 	private static GameDesynchAction	singleton	= new GameDesynchAction();
 

@@ -3,7 +3,8 @@ package org.emulinker.kaillera.relay;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.net.UDPRelay;
@@ -11,7 +12,7 @@ import org.emulinker.util.EmuUtil;
 
 public class KailleraRelay extends UDPRelay
 {
-	private static Log	log					= LogFactory.getLog(KailleraRelay.class);
+	private static final Logger log = LoggerFactory.getLogger(KailleraRelay.class);
 
 	public static void main(String[] args) throws Exception
 	{

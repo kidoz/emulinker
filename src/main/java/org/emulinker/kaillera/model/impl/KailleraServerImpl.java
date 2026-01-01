@@ -7,7 +7,8 @@ import java.text.*;
 
 import org.apache.commons.configuration2.*;
 import org.apache.commons.configuration2.ex.*;
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.release.*;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.master.StatsCollector;
@@ -18,7 +19,7 @@ import org.emulinker.util.*;
 
 public class KailleraServerImpl implements KailleraServer, Executable
 {
-	protected static Log						log							= LogFactory.getLog(KailleraServerImpl.class);
+	protected static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
 
 	protected int								maxPing;
 	protected int								maxUsers;
@@ -855,7 +856,7 @@ public class KailleraServerImpl implements KailleraServer, Executable
 		catch (Throwable e)
 		{
 			if (!stopFlag)
-				log.fatal("KailleraServer thread caught unexpected exception: " + e, e);
+				log.error("KailleraServer thread caught unexpected exception: " + e, e);
 		}
 		finally
 		{

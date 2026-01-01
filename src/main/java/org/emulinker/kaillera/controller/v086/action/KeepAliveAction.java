@@ -1,12 +1,13 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 
 public class KeepAliveAction implements V086Action
 {
-	//private static Log				log			= LogFactory.getLog(KeepAliveAction.class);
+	//private static final Logger log = LoggerFactory.getLogger(KeepAliveAction.class);
 	private static final String		desc		= "KeepAliveAction";
 	private static KeepAliveAction	singleton	= new KeepAliveAction();
 

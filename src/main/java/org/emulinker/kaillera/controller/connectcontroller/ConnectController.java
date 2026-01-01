@@ -7,7 +7,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.configuration2.*;
 import org.apache.commons.configuration2.ex.*;
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
@@ -18,7 +19,7 @@ import org.emulinker.util.EmuUtil;
 
 public class ConnectController extends UDPServer
 {
-	private static Log						log						= LogFactory.getLog(ConnectController.class);
+	private static final Logger log = LoggerFactory.getLogger(ConnectController.class);
 
 	private ThreadPoolExecutor				threadPool;
 	private AccessManager					accessManager;

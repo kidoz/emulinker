@@ -6,12 +6,12 @@ import java.util.ResourceBundle;
 
 import java.lang.reflect.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EmuLang
 {
-	private static Log				log			= LogFactory.getLog(EmuLang.class);
+	private static final Logger log = LoggerFactory.getLogger(EmuLang.class);
 	
 	private static final String		BUNDLE_NAME		= "language";
 

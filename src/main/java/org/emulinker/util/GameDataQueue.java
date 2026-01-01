@@ -2,11 +2,12 @@ package org.emulinker.util;
 
 import java.util.concurrent.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GameDataQueue
 {
-	private static Log			log				= LogFactory.getLog(GameDataQueue.class);
+	private static final Logger log = LoggerFactory.getLogger(GameDataQueue.class);
 
 	private int					gameID;
 	private int					numPlayers;

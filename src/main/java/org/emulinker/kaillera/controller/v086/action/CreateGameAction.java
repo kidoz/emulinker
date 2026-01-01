@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -11,7 +12,7 @@ import org.emulinker.util.EmuLang;
 
 public class CreateGameAction implements V086Action, V086ServerEventHandler
 {
-	private static Log				log			= LogFactory.getLog(CreateGameAction.class);
+	private static final Logger log = LoggerFactory.getLogger(CreateGameAction.class);
 	private static final String		desc		= "CreateGameAction";
 	private static CreateGameAction	singleton	= new CreateGameAction();
 

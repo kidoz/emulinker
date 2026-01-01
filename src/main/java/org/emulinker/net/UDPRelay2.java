@@ -7,12 +7,13 @@ import java.nio.channels.DatagramChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.util.EmuUtil;
 
 public abstract class UDPRelay2
 {
-	private static Log			log					= LogFactory.getLog(UDPRelay2.class);
+	private static final Logger log = LoggerFactory.getLogger(UDPRelay2.class);
 
 	public static final int		DEFAULT_BUFFER_SIZE	= 4096;
 	private static int			threadCounter		= 0;
@@ -278,7 +279,7 @@ public abstract class UDPRelay2
 			}
 			catch (Exception e)
 			{
-				log.fatal(name + " caught unexpected exception", e);
+				log.error(name + " caught unexpected exception", e);
 				if (exception != null)
 					exception = e;
 			}

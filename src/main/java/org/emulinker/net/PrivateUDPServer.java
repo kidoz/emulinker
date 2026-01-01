@@ -5,11 +5,12 @@ import java.nio.ByteBuffer;
 
 import org.emulinker.util.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class PrivateUDPServer extends UDPServer
 {
-	private static Log			log	= LogFactory.getLog(PrivateUDPServer.class);
+	private static final Logger log = LoggerFactory.getLogger(PrivateUDPServer.class);
 
 	private InetAddress			remoteAddress;
 	private InetSocketAddress	remoteSocketAddress;

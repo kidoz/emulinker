@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{MM-dd-yy HH:mm:ss.SSS} %5p %c{1}: %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Rolling File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>emulinker.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>emulinker.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{MM-dd-yy HH:mm:ss.SSS} %5p %c{1}: %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Async Appender for better performance -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <!-- Granular logging control -->
+
+    <!-- HTTP client logging - reduce verbosity -->
+    <logger name="org.apache.commons.httpclient" level="WARN"/>
+    <logger name="httpclient" level="WARN"/>
+
+    <!-- Spring Framework -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.boot" level="INFO"/>
+
+    <!-- Hibernate/JPA (if used in future) -->
+    <logger name="org.hibernate" level="WARN"/>
+
+    <!-- EmuLinker specific loggers - configure as needed -->
+    <logger name="org.emulinker" level="DEBUG"/>
+    <logger name="org.emulinker.kaillera.controller" level="DEBUG"/>
+    <logger name="org.emulinker.kaillera.model" level="DEBUG"/>
+    <logger name="org.emulinker.kaillera.master" level="INFO"/>
+    <logger name="org.emulinker.net" level="DEBUG"/>
+
+    <!-- Game data logging - can be very verbose, set to INFO or WARN in production -->
+    <logger name="org.emulinker.kaillera.controller.v086.action.GameDataAction" level="INFO"/>
+    <logger name="org.emulinker.kaillera.controller.v086.action.CachedGameDataAction" level="INFO"/>
+
+    <!-- Root logger -->
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+        <!-- Uncomment to enable file logging -->
+        <!-- <appender-ref ref="ASYNC_FILE"/> -->
+    </root>
+</configuration>

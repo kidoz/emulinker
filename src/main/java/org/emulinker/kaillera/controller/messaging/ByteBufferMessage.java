@@ -3,11 +3,12 @@ package org.emulinker.kaillera.controller.messaging;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ByteBufferMessage
 {
-	protected static Log		log		= LogFactory.getLog(ByteBufferMessage.class);
+	protected static final Logger log = LoggerFactory.getLogger(ByteBufferMessage.class);
 //	public static Charset	charset	= Charset.forName("US-ASCII");
 //	public static Charset	charset	= Charset.forName("ISO-8859-1");
 //	public static Charset	charset	= Charset.forName("UTF-8");
@@ -23,11 +24,11 @@ public abstract class ByteBufferMessage
 				if (Charset.isSupported(charsetName))
 					charset = Charset.forName(charsetName);
 				else
-					log.fatal("Charset " + charsetName + " is not supported!");
+					log.error("Charset " + charsetName + " is not supported!");
 			}
 			catch (Exception e)
 			{
-				log.fatal("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
+				log.error("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
 			}
 		}
 		

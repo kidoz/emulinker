@@ -8,8 +8,8 @@ import java.util.concurrent.*;
 
 import java.io.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.*;
@@ -17,7 +17,7 @@ import org.emulinker.util.*;
 
 public class AutoFireScanner implements AutoFireDetector
 {
-	private static Log	log							= LogFactory.getLog(AutoFireScanner.class);
+	private static final Logger log = LoggerFactory.getLogger(AutoFireScanner.class);
 
 	private static int MIN_CHAR = 65;
 	private static int MAX_CHAR = 90;

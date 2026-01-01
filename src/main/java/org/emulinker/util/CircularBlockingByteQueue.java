@@ -2,14 +2,15 @@ package org.emulinker.util;
 
 import java.util.concurrent.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // This is a very specialized structure designed for queueing ints during gameplay
 // Adapted from http://www.smotricz.com/kabutz/Issue027.html
 
 public final class CircularBlockingByteQueue
 {
-	private static Log	log			= LogFactory.getLog(CircularBlockingByteQueue.class);
+	private static final Logger log = LoggerFactory.getLogger(CircularBlockingByteQueue.class);
 
 	// array holds the elements
 	private byte[]		array;

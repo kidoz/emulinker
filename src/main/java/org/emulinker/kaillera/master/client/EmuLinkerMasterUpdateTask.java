@@ -4,7 +4,8 @@ import java.util.Properties;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.PublicServerInformation;
 import org.emulinker.kaillera.model.KailleraServer;
@@ -13,7 +14,7 @@ import org.emulinker.util.EmuUtil;
 
 public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask
 {
-	private static Log				log	= LogFactory.getLog(EmuLinkerMasterUpdateTask.class);
+	private static final Logger log = LoggerFactory.getLogger(EmuLinkerMasterUpdateTask.class);
 	private static final String		url	= "http://master.emulinker.org/touch.php";
 
 	private PublicServerInformation	publicInfo;

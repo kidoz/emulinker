@@ -5,7 +5,8 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.util.WildcardStringPattern;
 import org.picocontainer.Startable;
 
@@ -17,7 +18,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		java.security.Security.setProperty("networkaddress.cache.negative.ttl" , "60");
 	}
 	
-	private static Log				log						= LogFactory.getLog(AccessManager2.class);
+	private static final Logger log = LoggerFactory.getLogger(AccessManager2.class);
 
 	private ThreadPoolExecutor		threadPool;
 	private boolean					isRunning				= false;
@@ -152,7 +153,7 @@ public class AccessManager2 implements AccessManager, Startable, Runnable
 		catch (Throwable e)
 		{
 			if (!stopFlag)
-				log.fatal("AccessManager2 thread caught unexpected exception: " + e, e);
+				log.error("AccessManager2 thread caught unexpected exception: " + e, e);
 		}
 		finally
 		{

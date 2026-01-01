@@ -2,7 +2,8 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -12,7 +13,7 @@ import org.emulinker.kaillera.model.exception.LoginException;
 
 public class ACKAction implements V086Action, V086UserEventHandler
 {
-	private static Log			log					= LogFactory.getLog(ACKAction.class);
+	private static final Logger log = LoggerFactory.getLogger(ACKAction.class);
 	private static final String	desc				= "ACKAction";
 	private static ACKAction	singleton			= new ACKAction();
 	private static int			numAcksForSpeedTest	= 3;

@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -10,7 +11,7 @@ import org.emulinker.kaillera.model.exception.DropGameException;
 
 public class DropGameAction implements V086Action, V086GameEventHandler
 {
-	private static Log				log			= LogFactory.getLog(DropGameAction.class);
+	private static final Logger log = LoggerFactory.getLogger(DropGameAction.class);
 	private static final String		desc		= "DropGameAction";
 	private static DropGameAction	singleton	= new DropGameAction();
 

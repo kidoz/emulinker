@@ -7,7 +7,8 @@ import java.util.concurrent.*;
 
 import org.apache.commons.configuration2.*;
 import org.apache.commons.configuration2.ex.*;
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.messaging.*;
@@ -21,7 +22,7 @@ import org.emulinker.util.*;
 
 public class V086Controller implements KailleraServerController
 {
-	private static Log							log					= LogFactory.getLog(V086Controller.class);
+	private static final Logger log = LoggerFactory.getLogger(V086Controller.class);
 
 	private int									MAX_BUNDLE_SIZE		= 5;
 

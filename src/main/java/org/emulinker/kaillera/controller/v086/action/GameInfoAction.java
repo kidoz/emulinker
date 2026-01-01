@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
@@ -8,7 +9,7 @@ import org.emulinker.kaillera.model.event.*;
 
 public class GameInfoAction implements V086GameEventHandler
 {
-	private static Log				log			= LogFactory.getLog(GameInfoAction.class);
+	private static final Logger log = LoggerFactory.getLogger(GameInfoAction.class);
 	private static final String		desc		= "GameInfoAction";
 	private static GameInfoAction	singleton	= new GameInfoAction();
 

@@ -6,14 +6,14 @@ import java.util.*;
 import java.net.*;
 import java.util.concurrent.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.emulinker.util.*;
 
 public abstract class UDPRelay implements Runnable
 {
-	protected static Log			log					= LogFactory.getLog(UDPRelay.class);
+	protected static final Logger log = LoggerFactory.getLogger(UDPRelay.class);
 
 	protected static ExecutorService threadPool = Executors.newCachedThreadPool();
 	

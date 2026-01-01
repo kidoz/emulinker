@@ -4,7 +4,8 @@ import java.util.*;
 import java.io.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.master.StatsCollector;
 import org.emulinker.kaillera.model.*;
@@ -14,7 +15,7 @@ import org.emulinker.util.*;
 
 public final class KailleraGameImpl implements KailleraGame
 {
-	private static Log	log							= LogFactory.getLog(KailleraGameImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(KailleraGameImpl.class);
 
 	private int						id;
 	private String					romName;

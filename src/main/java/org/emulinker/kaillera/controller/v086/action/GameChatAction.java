@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -11,7 +12,7 @@ public class GameChatAction implements V086Action, V086GameEventHandler
 {
 	public static final String	ADMIN_COMMAND_ESCAPE_STRING	= "/";
 
-	private static Log				log			= LogFactory.getLog(GameChatAction.class);
+	private static final Logger log = LoggerFactory.getLogger(GameChatAction.class);
 	private static final String		desc		= "GameChatAction";
 	private static GameChatAction	singleton	= new GameChatAction();
 

@@ -3,7 +3,8 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.net.InetAddress;
 import java.util.*;
 
-import org.apache.commons.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.emulinker.release.*;
 import org.emulinker.kaillera.access.AccessManager;
@@ -30,7 +31,7 @@ public class AdminCommandAction implements V086Action
 	public static final String			COMMAND_TEMPADMIN		= "/tempadmin"; //$NON-NLS-1$
 	public static final String			COMMAND_VERSION			= "/version"; //$NON-NLS-1$
 
-	private static Log					log						= LogFactory.getLog(AdminCommandAction.class);
+	private static final Logger log = LoggerFactory.getLogger(AdminCommandAction.class);
 	private static final String			desc					= "AdminCommandAction"; //$NON-NLS-1$
 	private static AdminCommandAction	singleton				= new AdminCommandAction();
 
