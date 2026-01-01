@@ -4,5 +4,5 @@ import org.emulinker.kaillera.model.KailleraGame;
 
 public interface GameEvent extends KailleraEvent
 {
-	public KailleraGame getGame();
+	KailleraGame getGame();
 }

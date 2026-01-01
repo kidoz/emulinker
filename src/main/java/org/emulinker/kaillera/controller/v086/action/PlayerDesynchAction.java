@@ -4,7 +4,6 @@ import org.apache.commons.logging.*;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
-import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.util.EmuLang;
 

@@ -4,5 +4,5 @@ import org.emulinker.kaillera.model.KailleraServer;
 
 public interface ServerEvent extends KailleraEvent
 {
-	public KailleraServer getServer();
+	KailleraServer getServer();
 }

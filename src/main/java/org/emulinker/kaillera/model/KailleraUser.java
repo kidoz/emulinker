@@ -7,93 +7,93 @@ import org.emulinker.kaillera.model.exception.*;
 
 public interface KailleraUser
 {
-	public static final byte		CONNECTION_TYPE_LAN			= 1;
-	public static final byte		CONNECTION_TYPE_EXCELLENT	= 2;
-	public static final byte		CONNECTION_TYPE_GOOD		= 3;
-	public static final byte		CONNECTION_TYPE_AVERAGE		= 4;
-	public static final byte		CONNECTION_TYPE_LOW			= 5;
-	public static final byte		CONNECTION_TYPE_BAD			= 6;
+	byte		CONNECTION_TYPE_LAN			= 1;
+	byte		CONNECTION_TYPE_EXCELLENT	= 2;
+	byte		CONNECTION_TYPE_GOOD		= 3;
+	byte		CONNECTION_TYPE_AVERAGE		= 4;
+	byte		CONNECTION_TYPE_LOW			= 5;
+	byte		CONNECTION_TYPE_BAD			= 6;
 
-	public static final String[]	CONNECTION_TYPE_NAMES		= { "DISABLED", "Lan", "Excellent", "Good", "Average", "Low", "Bad" };
+	String[]	CONNECTION_TYPE_NAMES		= { "DISABLED", "Lan", "Excellent", "Good", "Average", "Low", "Bad" };
 
-	public static final byte		STATUS_PLAYING				= 0;
-	public static final byte		STATUS_IDLE					= 1;
-	public static final byte		STATUS_CONNECTING			= 2;
-	public static final String[]	STATUS_NAMES				= { "Playing", "Idle", "Connecting" };
+	byte		STATUS_PLAYING				= 0;
+	byte		STATUS_IDLE					= 1;
+	byte		STATUS_CONNECTING			= 2;
+	String[]	STATUS_NAMES				= { "Playing", "Idle", "Connecting" };
 
-	public int getID();
+	int getID();
 
-	public InetSocketAddress getConnectSocketAddress();
+	InetSocketAddress getConnectSocketAddress();
 
-	public String getProtocol();
+	String getProtocol();
 
-	public long getConnectTime();
+	long getConnectTime();
 
-	public int getStatus();
+	int getStatus();
 
-	public String getName();
+	String getName();
 
-	public void setName(String name);
+	void setName(String name);
 
-	public String getClientType();
-	
-	public boolean isEmuLinkerClient();
+	String getClientType();
 
-	public void setClientType(String clientType);
+	boolean isEmuLinkerClient();
 
-	public byte getConnectionType();
+	void setClientType(String clientType);
 
-	public void setConnectionType(byte connectionType);
+	byte getConnectionType();
 
-	public InetSocketAddress getSocketAddress();
+	void setConnectionType(byte connectionType);
 
-	public void setSocketAddress(InetSocketAddress clientSocketAddress);
+	InetSocketAddress getSocketAddress();
 
-	public int getPing();
+	void setSocketAddress(InetSocketAddress clientSocketAddress);
 
-	public void setPing(int ping);
+	int getPing();
 
-	public void login() throws PingTimeException, ClientAddressException, ConnectionTypeException, UserNameException, LoginException;
+	void setPing(int ping);
 
-	public long getLastActivity();
+	void login() throws PingTimeException, ClientAddressException, ConnectionTypeException, UserNameException, LoginException;
 
-	public void updateLastActivity();
+	long getLastActivity();
 
-	public void updateLastKeepAlive();
+	void updateLastActivity();
 
-	public long getLastKeepAlive();
+	void updateLastKeepAlive();
 
-	public boolean isLoggedIn();
+	long getLastKeepAlive();
 
-	public KailleraServer getServer();
+	boolean isLoggedIn();
 
-	public KailleraEventListener getListener();
+	KailleraServer getServer();
 
-	public void chat(String message) throws ChatException, FloodException;
+	KailleraEventListener getListener();
 
-	public KailleraGame createGame(String romName) throws CreateGameException, FloodException;
+	void chat(String message) throws ChatException, FloodException;
 
-	public void quit(String message) throws QuitException, DropGameException, QuitGameException, CloseGameException;
+	KailleraGame createGame(String romName) throws CreateGameException, FloodException;
 
-	public KailleraGame joinGame(int gameID) throws JoinGameException;
+	void quit(String message) throws QuitException, DropGameException, QuitGameException, CloseGameException;
 
-	public int getPlayerNumber();
+	KailleraGame joinGame(int gameID) throws JoinGameException;
 
-	public void startGame() throws StartGameException;
+	int getPlayerNumber();
 
-	public void gameChat(String message, int messageID) throws GameChatException;
+	void startGame() throws StartGameException;
 
-	public void gameKick(int userID) throws GameKickException;
+	void gameChat(String message, int messageID) throws GameChatException;
 
-	public void playerReady() throws UserReadyException;
+	void gameKick(int userID) throws GameKickException;
 
-	public void addGameData(byte[] data) throws GameDataException;
+	void playerReady() throws UserReadyException;
 
-	public void dropGame() throws DropGameException;
+	void addGameData(byte[] data) throws GameDataException;
 
-	public void quitGame() throws DropGameException, QuitGameException, CloseGameException;
+	void dropGame() throws DropGameException;
 
-	public void droppedPacket();
+	void quitGame() throws DropGameException, QuitGameException, CloseGameException;
 
-	public void stop();
+	void droppedPacket();
+
+	void stop();
 }

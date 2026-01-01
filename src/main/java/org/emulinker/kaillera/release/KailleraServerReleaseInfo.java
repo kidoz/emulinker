@@ -24,37 +24,37 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo
 		//generic constructor
 	}
 
-	public final String getProductName()
+	public String getProductName()
 	{
 		return productName;
 	}
 
-	public final int getMajorVersion()
+	public int getMajorVersion()
 	{
 		return majorVersion;
 	}
 
-	public final int getMinorVersion()
+	public int getMinorVersion()
 	{
 		return minorVersion;
 	}
 
-	public final String getReleaseDate()
+	public String getReleaseDate()
 	{
 		return releaseDate;
 	}
 
-	public final String getLicenseInfo()
+	public String getLicenseInfo()
 	{
 		return licenseInfo;
 	}
 
-	public final String getWebsiteString()
+	public String getWebsiteString()
 	{
 		return website;
 	}
 
-	public final int getBuildNumber()
+	public int getBuildNumber()
 	{
 		// TODO: modify this to pull from an Ant build version file
 		return buildNumber;
@@ -66,7 +66,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo
 	 * <i>major</i>.<i>minor</i>
 	 * </p>
 	 */
-	public final String getVersionString()
+	public String getVersionString()
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(getMajorVersion());

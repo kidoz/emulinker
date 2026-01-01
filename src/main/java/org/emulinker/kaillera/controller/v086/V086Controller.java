@@ -342,7 +342,9 @@ public class V086Controller implements KailleraServerController
 
 		public void startSpeedTest()
 		{
-			testStart = lastMeasurement = System.currentTimeMillis();
+			long now = System.currentTimeMillis();
+			testStart = now;
+			lastMeasurement = now;
 			measurementCount = 0;
 		}
 

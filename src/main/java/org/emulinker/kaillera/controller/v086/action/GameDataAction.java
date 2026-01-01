@@ -6,7 +6,6 @@ import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.GameDataException;
-import org.emulinker.util.EmuUtil;
 
 public class GameDataAction implements V086Action, V086GameEventHandler
 {

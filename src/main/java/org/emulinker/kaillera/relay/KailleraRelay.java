@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.relay;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
@@ -14,7 +13,7 @@ public class KailleraRelay extends UDPRelay
 {
 	private static Log	log					= LogFactory.getLog(KailleraRelay.class);
 
-	public static void main(String args[]) throws Exception
+	public static void main(String[] args) throws Exception
 	{
 		int localPort = Integer.parseInt(args[0]);
 		String serverIP = args[1];

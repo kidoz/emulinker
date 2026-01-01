@@ -10,33 +10,33 @@ import org.picocontainer.Startable;
 
 public interface KailleraServer extends Startable
 {
-	public ReleaseInfo getReleaseInfo();
-	
-	public int getNumUsers();
+	ReleaseInfo getReleaseInfo();
 
-	public int getNumGames();
+	int getNumUsers();
 
-	public int getMaxUsers();
+	int getNumGames();
 
-	public int getMaxGames();
+	int getMaxUsers();
 
-	public int getMaxPing();
+	int getMaxGames();
 
-	public Collection<? extends KailleraUser> getUsers();
+	int getMaxPing();
 
-	public Collection<? extends KailleraGame> getGames();
+	Collection<? extends KailleraUser> getUsers();
 
-	public KailleraUser getUser(int userID);
+	Collection<? extends KailleraGame> getGames();
 
-	public KailleraGame getGame(int gameID);
+	KailleraUser getUser(int userID);
 
-	public KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol, KailleraEventListener listener) throws ServerFullException, NewConnectionException;
+	KailleraGame getGame(int gameID);
 
-	public void login(KailleraUser user) throws PingTimeException, ClientAddressException, ConnectionTypeException, UserNameException, LoginException;
+	KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol, KailleraEventListener listener) throws ServerFullException, NewConnectionException;
 
-	public void chat(KailleraUser user, String message) throws ChatException, FloodException;
+	void login(KailleraUser user) throws PingTimeException, ClientAddressException, ConnectionTypeException, UserNameException, LoginException;
 
-	public KailleraGame createGame(KailleraUser user, String romName) throws CreateGameException, FloodException;
+	void chat(KailleraUser user, String message) throws ChatException, FloodException;
 
-	public void quit(KailleraUser user, String message) throws QuitException, DropGameException, QuitGameException, CloseGameException;
+	KailleraGame createGame(KailleraUser user, String romName) throws CreateGameException, FloodException;
+
+	void quit(KailleraUser user, String message) throws QuitException, DropGameException, QuitGameException, CloseGameException;
 }

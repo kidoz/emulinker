@@ -52,7 +52,7 @@ public class GameDataQueue
 		gameDesynched = true;
 	}
 
-	public void addData(int playerNumber, byte data[])
+	public void addData(int playerNumber, byte[] data)
 	{
 		for (int i = 0; i < data.length; i++)
 			addData(playerNumber, data[i]);
@@ -126,7 +126,8 @@ public class GameDataQueue
 				}
 			}
 
-			lastI = lastJ = 0;
+			lastI = 0;
+			lastJ = 0;
 			lastData = null;
 			timeoutCounter = 0;
 

@@ -8,15 +8,15 @@ import org.picocontainer.Startable;
 
 public interface KailleraServerController extends Startable
 {
-	public int newConnection(InetSocketAddress clientSocketAddress, String protocol) throws ServerFullException, NewConnectionException;
+	int newConnection(InetSocketAddress clientSocketAddress, String protocol) throws ServerFullException, NewConnectionException;
 
-	public KailleraServer getServer();
+	KailleraServer getServer();
 
-	public int getBufferSize();
+	int getBufferSize();
 
-	public String getVersion();
+	String getVersion();
 
-	public int getNumClients();
+	int getNumClients();
 
-	public String[] getClientTypes();
+	String[] getClientTypes();
 }

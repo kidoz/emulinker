@@ -261,7 +261,8 @@ public class EmuUtil
 //		while (buffer.hasRemaining())
 		for(i=0; i<tempArray.length; i++)
 		{
-			if ((b = buffer.get()) == stopByte)
+			b = buffer.get();
+			if (b == stopByte)
 				break;
 //			tempBuffer.put(b);
 			tempArray[i] = (char)b;
@@ -279,7 +280,7 @@ public class EmuUtil
 		buffer.put((byte) stopByte);
 	}
 
-	public static Object construct(String className, Object args[]) throws InstantiationException
+	public static Object construct(String className, Object[] args) throws InstantiationException
 	{
 		try
 		{

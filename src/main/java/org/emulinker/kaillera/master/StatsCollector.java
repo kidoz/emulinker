@@ -6,9 +6,9 @@ import org.emulinker.kaillera.model.*;
 
 public interface StatsCollector
 {
-	public void gameStarted(KailleraServer server, KailleraGame game);
+	void gameStarted(KailleraServer server, KailleraGame game);
 
-	public List getStartedGamesList();
+	List getStartedGamesList();
 
-	public void clearStartedGamesList();
+	void clearStartedGamesList();
 }

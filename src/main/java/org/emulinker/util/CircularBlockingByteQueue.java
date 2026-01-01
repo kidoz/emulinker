@@ -136,7 +136,7 @@ public final class CircularBlockingByteQueue
 		int oldCapacity = array.length;
 		int newCapacity = (oldCapacity * 3) / 2 + 1;
 		log.debug("CircularBlockingByteQueue growing from " + oldCapacity + " to " + newCapacity);
-		byte newData[] = new byte[newCapacity];
+		byte[] newData = new byte[newCapacity];
 		toArray(newData);
 		tail = size;
 		head = 0;
@@ -150,7 +150,7 @@ public final class CircularBlockingByteQueue
 		return toArray(new byte[size]);
 	}
 
-	public byte[] toArray(byte a[])
+	public byte[] toArray(byte[] a)
 	{
 		//		log.debug(this + " toArray("+Arrays.toString(a)+")");
 

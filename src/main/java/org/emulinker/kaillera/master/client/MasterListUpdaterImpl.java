@@ -7,7 +7,6 @@ import org.picocontainer.Startable;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.*;
 
 import org.emulinker.kaillera.master.*;

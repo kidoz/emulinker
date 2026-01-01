@@ -4,7 +4,7 @@ import java.io.*;
 
 public class HexConverter
 {
-	public static void main(String args[]) throws Exception
+	public static void main(String[] args) throws Exception
 	{
 		BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(args[1]));
 		BufferedReader is = new BufferedReader(new FileReader(args[0]));

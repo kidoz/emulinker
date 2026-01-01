@@ -13,7 +13,7 @@ public class WildcardStringPattern
 	private String				endString		= "";
 	private LinkedList<String>	containsStrings	= new LinkedList<String>();
 
-	public static void main(String args[])
+	public static void main(String[] args)
 	{
 		WildcardStringPattern test = new WildcardStringPattern(args[0]);
 		for (int i = 1; i < args.length; i++)

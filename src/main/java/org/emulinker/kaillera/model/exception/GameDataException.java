@@ -1,7 +1,5 @@
 package org.emulinker.kaillera.model.exception;
 
-import org.emulinker.util.EmuLang;
-
 public class GameDataException extends ActionException
 {
 //	private boolean	reflectData	= true;

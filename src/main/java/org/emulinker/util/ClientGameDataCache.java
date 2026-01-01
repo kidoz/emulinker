@@ -117,7 +117,9 @@ public class ClientGameDataCache implements GameDataCache
 		for (int i = 0; i < size; i++)
 			array[convert(i)] = null;
 
-		head = tail = size = 0;
+		head = 0;
+		tail = 0;
+		size = 0;
 	}
 
 	public int add(byte[] data)

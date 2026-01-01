@@ -60,8 +60,12 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 
 		toString = "User" + userID + "(" + connectSocketAddress.getAddress().getHostAddress() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-		lastChatTime = lastCreateGameTime = lastTimeout = 0;
-		lastActivity = lastKeepAlive = connectTime = System.currentTimeMillis();
+		lastChatTime = 0;
+		lastCreateGameTime = 0;
+		lastTimeout = 0;
+		connectTime = System.currentTimeMillis();
+		lastActivity = connectTime;
+		lastKeepAlive = connectTime;
 	}
 
 	public int getID()
@@ -251,7 +255,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable
 
 	public void updateLastActivity()
 	{
-		lastActivity = lastKeepAlive = System.currentTimeMillis();
+		long now = System.currentTimeMillis();
+		lastActivity = now;
+		lastKeepAlive = now;
 	}
 
 	public boolean equals(Object obj)

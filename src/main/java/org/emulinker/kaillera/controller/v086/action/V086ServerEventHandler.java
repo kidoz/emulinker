@@ -5,9 +5,9 @@ import org.emulinker.kaillera.model.event.ServerEvent;
 
 public interface V086ServerEventHandler
 {
-	public String toString();
+	String toString();
 
-	public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler);
+	void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler);
 
-	public int getHandledEventCount();
+	int getHandledEventCount();
 }

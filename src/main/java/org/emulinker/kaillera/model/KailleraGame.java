@@ -6,47 +6,47 @@ import org.emulinker.kaillera.model.exception.*;
 
 public interface KailleraGame
 {
-	public static final byte		STATUS_WAITING			= 0;
-	public static final byte		STATUS_PLAYING			= 1;
-	public static final byte		STATUS_SYNCHRONIZING	= 2;
+	byte		STATUS_WAITING			= 0;
+	byte		STATUS_PLAYING			= 1;
+	byte		STATUS_SYNCHRONIZING	= 2;
 
-	public static final String[]	STATUS_NAMES			= { "Waiting", "Playing", "Synchronizing" };
+	String[]	STATUS_NAMES			= { "Waiting", "Playing", "Synchronizing" };
 
-	public int getID();
+	int getID();
 
-	public String getRomName();
+	String getRomName();
 
-	public String getClientType();
+	String getClientType();
 
-	public KailleraUser getOwner();
+	KailleraUser getOwner();
 
-	public int getPlayerNumber(KailleraUser user);
+	int getPlayerNumber(KailleraUser user);
 
-	public int getNumPlayers();
+	int getNumPlayers();
 
-	public KailleraUser getPlayer(int playerNumber);
+	KailleraUser getPlayer(int playerNumber);
 
-	public Collection<? extends KailleraUser> getPlayers();
+	Collection<? extends KailleraUser> getPlayers();
 
-	public int getStatus();
+	int getStatus();
 
-	public KailleraServer getServer();
+	KailleraServer getServer();
 
-	public void droppedPacket(KailleraUser user);
+	void droppedPacket(KailleraUser user);
 
-	public int join(KailleraUser user) throws JoinGameException;
+	int join(KailleraUser user) throws JoinGameException;
 
-	public void chat(KailleraUser user, String message) throws GameChatException;
+	void chat(KailleraUser user, String message) throws GameChatException;
 
-	public void kick(KailleraUser requester, int userID) throws GameKickException;
+	void kick(KailleraUser requester, int userID) throws GameKickException;
 
-	public void start(KailleraUser user) throws StartGameException;
+	void start(KailleraUser user) throws StartGameException;
 
-	public void ready(KailleraUser user, int playerNumber) throws UserReadyException;
+	void ready(KailleraUser user, int playerNumber) throws UserReadyException;
 
-	public void addData(KailleraUser user, int playerNumber, byte[] data) throws GameDataException;
+	void addData(KailleraUser user, int playerNumber, byte[] data) throws GameDataException;
 
-	public void drop(KailleraUser user, int playerNumber) throws DropGameException;
+	void drop(KailleraUser user, int playerNumber) throws DropGameException;
 
-	public void quit(KailleraUser user, int playerNumber) throws DropGameException, QuitGameException, CloseGameException;
+	void quit(KailleraUser user, int playerNumber) throws DropGameException, QuitGameException, CloseGameException;
 }

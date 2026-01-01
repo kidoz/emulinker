@@ -2,8 +2,6 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.util.*;
 

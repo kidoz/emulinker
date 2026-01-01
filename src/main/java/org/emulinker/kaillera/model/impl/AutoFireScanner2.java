@@ -13,7 +13,7 @@ public class AutoFireScanner2 implements AutoFireDetector
 	protected static Log	log							= LogFactory.getLog(AutoFireScanner2.class);
 	
 	// MAX DELAY, MIN REPEITIONS
-	private static int SENSITIVITY_TABLE[][] = 
+	private static int[][] SENSITIVITY_TABLE =
 	{
 		{0,	0 },	// 0 means disable autofire detect
 		{2,	13},	// 1 is least sensitive

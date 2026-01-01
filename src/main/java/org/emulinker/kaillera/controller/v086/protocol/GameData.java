@@ -12,7 +12,7 @@ public class GameData extends V086Message
 
 	private byte[]				gameData;
 
-	public static void main(String args[]) throws Exception
+	public static void main(String[] args) throws Exception
 	{
 		byte[] data = new byte[9];
 		long st = System.currentTimeMillis();

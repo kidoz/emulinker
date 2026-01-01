@@ -3,7 +3,6 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.*;
 
 import org.apache.commons.logging.*;
-import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
@@ -11,7 +10,6 @@ import org.emulinker.kaillera.model.exception.ActionException;
 import org.emulinker.kaillera.model.impl.*;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.util.EmuLang;
-import org.emulinker.util.WildcardStringPattern;
 
 public class GameOwnerCommandAction implements V086Action
 {
