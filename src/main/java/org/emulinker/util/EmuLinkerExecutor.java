@@ -27,7 +27,7 @@ public class EmuLinkerExecutor implements ExecutorService {
     private final AtomicInteger activeCount = new AtomicInteger(0);
     private final AtomicInteger totalSubmitted = new AtomicInteger(0);
 
-    public EmuLinkerExecutor(Object config) {
+    public EmuLinkerExecutor() {
         this.delegate = Executors.newVirtualThreadPerTaskExecutor();
         log.info("EmuLinkerExecutor initialized with virtual threads (Project Loom)");
     }

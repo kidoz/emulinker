@@ -31,10 +31,6 @@
 
     <!-- Granular logging control -->
 
-    <!-- HTTP client logging - reduce verbosity -->
-    <logger name="org.apache.commons.httpclient" level="WARN"/>
-    <logger name="httpclient" level="WARN"/>
-
     <!-- Spring Framework -->
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.springframework.web" level="INFO"/>

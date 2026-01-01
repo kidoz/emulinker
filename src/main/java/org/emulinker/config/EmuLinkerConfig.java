@@ -1,31 +1,39 @@
 package org.emulinker.config;
 
+import java.time.Duration;
 import org.emulinker.kaillera.access.FileBasedAccessManager;
+import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.master.MasterListStatsCollector;
 import org.emulinker.kaillera.master.client.MasterListUpdaterImpl;
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import org.emulinker.kaillera.model.impl.KailleraServerImpl;
-import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
 import org.emulinker.util.EmuLinkerExecutor;
-import org.emulinker.util.EmuLinkerPropertiesConfig;
-// package org.emulinker.config;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 @Configuration
+@EnableConfigurationProperties({ServerConfig.class, GameConfig.class, MasterListConfig.class,
+        ControllersConfig.class})
 public class EmuLinkerConfig {
 
     @Bean
-    public EmuLinkerPropertiesConfig emuLinkerPropertiesConfig() throws Exception {
-        return new EmuLinkerPropertiesConfig();
+    public EmuLinkerExecutor emuLinkerExecutor() {
+        return new EmuLinkerExecutor();
     }
 
     @Bean
-    public EmuLinkerExecutor emuLinkerExecutor(EmuLinkerPropertiesConfig config) {
-        return new EmuLinkerExecutor(config);
+    public RestClient restClient(RestClient.Builder builder) {
+        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+                .withConnectTimeout(Duration.ofSeconds(5)).withReadTimeout(Duration.ofSeconds(5));
+        return builder.requestFactory(ClientHttpRequestFactoryBuilder.simple().build(settings))
+                .build();
     }
 
     @Bean
@@ -34,33 +42,35 @@ public class EmuLinkerConfig {
     }
 
     @Bean
-    public FileBasedAccessManager fileBasedAccessManager(EmuLinkerExecutor executor,
-            EmuLinkerPropertiesConfig config) throws Exception {
+    public FileBasedAccessManager fileBasedAccessManager(EmuLinkerExecutor executor)
+            throws Exception {
         return new FileBasedAccessManager(executor);
     }
 
     @Bean
     public ConnectController connectController(EmuLinkerExecutor executor,
             V086Controller v086Controller, FileBasedAccessManager accessManager,
-            EmuLinkerPropertiesConfig config) throws Exception {
+            ControllersConfig controllersConfig) throws Exception {
         KailleraServerController[] controllers = new KailleraServerController[]{v086Controller};
-        return new ConnectController(executor, controllers, accessManager, config);
+        return new ConnectController(executor, controllers, accessManager, controllersConfig);
     }
 
     @Bean
     public V086Controller v086Controller(KailleraServerImpl kailleraServer,
             EmuLinkerExecutor executor, FileBasedAccessManager accessManager,
-            EmuLinkerPropertiesConfig config) throws Exception {
-        return new V086Controller(kailleraServer, executor, accessManager, config);
+            ControllersConfig controllersConfig, ServerConfig serverConfig) throws Exception {
+        return new V086Controller(kailleraServer, executor, accessManager, controllersConfig,
+                serverConfig);
     }
 
     @Bean
     public KailleraServerImpl kailleraServerImpl(EmuLinkerExecutor executor,
-            FileBasedAccessManager accessManager, EmuLinkerPropertiesConfig config,
-            MasterListStatsCollector statsCollector, KailleraServerReleaseInfo releaseInfo,
-            AutoFireDetectorFactoryImpl autoFireFactory) throws Exception {
-        return new KailleraServerImpl(executor, accessManager, config, statsCollector, releaseInfo,
-                autoFireFactory);
+            FileBasedAccessManager accessManager, ServerConfig serverConfig, GameConfig gameConfig,
+            MasterListConfig masterListConfig, MasterListStatsCollector statsCollector,
+            KailleraServerReleaseInfo releaseInfo, AutoFireDetectorFactoryImpl autoFireFactory)
+            throws Exception {
+        return new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
+                masterListConfig, statsCollector, releaseInfo, autoFireFactory);
     }
 
     @Bean
@@ -74,12 +84,11 @@ public class EmuLinkerConfig {
     }
 
     @Bean
-    public MasterListUpdaterImpl masterListUpdaterImpl(EmuLinkerPropertiesConfig config,
+    public MasterListUpdaterImpl masterListUpdaterImpl(MasterListConfig masterListConfig,
             EmuLinkerExecutor executor, ConnectController connectController,
             KailleraServerImpl kailleraServer, MasterListStatsCollector statsCollector,
-            KailleraServerReleaseInfo releaseInfo) throws Exception {
-        return new MasterListUpdaterImpl(config, executor, connectController, kailleraServer,
-                statsCollector, releaseInfo);
+            KailleraServerReleaseInfo releaseInfo, RestClient restClient) throws Exception {
+        return new MasterListUpdaterImpl(masterListConfig, executor, connectController,
+                kailleraServer, statsCollector, releaseInfo, restClient);
     }
-
 }

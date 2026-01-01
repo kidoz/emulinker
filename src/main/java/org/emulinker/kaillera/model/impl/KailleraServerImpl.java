@@ -3,47 +3,46 @@ package org.emulinker.kaillera.model.impl;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.text.*;
 
-import org.apache.commons.configuration2.*;
-import org.apache.commons.configuration2.ex.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.emulinker.release.*;
+import org.emulinker.config.GameConfig;
+import org.emulinker.config.MasterListConfig;
+import org.emulinker.config.ServerConfig;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.master.StatsCollector;
 import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
+import org.emulinker.release.*;
 import org.emulinker.util.*;
-import org.emulinker.util.EmuLinkerExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KailleraServerImpl implements KailleraServer, Executable {
     protected static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
 
-    protected int maxPing;
-    protected int maxUsers;
-    protected int maxGames;
-    protected int idleTimeout;
-    protected int keepAliveTimeout;
-    protected int chatFloodTime;
-    protected int createGameFloodTime;
-    protected int maxUserNameLength;
-    protected int maxChatLength;
-    protected int maxGameNameLength;
-    protected int maxQuitMessageLength;
-    protected int maxClientNameLength;
+    protected final int maxPing;
+    protected final int maxUsers;
+    protected final int maxGames;
+    protected final int idleTimeout;
+    protected final int keepAliveTimeout;
+    protected final int chatFloodTime;
+    protected final int createGameFloodTime;
+    protected final int maxUserNameLength;
+    protected final int maxChatLength;
+    protected final int maxGameNameLength;
+    protected final int maxQuitMessageLength;
+    protected final int maxClientNameLength;
 
-    protected int gameBufferSize;
-    protected int gameTimeoutMillis;
-    protected int gameDesynchTimeouts;
-    protected int gameAutoFireSensitivity;
+    protected final int gameBufferSize;
+    protected final int gameTimeoutMillis;
+    protected final int gameDesynchTimeouts;
+    protected final int gameAutoFireSensitivity;
 
-    protected boolean[] allowedConnectionTypes = new boolean[7];
+    protected final ServerConfig serverConfig;
 
-    protected List<String> loginMessages = new ArrayList<String>();
-    protected boolean allowSinglePlayer = false;
-    protected boolean allowMultipleConnections = false;
+    protected final List<String> loginMessages = new ArrayList<String>();
+    protected final boolean allowSinglePlayer;
+    protected final boolean allowMultipleConnections;
 
     protected boolean stopFlag = false;
     protected boolean isRunning = false;
@@ -51,39 +50,42 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     protected int connectionCounter = 1;
     protected int gameCounter = 1;
 
-    protected EmuLinkerExecutor threadPool = null;
-    protected AccessManager accessManager;
+    protected final EmuLinkerExecutor threadPool;
+    protected final AccessManager accessManager;
     protected StatsCollector statsCollector;
-    protected ReleaseInfo releaseInfo;
-    protected AutoFireDetectorFactory autoFireDetectorFactory;
+    protected final ReleaseInfo releaseInfo;
+    protected final AutoFireDetectorFactory autoFireDetectorFactory;
 
-    protected Map<Integer, KailleraUserImpl> users;
-    protected Map<Integer, KailleraGameImpl> games;
+    protected final Map<Integer, KailleraUserImpl> users;
+    protected final Map<Integer, KailleraGameImpl> games;
 
     public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
-            Configuration config, StatsCollector statsCollector, ReleaseInfo releaseInfo,
-            AutoFireDetectorFactory autoFireDetectorFactory)
-            throws NoSuchElementException, ConfigurationException {
+            ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
+            StatsCollector statsCollector, ReleaseInfo releaseInfo,
+            AutoFireDetectorFactory autoFireDetectorFactory) {
         this.threadPool = threadPool;
         this.accessManager = accessManager;
         this.releaseInfo = releaseInfo;
         this.autoFireDetectorFactory = autoFireDetectorFactory;
+        this.serverConfig = serverConfig;
 
-        maxPing = config.getInt("server.maxPing");
-        maxUsers = config.getInt("server.maxUsers");
-        maxGames = config.getInt("server.maxGames");
-        keepAliveTimeout = config.getInt("server.keepAliveTimeout");
-        idleTimeout = config.getInt("server.idleTimeout");
-        chatFloodTime = config.getInt("server.chatFloodTime");
-        createGameFloodTime = config.getInt("server.createGameFloodTime");
-        allowSinglePlayer = config.getBoolean("server.allowSinglePlayer");
-        allowMultipleConnections = config.getBoolean("server.allowMultipleConnections");
-        maxUserNameLength = config.getInt("server.maxUserNameLength");
-        maxChatLength = config.getInt("server.maxChatLength");
-        maxGameNameLength = config.getInt("server.maxGameNameLength");
-        maxQuitMessageLength = config.getInt("server.maxQuitMessageLength");
-        maxClientNameLength = config.getInt("server.maxClientNameLength");
+        // Server config
+        this.maxPing = serverConfig.getMaxPing();
+        this.maxUsers = serverConfig.getMaxUsers();
+        this.maxGames = serverConfig.getMaxGames();
+        this.keepAliveTimeout = serverConfig.getKeepAliveTimeout();
+        this.idleTimeout = serverConfig.getIdleTimeout();
+        this.chatFloodTime = serverConfig.getChatFloodTime();
+        this.createGameFloodTime = serverConfig.getCreateGameFloodTime();
+        this.allowSinglePlayer = serverConfig.isAllowSinglePlayer();
+        this.allowMultipleConnections = serverConfig.isAllowMultipleConnections();
+        this.maxUserNameLength = serverConfig.getMaxUserNameLength();
+        this.maxChatLength = serverConfig.getMaxChatLength();
+        this.maxGameNameLength = serverConfig.getMaxGameNameLength();
+        this.maxQuitMessageLength = serverConfig.getMaxQuitMessageLength();
+        this.maxClientNameLength = serverConfig.getMaxClientNameLength();
 
+        // Load login messages from language bundle
         for (int i = 1; i <= 999; i++) {
             if (EmuLang.hasString("KailleraServerImpl.LoginMessage." + i))
                 loginMessages.add(EmuLang.getString("KailleraServerImpl.LoginMessage." + i));
@@ -91,49 +93,17 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 break;
         }
 
-        gameBufferSize = config.getInt("game.bufferSize");
-        if (gameBufferSize <= 0)
-            throw new ConfigurationException("game.bufferSize can not be <= 0");
-
-        gameTimeoutMillis = config.getInt("game.timeoutMillis");
-        if (gameTimeoutMillis <= 0)
-            throw new ConfigurationException("game.timeoutMillis can not be <= 0");
-
-        gameDesynchTimeouts = config.getInt("game.desynchTimeouts");
-
-        gameAutoFireSensitivity = config.getInt("game.defaultAutoFireSensitivity");
-        if (gameAutoFireSensitivity < 0 || gameAutoFireSensitivity > 5)
-            throw new ConfigurationException("game.defaultAutoFireSensitivity must be 0-5");
-
-        List<Object> connectionTypes = config.getList("server.allowedConnectionTypes");
-        for (Object obj : connectionTypes) {
-            String s = obj.toString();
-            try {
-                int ct = Integer.parseInt(s);
-                if (ct < 1 || ct > 6)
-                    throw new ConfigurationException("Invalid connectionType: " + s);
-                allowedConnectionTypes[ct] = true;
-            } catch (NumberFormatException e) {
-                throw new ConfigurationException("Invalid connectionType: " + s);
-            }
-        }
-
-        if (maxPing <= 0)
-            throw new ConfigurationException("server.maxPing can not be <= 0");
-
-        if (maxPing >= 1000)
-            throw new ConfigurationException("server.maxPing can not be > 999");
-
-        if (keepAliveTimeout <= 0)
-            throw new ConfigurationException(
-                    "server.keepAliveTimeout must be > 0 (190 is recommended)");
+        // Game config
+        this.gameBufferSize = gameConfig.getBufferSize();
+        this.gameTimeoutMillis = gameConfig.getTimeoutMillis();
+        this.gameDesynchTimeouts = gameConfig.getDesynchTimeouts();
+        this.gameAutoFireSensitivity = gameConfig.getDefaultAutoFireSensitivity();
 
         users = new ConcurrentHashMap<Integer, KailleraUserImpl>(maxUsers);
         games = new ConcurrentHashMap<Integer, KailleraGameImpl>(maxUsers);
 
-        boolean touchKaillera = config.getBoolean("masterList.touchKaillera", false);
-
-        if (touchKaillera)
+        // Master list config
+        if (masterListConfig.isTouchKaillera())
             this.statsCollector = statsCollector;
     }
 
@@ -373,7 +343,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         }
 
         if (access == AccessManager.ACCESS_NORMAL
-                && allowedConnectionTypes[user.getConnectionType()] == false) {
+                && !serverConfig.isConnectionTypeAllowed(user.getConnectionType())) {
             log.info(user + " login denied: Connection "
                     + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]
                     + " Not Allowed");

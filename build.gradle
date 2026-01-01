@@ -31,9 +31,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    // Compatibility replacements for local JARs
-    implementation 'org.apache.commons:commons-configuration2:2.11.0'
-    implementation 'commons-httpclient:commons-httpclient:3.1'
+    // Validation support for @ConfigurationProperties
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // Logging: SLF4J + Logback (Spring Boot includes Logback by default)
     // Bridge for libraries that still use commons-logging API

@@ -5,19 +5,18 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import org.emulinker.util.EmuLinkerExecutor;
 
-import org.apache.commons.configuration2.*;
-import org.apache.commons.configuration2.ex.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.emulinker.config.ControllersConfig;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
 import org.emulinker.kaillera.controller.messaging.*;
 import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.net.*;
+import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.EmuUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnectController extends UDPServer {
     private static final Logger log = LoggerFactory.getLogger(ConnectController.class);
@@ -26,7 +25,7 @@ public class ConnectController extends UDPServer {
     private final AccessManager accessManager;
     private final Map<String, KailleraServerController> controllersMap;
 
-    private int bufferSize;
+    private final int bufferSize;
 
     private final AtomicLong startTime = new AtomicLong(0);
     private final AtomicInteger requestCount = new AtomicInteger(0);
@@ -40,17 +39,14 @@ public class ConnectController extends UDPServer {
 
     public ConnectController(EmuLinkerExecutor threadPool,
             KailleraServerController[] controllersArray, AccessManager accessManager,
-            Configuration config)
-            throws NoSuchElementException, ConfigurationException, BindException {
+            ControllersConfig config) throws BindException {
         super(true);
 
         this.threadPool = threadPool;
         this.accessManager = accessManager;
 
-        int port = config.getInt("controllers.connect.port");
-        bufferSize = config.getInt("controllers.connect.bufferSize");
-        if (bufferSize <= 0)
-            throw new ConfigurationException("controllers.connect.bufferSize must be > 0");
+        int port = config.getConnect().getPort();
+        this.bufferSize = config.getConnect().getBufferSize();
 
         controllersMap = new HashMap<String, KailleraServerController>();
         for (KailleraServerController controller : controllersArray) {

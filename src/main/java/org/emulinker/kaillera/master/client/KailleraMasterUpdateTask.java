@@ -2,35 +2,32 @@ package org.emulinker.kaillera.master.client;
 
 import java.util.*;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class KailleraMasterUpdateTask implements MasterListUpdateTask {
     private static final Logger log = LoggerFactory.getLogger(KailleraMasterUpdateTask.class);
+    private static final String KAILLERA_MASTER_URL = "http://www.kaillera.com/touch_server.php";
 
-    private PublicServerInformation publicInfo;
-    private ConnectController connectController;
-    private KailleraServer kailleraServer;
-    private StatsCollector statsCollector;
-    private HttpClient httpClient;
+    private final PublicServerInformation publicInfo;
+    private final ConnectController connectController;
+    private final KailleraServer kailleraServer;
+    private final StatsCollector statsCollector;
+    private final RestClient restClient;
 
     public KailleraMasterUpdateTask(PublicServerInformation publicInfo,
             ConnectController connectController, KailleraServer kailleraServer,
-            StatsCollector statsCollector) {
+            StatsCollector statsCollector, RestClient restClient) {
         this.publicInfo = publicInfo;
         this.connectController = connectController;
         this.kailleraServer = kailleraServer;
         this.statsCollector = statsCollector;
-        this.publicInfo = publicInfo;
-
-        httpClient = new HttpClient();
-        httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
-        httpClient.getParams().setSoTimeout(5000);
+        this.restClient = restClient;
     }
 
     public void touchMaster() {
@@ -64,37 +61,24 @@ public class KailleraMasterUpdateTask implements MasterListUpdateTask {
             waitingGames.append("|");
         }
 
-        NameValuePair[] params = new NameValuePair[9];
-        params[0] = new NameValuePair("servername", publicInfo.getServerName());
-        params[1] = new NameValuePair("port", Integer.toString(connectController.getBindPort()));
-        params[2] = new NameValuePair("nbusers", Integer.toString(kailleraServer.getNumUsers()));
-        params[3] = new NameValuePair("maxconn", Integer.toString(kailleraServer.getMaxUsers()));
-        params[4] = new NameValuePair("version", "0.86");
-        params[5] = new NameValuePair("nbgames", Integer.toString(kailleraServer.getNumGames()));
-        params[6] = new NameValuePair("location", publicInfo.getLocation());
-        params[7] = new NameValuePair("ip", publicInfo.getConnectAddress());
-        params[8] = new NameValuePair("url", publicInfo.getWebsite());
-
-        HttpMethod kailleraTouch = new GetMethod("http://www.kaillera.com/touch_server.php");
-        kailleraTouch.setQueryString(params);
-        kailleraTouch.setRequestHeader("Kaillera-games", createdGames.toString());
-        kailleraTouch.setRequestHeader("Kaillera-wgames", waitingGames.toString());
+        String uri = UriComponentsBuilder.fromUriString(KAILLERA_MASTER_URL)
+                .queryParam("servername", publicInfo.getServerName())
+                .queryParam("port", connectController.getBindPort())
+                .queryParam("nbusers", kailleraServer.getNumUsers())
+                .queryParam("maxconn", kailleraServer.getMaxUsers()).queryParam("version", "0.86")
+                .queryParam("nbgames", kailleraServer.getNumGames())
+                .queryParam("location", publicInfo.getLocation())
+                .queryParam("ip", publicInfo.getConnectAddress())
+                .queryParam("url", publicInfo.getWebsite()).build().toUriString();
 
         try {
-            int statusCode = httpClient.executeMethod(kailleraTouch);
-            if (statusCode != HttpStatus.SC_OK)
-                log.error("Failed to touch Kaillera Master: " + kailleraTouch.getStatusLine());
-            else
-                log.info("Touching Kaillera Master done");
+            restClient.get().uri(uri).header("Kaillera-games", createdGames.toString())
+                    .header("Kaillera-wgames", waitingGames.toString()).retrieve()
+                    .toBodilessEntity();
+
+            log.info("Touching Kaillera Master done");
         } catch (Exception e) {
             log.error("Failed to touch Kaillera Master: " + e.getMessage());
-        } finally {
-            if (kailleraTouch != null) {
-                try {
-                    kailleraTouch.releaseConnection();
-                } catch (Exception e) {
-                }
-            }
         }
     }
 }

@@ -1,18 +1,18 @@
 package org.emulinker.kaillera.master;
 
-import org.apache.commons.configuration2.Configuration;
+import org.emulinker.config.MasterListConfig;
 
 public class PublicServerInformation {
-    private String serverName;
-    private String serverLocation;
-    private String serverWebsite;
-    private String serverAddress;
+    private final String serverName;
+    private final String serverLocation;
+    private final String serverWebsite;
+    private final String serverAddress;
 
-    public PublicServerInformation(Configuration config) {
-        serverName = config.getString("masterList.serverName", "Emulinker Server");
-        serverLocation = config.getString("masterList.serverLocation", "Unknown");
-        serverWebsite = config.getString("masterList.serverWebsite", "");
-        serverAddress = config.getString("masterList.serverConnectAddress", "");
+    public PublicServerInformation(MasterListConfig config) {
+        serverName = config.getServerName();
+        serverLocation = config.getServerLocation();
+        serverWebsite = config.getServerWebsite();
+        serverAddress = config.getServerConnectAddress();
     }
 
     public String getServerName() {

@@ -1,0 +1,119 @@
+package org.emulinker.config;
+
+import java.util.List;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
+
+/**
+ * Controllers configuration properties.
+ *
+ * <p>
+ * Maps to properties with prefix "controllers." in application.properties.
+ */
+@ConfigurationProperties(prefix = "controllers")
+@Validated
+public class ControllersConfig {
+
+    @Valid
+    private Connect connect = new Connect();
+
+    @Valid
+    private V086 v086 = new V086();
+
+    public Connect getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Connect connect) {
+        this.connect = connect;
+    }
+
+    public V086 getV086() {
+        return v086;
+    }
+
+    public void setV086(V086 v086) {
+        this.v086 = v086;
+    }
+
+    /**
+     * Connect controller configuration.
+     */
+    public static class Connect {
+
+        @Min(1)
+        private int port = 27888;
+
+        @Min(1)
+        private int bufferSize = 1024;
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public int getBufferSize() {
+            return bufferSize;
+        }
+
+        public void setBufferSize(int bufferSize) {
+            this.bufferSize = bufferSize;
+        }
+    }
+
+    /**
+     * V086 controller configuration.
+     */
+    public static class V086 {
+
+        @Min(1)
+        private int portRangeStart = 27889;
+
+        @Min(0)
+        private int extraPorts = 10;
+
+        @Min(1)
+        private int bufferSize = 2048;
+
+        @NotEmpty
+        private List<String> clientTypes = List.of("0.83");
+
+        public int getPortRangeStart() {
+            return portRangeStart;
+        }
+
+        public void setPortRangeStart(int portRangeStart) {
+            this.portRangeStart = portRangeStart;
+        }
+
+        public int getExtraPorts() {
+            return extraPorts;
+        }
+
+        public void setExtraPorts(int extraPorts) {
+            this.extraPorts = extraPorts;
+        }
+
+        public int getBufferSize() {
+            return bufferSize;
+        }
+
+        public void setBufferSize(int bufferSize) {
+            this.bufferSize = bufferSize;
+        }
+
+        public List<String> getClientTypes() {
+            return clientTypes;
+        }
+
+        public void setClientTypes(List<String> clientTypes) {
+            this.clientTypes = clientTypes;
+        }
+    }
+}

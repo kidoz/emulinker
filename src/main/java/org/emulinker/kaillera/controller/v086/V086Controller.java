@@ -6,11 +6,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.commons.configuration2.*;
-import org.emulinker.util.EmuLinkerExecutor;
-import org.apache.commons.configuration2.ex.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.emulinker.config.ControllersConfig;
+import org.emulinker.config.ServerConfig;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.messaging.*;
@@ -21,47 +18,50 @@ import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.net.*;
 import org.emulinker.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class V086Controller implements KailleraServerController {
     private static final Logger log = LoggerFactory.getLogger(V086Controller.class);
 
-    private int MAX_BUNDLE_SIZE = 5;
+    private static final int MAX_BUNDLE_SIZE = 5;
 
-    private int bufferSize = 4096;
+    private final int bufferSize;
     private boolean isRunning = false;
 
-    private EmuLinkerExecutor threadPool;
-    private KailleraServer server;
-    private AccessManager accessManager;
-    private String[] clientTypes;
-    private Map<Integer, V086ClientHandler> clientHandlers = new ConcurrentHashMap<Integer, V086ClientHandler>();
+    private final EmuLinkerExecutor threadPool;
+    private final KailleraServer server;
+    private final AccessManager accessManager;
+    private final String[] clientTypes;
+    private final Map<Integer, V086ClientHandler> clientHandlers = new ConcurrentHashMap<Integer, V086ClientHandler>();
 
-    private int portRangeStart;
-    private int extraPorts;
-    private Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
+    private final int portRangeStart;
+    private final int extraPorts;
+    private final Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
 
     // shouldn't need to use a synchronized or concurrent map since all thread
     // access will be read only
-    private Map<Class, V086ServerEventHandler> serverEventHandlers = new HashMap<Class, V086ServerEventHandler>();
-    private Map<Class, V086GameEventHandler> gameEventHandlers = new HashMap<Class, V086GameEventHandler>();
-    private Map<Class, V086UserEventHandler> userEventHandlers = new HashMap<Class, V086UserEventHandler>();
+    private final Map<Class, V086ServerEventHandler> serverEventHandlers = new HashMap<Class, V086ServerEventHandler>();
+    private final Map<Class, V086GameEventHandler> gameEventHandlers = new HashMap<Class, V086GameEventHandler>();
+    private final Map<Class, V086UserEventHandler> userEventHandlers = new HashMap<Class, V086UserEventHandler>();
 
-    private V086Action[] actions = new V086Action[25];
+    private final V086Action[] actions = new V086Action[25];
 
     public V086Controller(KailleraServer server, EmuLinkerExecutor threadPool,
-            AccessManager accessManager, Configuration config)
-            throws NoSuchElementException, ConfigurationException {
+            AccessManager accessManager, ControllersConfig controllersConfig,
+            ServerConfig serverConfig) {
         this.threadPool = threadPool;
         this.server = server;
         this.accessManager = accessManager;
 
-        this.bufferSize = config.getInt("controllers.v086.bufferSize");
-        this.clientTypes = config.getStringArray("controllers.v086.clientTypes.clientType");
+        ControllersConfig.V086 v086Config = controllersConfig.getV086();
+        this.bufferSize = v086Config.getBufferSize();
+        this.clientTypes = v086Config.getClientTypes().toArray(new String[0]);
 
-        this.portRangeStart = config.getInt("controllers.v086.portRangeStart");
-        this.extraPorts = config.getInt("controllers.v086.extraPorts", 0);
+        this.portRangeStart = v086Config.getPortRangeStart();
+        this.extraPorts = v086Config.getExtraPorts();
         int maxPort = 0;
-        for (int i = portRangeStart; i <= (portRangeStart + server.getMaxUsers()
+        for (int i = portRangeStart; i <= (portRangeStart + serverConfig.getMaxUsers()
                 + extraPorts); i++) {
             portRangeQueue.add(i);
             maxPort = i;
@@ -69,9 +69,6 @@ public class V086Controller implements KailleraServerController {
 
         log.warn("Listening on UDP ports: " + portRangeStart + " to " + maxPort
                 + ".  Make sure these ports are open in your firewall!");
-
-        if (bufferSize <= 0)
-            throw new ConfigurationException("controllers.v086.bufferSize must be > 0");
 
         // array access should be faster than a hash and we won't have to create
         // a new Integer each time

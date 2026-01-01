@@ -2,32 +2,30 @@ package org.emulinker.kaillera.master.client;
 
 import java.util.*;
 
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.httpclient.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.emulinker.kaillera.master.*;
+import org.emulinker.config.MasterListConfig;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
-import org.emulinker.kaillera.master.StatsCollector;
+import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.model.*;
+import org.emulinker.release.*;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.Executable;
-import org.emulinker.release.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestClient;
 
 public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     private static final Logger log = LoggerFactory.getLogger(MasterListUpdaterImpl.class);
 
-    private EmuLinkerExecutor threadPool;
-    private ConnectController connectController;
-    private KailleraServer kailleraServer;
-    private StatsCollector statsCollector;
-    private ReleaseInfo releaseInfo;
+    private final EmuLinkerExecutor threadPool;
+    private final ConnectController connectController;
+    private final KailleraServer kailleraServer;
+    private final StatsCollector statsCollector;
+    private final ReleaseInfo releaseInfo;
 
-    private PublicServerInformation publicInfo;
+    private final PublicServerInformation publicInfo;
 
-    private boolean touchKaillera = false;
-    private boolean touchEmulinker = false;
+    private final boolean touchKaillera;
+    private final boolean touchEmulinker;
 
     private EmuLinkerMasterUpdateTask emulinkerMasterTask;
     private KailleraMasterUpdateTask kailleraMasterTask;
@@ -35,28 +33,31 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     private boolean stopFlag = false;
     private boolean isRunning = false;
 
-    public MasterListUpdaterImpl(Configuration config, EmuLinkerExecutor threadPool,
+    public MasterListUpdaterImpl(MasterListConfig config, EmuLinkerExecutor threadPool,
             ConnectController connectController, KailleraServer kailleraServer,
-            StatsCollector statsCollector, ReleaseInfo releaseInfo) throws Exception {
+            StatsCollector statsCollector, ReleaseInfo releaseInfo, RestClient restClient) {
         this.threadPool = threadPool;
         this.connectController = connectController;
         this.kailleraServer = kailleraServer;
         this.statsCollector = statsCollector;
         this.releaseInfo = releaseInfo;
 
-        touchKaillera = config.getBoolean("masterList.touchKaillera", false);
-        touchEmulinker = config.getBoolean("masterList.touchEmulinker", false);
+        this.touchKaillera = config.isTouchKaillera();
+        this.touchEmulinker = config.isTouchEmulinker();
 
-        if (touchKaillera || touchEmulinker)
+        if (touchKaillera || touchEmulinker) {
             publicInfo = new PublicServerInformation(config);
+        } else {
+            publicInfo = null;
+        }
 
         if (touchKaillera)
             kailleraMasterTask = new KailleraMasterUpdateTask(publicInfo, connectController,
-                    kailleraServer, statsCollector);
+                    kailleraServer, statsCollector, restClient);
 
         if (touchEmulinker)
             emulinkerMasterTask = new EmuLinkerMasterUpdateTask(publicInfo, connectController,
-                    kailleraServer, releaseInfo);
+                    kailleraServer, releaseInfo, restClient);
     }
 
     public synchronized boolean isRunning() {

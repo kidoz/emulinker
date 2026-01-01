@@ -1,81 +1,66 @@
 package org.emulinker.kaillera.master.client;
 
+import java.io.StringReader;
 import java.util.Properties;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.PublicServerInformation;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
     private static final Logger log = LoggerFactory.getLogger(EmuLinkerMasterUpdateTask.class);
-    private static final String url = "http://master.emulinker.org/touch.php";
+    private static final String EMULINKER_MASTER_URL = "http://master.emulinker.org/touch.php";
 
-    private PublicServerInformation publicInfo;
-    private ConnectController connectController;
-    private KailleraServer kailleraServer;
-    private ReleaseInfo releaseInfo;
-    private HttpClient httpClient;
+    private final PublicServerInformation publicInfo;
+    private final ConnectController connectController;
+    private final KailleraServer kailleraServer;
+    private final ReleaseInfo releaseInfo;
+    private final RestClient restClient;
 
     public EmuLinkerMasterUpdateTask(PublicServerInformation publicInfo,
             ConnectController connectController, KailleraServer kailleraServer,
-            ReleaseInfo releaseInfo) {
+            ReleaseInfo releaseInfo, RestClient restClient) {
         this.publicInfo = publicInfo;
         this.connectController = connectController;
         this.kailleraServer = kailleraServer;
-        this.publicInfo = publicInfo;
         this.releaseInfo = releaseInfo;
-
-        httpClient = new HttpClient();
-        httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
-        httpClient.getParams().setSoTimeout(5000);
+        this.restClient = restClient;
     }
 
     public void touchMaster() {
-        NameValuePair[] params = new NameValuePair[13];
-        params[0] = new NameValuePair("serverName", publicInfo.getServerName());
-        params[1] = new NameValuePair("connectAddress", publicInfo.getConnectAddress());
-        params[2] = new NameValuePair("location", publicInfo.getLocation());
-        params[3] = new NameValuePair("website", publicInfo.getWebsite());
-        params[4] = new NameValuePair("port", Integer.toString(connectController.getBindPort()));
-        params[5] = new NameValuePair("connectCount",
-                Integer.toString(connectController.getConnectCount()));
-        params[6] = new NameValuePair("numUsers", Integer.toString(kailleraServer.getNumUsers()));
-        params[7] = new NameValuePair("maxUsers", Integer.toString(kailleraServer.getMaxUsers()));
-        params[8] = new NameValuePair("numGames", Integer.toString(kailleraServer.getNumGames()));
-        params[9] = new NameValuePair("maxGames", Integer.toString(kailleraServer.getMaxGames()));
-        params[10] = new NameValuePair("version", releaseInfo.getVersionString());
-        params[11] = new NameValuePair("build", Integer.toString(releaseInfo.getBuildNumber()));
-        params[12] = new NameValuePair("isWindows", Boolean.toString(EmuUtil.systemIsWindows()));
-
-        HttpMethod meth = new GetMethod(url);
-        meth.setQueryString(params);
-        meth.setFollowRedirects(true);
+        String uri = UriComponentsBuilder.fromUriString(EMULINKER_MASTER_URL)
+                .queryParam("serverName", publicInfo.getServerName())
+                .queryParam("connectAddress", publicInfo.getConnectAddress())
+                .queryParam("location", publicInfo.getLocation())
+                .queryParam("website", publicInfo.getWebsite())
+                .queryParam("port", connectController.getBindPort())
+                .queryParam("connectCount", connectController.getConnectCount())
+                .queryParam("numUsers", kailleraServer.getNumUsers())
+                .queryParam("maxUsers", kailleraServer.getMaxUsers())
+                .queryParam("numGames", kailleraServer.getNumGames())
+                .queryParam("maxGames", kailleraServer.getMaxGames())
+                .queryParam("version", releaseInfo.getVersionString())
+                .queryParam("build", releaseInfo.getBuildNumber())
+                .queryParam("isWindows", EmuUtil.systemIsWindows()).build().toUriString();
 
         Properties props = new Properties();
 
         try {
-            int statusCode = httpClient.executeMethod(meth);
-            if (statusCode != HttpStatus.SC_OK)
-                log.error("Failed to touch Kaillera Master: " + meth.getStatusLine());
-            else {
-                props.load(meth.getResponseBodyAsStream());
-                log.info("Touching EmuLinker Master done");
+            String response = restClient.get().uri(uri).retrieve().body(String.class);
+
+            if (response != null) {
+                props.load(new StringReader(response));
             }
+
+            log.info("Touching EmuLinker Master done");
         } catch (Exception e) {
             log.error("Failed to touch EmuLinker Master: " + e.getMessage());
-        } finally {
-            if (meth != null) {
-                try {
-                    meth.releaseConnection();
-                } catch (Exception e) {
-                }
-            }
         }
 
         String updateAvailable = props.getProperty("updateAvailable");
