@@ -8,7 +8,8 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.GameStatus;
 import org.emulinker.kaillera.model.KailleraGame;
-import org.emulinker.kaillera.model.event.*;
+import org.emulinker.kaillera.model.event.GameStatusChangedEvent;
+import org.emulinker.kaillera.model.event.ServerEvent;
 
 public class GameStatusAction implements V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameStatusAction.class);

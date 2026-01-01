@@ -1,6 +1,9 @@
 package org.emulinker.util;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 
 public class HexConverter {
     public static void main(String[] args) throws Exception {

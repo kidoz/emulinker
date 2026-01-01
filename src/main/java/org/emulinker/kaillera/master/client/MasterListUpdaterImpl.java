@@ -1,12 +1,13 @@
 package org.emulinker.kaillera.master.client;
 
-import java.util.*;
+import java.util.List;
 
 import org.emulinker.config.MasterListConfig;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
-import org.emulinker.kaillera.master.*;
-import org.emulinker.kaillera.model.*;
-import org.emulinker.release.*;
+import org.emulinker.kaillera.master.PublicServerInformation;
+import org.emulinker.kaillera.master.StatsCollector;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.Executable;
 import org.slf4j.Logger;

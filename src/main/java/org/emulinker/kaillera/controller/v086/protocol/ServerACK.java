@@ -2,8 +2,10 @@ package org.emulinker.kaillera.controller.v086.protocol;
 
 import java.nio.ByteBuffer;
 
-import org.emulinker.kaillera.controller.messaging.*;
-import org.emulinker.util.*;
+import org.emulinker.kaillera.controller.messaging.MessageFormatException;
+import org.emulinker.kaillera.controller.messaging.ParseException;
+import org.emulinker.util.EmuUtil;
+import org.emulinker.util.UnsignedUtil;
 
 public class ServerACK extends ACK {
     public static final byte ID = 0x05;

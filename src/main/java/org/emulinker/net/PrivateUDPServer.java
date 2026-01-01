@@ -1,9 +1,10 @@
 package org.emulinker.net;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
-import org.emulinker.util.*;
+import org.emulinker.util.EmuUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

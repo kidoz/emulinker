@@ -1,20 +1,28 @@
 package org.emulinker.kaillera.controller.v086.action;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.emulinker.release.*;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
+import org.emulinker.kaillera.controller.v086.protocol.Chat;
+import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.exception.ActionException;
-import org.emulinker.kaillera.model.impl.*;
-import org.emulinker.util.*;
+import org.emulinker.kaillera.model.impl.KailleraGameImpl;
+import org.emulinker.kaillera.model.impl.KailleraServerImpl;
+import org.emulinker.kaillera.model.impl.KailleraUserImpl;
+import org.emulinker.release.ReleaseInfo;
+import org.emulinker.util.EmuLang;
+import org.emulinker.util.EmuUtil;
+import org.emulinker.util.WildcardStringPattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AdminCommandAction implements V086Action {
     public static final String COMMAND_ANNOUNCE = "/announce"; //$NON-NLS-1$

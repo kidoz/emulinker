@@ -1,16 +1,41 @@
 package org.emulinker.kaillera.model.impl;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import org.emulinker.kaillera.access.AccessManager;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraUser;
+import org.emulinker.kaillera.model.event.GameStartedEvent;
+import org.emulinker.kaillera.model.event.KailleraEvent;
+import org.emulinker.kaillera.model.event.KailleraEventListener;
+import org.emulinker.kaillera.model.event.UserQuitEvent;
+import org.emulinker.kaillera.model.event.UserQuitGameEvent;
+import org.emulinker.kaillera.model.exception.ChatException;
+import org.emulinker.kaillera.model.exception.ClientAddressException;
+import org.emulinker.kaillera.model.exception.CloseGameException;
+import org.emulinker.kaillera.model.exception.ConnectionTypeException;
+import org.emulinker.kaillera.model.exception.CreateGameException;
+import org.emulinker.kaillera.model.exception.DropGameException;
+import org.emulinker.kaillera.model.exception.FloodException;
+import org.emulinker.kaillera.model.exception.GameChatException;
+import org.emulinker.kaillera.model.exception.GameDataException;
+import org.emulinker.kaillera.model.exception.GameKickException;
+import org.emulinker.kaillera.model.exception.JoinGameException;
+import org.emulinker.kaillera.model.exception.LoginException;
+import org.emulinker.kaillera.model.exception.PingTimeException;
+import org.emulinker.kaillera.model.exception.QuitException;
+import org.emulinker.kaillera.model.exception.QuitGameException;
+import org.emulinker.kaillera.model.exception.StartGameException;
+import org.emulinker.kaillera.model.exception.UserNameException;
+import org.emulinker.kaillera.model.exception.UserReadyException;
+import org.emulinker.util.EmuLang;
+import org.emulinker.util.EmuUtil;
+import org.emulinker.util.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.emulinker.kaillera.access.*;
-import org.emulinker.kaillera.model.*;
-import org.emulinker.kaillera.model.event.*;
-import org.emulinker.kaillera.model.exception.*;
-import org.emulinker.util.*;
 
 public final class KailleraUserImpl implements KailleraUser, Executable {
     private static final Logger log = LoggerFactory.getLogger(KailleraUserImpl.class);

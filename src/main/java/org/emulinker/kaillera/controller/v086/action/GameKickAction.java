@@ -2,11 +2,12 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.protocol.GameKick;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
+import org.emulinker.kaillera.model.exception.GameKickException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
-import org.emulinker.kaillera.model.exception.GameKickException;
 
 public class GameKickAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(GameKickAction.class);

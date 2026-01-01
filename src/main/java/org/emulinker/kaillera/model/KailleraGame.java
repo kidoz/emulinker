@@ -2,7 +2,15 @@ package org.emulinker.kaillera.model;
 
 import java.util.Collection;
 
-import org.emulinker.kaillera.model.exception.*;
+import org.emulinker.kaillera.model.exception.CloseGameException;
+import org.emulinker.kaillera.model.exception.DropGameException;
+import org.emulinker.kaillera.model.exception.GameChatException;
+import org.emulinker.kaillera.model.exception.GameDataException;
+import org.emulinker.kaillera.model.exception.GameKickException;
+import org.emulinker.kaillera.model.exception.JoinGameException;
+import org.emulinker.kaillera.model.exception.QuitGameException;
+import org.emulinker.kaillera.model.exception.StartGameException;
+import org.emulinker.kaillera.model.exception.UserReadyException;
 
 public interface KailleraGame {
     byte STATUS_WAITING = 0;

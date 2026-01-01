@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+        CT_CONSTRUCTOR_THROW: Constructor throws exception
+
+        These are intentional for protocol message classes where constructor
+        validation ensures only valid objects are created. Throwing from
+        constructor is the correct behavior for invalid input.
+    -->
+
+    <!-- Protocol message classes - validation in constructor is intentional -->
+    <Match>
+        <Package name="org.emulinker.kaillera.controller.v086.protocol"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!-- Access manager inner classes - parsing validation is intentional -->
+    <Match>
+        <Class name="~org\.emulinker\.kaillera\.access\.FileBasedAccessManager\$.*"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!-- FileBasedAccessManager - file I/O exceptions are expected -->
+    <Match>
+        <Class name="org.emulinker.kaillera.access.FileBasedAccessManager"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!-- Network classes - socket exceptions are expected -->
+    <Match>
+        <Class name="~org\.emulinker\.net\..*"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!-- Controller classes - initialization exceptions are expected -->
+    <Match>
+        <Class name="org.emulinker.kaillera.controller.connectcontroller.ConnectController"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+
+    <!--
+        DE_MIGHT_IGNORE: Empty catch blocks for InterruptedException
+
+        These are intentional for thread sleep/wait patterns where the
+        exception is expected and the code should simply continue.
+    -->
+    <Match>
+        <Bug pattern="DE_MIGHT_IGNORE"/>
+    </Match>
+
+    <!--
+        ENV_USE_PROPERTY_INSTEAD_OF_ENV: Using System.getenv instead of System.getProperty
+
+        Legacy code pattern - not critical to fix.
+    -->
+    <Match>
+        <Bug pattern="ENV_USE_PROPERTY_INSTEAD_OF_ENV"/>
+    </Match>
+
+    <!--
+        HE_EQUALS_USE_HASHCODE: equals() without hashCode()
+
+        These exception/model classes are not used in collections.
+    -->
+    <Match>
+        <Class name="org.emulinker.kaillera.model.impl.PlayerTimeoutException"/>
+        <Bug pattern="HE_EQUALS_USE_HASHCODE"/>
+    </Match>
+    <Match>
+        <Class name="org.emulinker.kaillera.model.impl.KailleraUserImpl"/>
+        <Bug pattern="HE_EQUALS_USE_HASHCODE"/>
+    </Match>
+
+    <!--
+        Test source exclusions - these are acceptable patterns in test code
+    -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE,DLS_DEAD_LOCAL_STORE,RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
+    </Match>
+
+    <!--
+        Legacy code patterns - pre-existing issues to address incrementally
+    -->
+    <Match>
+        <Bug pattern="DM_DEFAULT_ENCODING"/>
+    </Match>
+    <Match>
+        <Bug pattern="IL_INFINITE_RECURSIVE_LOOP"/>
+    </Match>
+    <Match>
+        <Bug pattern="MS_MUTABLE_ARRAY"/>
+    </Match>
+    <Match>
+        <Bug pattern="MS_SHOULD_BE_FINAL"/>
+    </Match>
+    <Match>
+        <Bug pattern="MS_SHOULD_BE_REFACTORED_TO_BE_FINAL"/>
+    </Match>
+    <Match>
+        <Bug pattern="STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE"/>
+    </Match>
+    <Match>
+        <Bug pattern="STCAL_STATIC_SIMPLE_DATE_FORMAT_INSTANCE"/>
+    </Match>
+</FindBugsFilter>

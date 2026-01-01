@@ -1,12 +1,15 @@
 package org.emulinker.kaillera.model.impl;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraUser;
+import org.emulinker.util.EmuLang;
+import org.emulinker.util.EmuUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.emulinker.kaillera.model.*;
-import org.emulinker.util.*;
 
 public class AutoFireScanner implements AutoFireDetector {
     protected static final Logger log = LoggerFactory.getLogger(AutoFireScanner.class);

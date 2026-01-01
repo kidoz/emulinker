@@ -6,8 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
-import org.emulinker.kaillera.model.event.*;
+import org.emulinker.kaillera.controller.v086.protocol.Chat;
+import org.emulinker.kaillera.controller.v086.protocol.Chat_Notification;
+import org.emulinker.kaillera.controller.v086.protocol.Chat_Request;
+import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
+import org.emulinker.kaillera.model.event.ChatEvent;
+import org.emulinker.kaillera.model.event.ServerEvent;
 import org.emulinker.kaillera.model.exception.ActionException;
 import org.emulinker.util.EmuLang;
 

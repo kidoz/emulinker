@@ -1,7 +1,8 @@
 package org.emulinker.kaillera.model.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.InetSocketAddress;
 import org.emulinker.kaillera.model.KailleraUser;

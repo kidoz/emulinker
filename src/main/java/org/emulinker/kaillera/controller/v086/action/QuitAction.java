@@ -2,14 +2,17 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
+import org.emulinker.kaillera.controller.v086.protocol.Quit_Notification;
+import org.emulinker.kaillera.controller.v086.protocol.Quit_Request;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.model.event.*;
+import org.emulinker.kaillera.model.event.ServerEvent;
+import org.emulinker.kaillera.model.event.UserQuitEvent;
 import org.emulinker.kaillera.model.exception.ActionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class QuitAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitAction.class);

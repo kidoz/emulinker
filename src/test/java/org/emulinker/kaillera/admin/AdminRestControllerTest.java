@@ -1,8 +1,12 @@
 package org.emulinker.kaillera.admin;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -65,7 +69,7 @@ class AdminRestControllerTest {
             // Setup mocks
             ReleaseInfo releaseInfo = mock(ReleaseInfo.class);
             when(releaseInfo.getProductName()).thenReturn("EmuLinker");
-            when(releaseInfo.getVersionString()).thenReturn("1.0.2");
+            when(releaseInfo.getVersionString()).thenReturn("1.1.0");
             when(releaseInfo.getBuildNumber()).thenReturn(100);
 
             when(kailleraServer.getReleaseInfo()).thenReturn(releaseInfo);
@@ -92,7 +96,7 @@ class AdminRestControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.serverName").value("EmuLinker"))
-                    .andExpect(jsonPath("$.version").value("1.0.2"))
+                    .andExpect(jsonPath("$.version").value("1.1.0"))
                     .andExpect(jsonPath("$.build").value(100))
                     .andExpect(jsonPath("$.running").value(true))
                     .andExpect(jsonPath("$.connectPort").value(27888))

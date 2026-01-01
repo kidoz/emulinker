@@ -2,14 +2,17 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
-import org.emulinker.kaillera.model.*;
-import org.emulinker.kaillera.model.event.*;
+import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop_Notification;
+import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop_Request;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
+import org.emulinker.kaillera.model.KailleraUser;
+import org.emulinker.kaillera.model.event.GameEvent;
+import org.emulinker.kaillera.model.event.UserDroppedGameEvent;
 import org.emulinker.kaillera.model.exception.DropGameException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DropGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(DropGameAction.class);

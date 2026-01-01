@@ -1,10 +1,13 @@
 package org.emulinker.kaillera.master.client;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
-import org.emulinker.kaillera.master.*;
-import org.emulinker.kaillera.model.*;
+import org.emulinker.kaillera.master.PublicServerInformation;
+import org.emulinker.kaillera.master.StatsCollector;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClient;

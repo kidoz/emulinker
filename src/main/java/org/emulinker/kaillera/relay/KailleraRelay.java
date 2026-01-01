@@ -5,7 +5,10 @@ import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.emulinker.kaillera.controller.connectcontroller.protocol.*;
+import org.emulinker.kaillera.controller.connectcontroller.protocol.ConnectMessage;
+import org.emulinker.kaillera.controller.connectcontroller.protocol.ConnectMessage_HELLO;
+import org.emulinker.kaillera.controller.connectcontroller.protocol.ConnectMessage_HELLOD00D;
+import org.emulinker.kaillera.controller.connectcontroller.protocol.ConnectMessage_TOO;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.net.UDPRelay;
 import org.emulinker.util.EmuUtil;

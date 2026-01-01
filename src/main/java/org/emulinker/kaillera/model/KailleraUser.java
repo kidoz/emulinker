@@ -3,7 +3,24 @@ package org.emulinker.kaillera.model;
 import java.net.InetSocketAddress;
 
 import org.emulinker.kaillera.model.event.KailleraEventListener;
-import org.emulinker.kaillera.model.exception.*;
+import org.emulinker.kaillera.model.exception.ChatException;
+import org.emulinker.kaillera.model.exception.ClientAddressException;
+import org.emulinker.kaillera.model.exception.CloseGameException;
+import org.emulinker.kaillera.model.exception.ConnectionTypeException;
+import org.emulinker.kaillera.model.exception.CreateGameException;
+import org.emulinker.kaillera.model.exception.DropGameException;
+import org.emulinker.kaillera.model.exception.FloodException;
+import org.emulinker.kaillera.model.exception.GameChatException;
+import org.emulinker.kaillera.model.exception.GameDataException;
+import org.emulinker.kaillera.model.exception.GameKickException;
+import org.emulinker.kaillera.model.exception.JoinGameException;
+import org.emulinker.kaillera.model.exception.LoginException;
+import org.emulinker.kaillera.model.exception.PingTimeException;
+import org.emulinker.kaillera.model.exception.QuitException;
+import org.emulinker.kaillera.model.exception.QuitGameException;
+import org.emulinker.kaillera.model.exception.StartGameException;
+import org.emulinker.kaillera.model.exception.UserNameException;
+import org.emulinker.kaillera.model.exception.UserReadyException;
 
 public interface KailleraUser {
     byte CONNECTION_TYPE_LAN = 1;

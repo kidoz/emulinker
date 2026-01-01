@@ -1,6 +1,6 @@
 package org.emulinker.kaillera.model.impl;
 
-import org.emulinker.kaillera.model.*;
+import org.emulinker.kaillera.model.KailleraUser;
 
 public interface AutoFireDetector {
     void start(int numPlayers);

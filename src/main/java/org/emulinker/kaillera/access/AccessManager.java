@@ -15,8 +15,6 @@ import java.net.InetAddress;
  * AccessManager is a top-level EmuLinker component; its implementation class is
  * loaded via Spring upon startup.
  *
- * @author Paul Cowan
- * @see www.emulinker.org
  */
 public interface AccessManager {
     int ACCESS_BANNED = 0;

@@ -2,15 +2,23 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
-import org.emulinker.kaillera.model.*;
-import org.emulinker.kaillera.model.event.*;
-import org.emulinker.kaillera.model.exception.*;
+import org.emulinker.kaillera.controller.v086.protocol.CreateGame;
+import org.emulinker.kaillera.controller.v086.protocol.CreateGame_Notification;
+import org.emulinker.kaillera.controller.v086.protocol.CreateGame_Request;
+import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
+import org.emulinker.kaillera.controller.v086.protocol.QuitGame_Notification;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraUser;
+import org.emulinker.kaillera.model.event.GameCreatedEvent;
+import org.emulinker.kaillera.model.event.ServerEvent;
+import org.emulinker.kaillera.model.exception.CreateGameException;
+import org.emulinker.kaillera.model.exception.FloodException;
 import org.emulinker.util.EmuLang;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CreateGameAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(CreateGameAction.class);

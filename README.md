@@ -1,9 +1,89 @@
 # EmuLinker
 
-EmuLinker is a [Kaillera](http://www.kaillera.com/) network server. Kaillera is a client/server system that virtually any emulator can implement to enable network play, by mapping "Player 2" input to another user over the Internet using network communication.  EmuLinker is a complete rewrite of the original Kaillera network server for the purpose of preventing exploitable bugs and adding features.
+![Java](https://img.shields.io/badge/Java-21-007396?logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-6DB33F?logo=springboot&logoColor=white)
+![Gradle](https://img.shields.io/badge/Gradle-8.x-02303A?logo=gradle&logoColor=white)
+![License](https://img.shields.io/badge/License-GPL--2.0-blue)
 
-This is a port of the project from [SourceForge](https://sourceforge.net/projects/emulinker) to GitHub by the original author ([Paul Cowan](https://github.com/monospacesoftware)) on 6/25/2015.  I am concurrently changing the license to GPL 2.0.  No code has changed since 2006.
+EmuLinker is a Kaillera network server that enables online multiplayer for
+emulators by routing player input over the network.
 
-+ [Download](https://github.com/monospacesoftware/emulinker/raw/master/package/archive/emulinker-kaillera-server-1.0.2.zip)
-+ [User Guide](package/emulinker/doc/quickstart.txt)
-+ [Change Log](package/emulinker/README.txt)
+## Highlights
+
+- Modernized Java 21 + Spring Boot build
+- Admin API and health/metrics endpoints for ops visibility
+- File-based access control with temporary bans and silencing
+- Arch Linux packaging with systemd service
+
+## Quick start
+
+Build the server:
+
+```bash
+./gradlew build
+```
+
+Run the JAR:
+
+```bash
+java -jar build/emulinker.jar
+```
+
+## Installation
+
+### Arch Linux
+
+Build and install using the provided PKGBUILD:
+
+```bash
+cd packaging/archlinux
+makepkg -si
+```
+
+Start the service:
+
+```bash
+sudo systemctl enable --now emulinker
+```
+
+Configuration files are installed to `/etc/emulinker/`.
+
+### Docker
+
+```bash
+docker build -t emulinker .
+docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27899:27889-27899/udp emulinker
+```
+
+### Manual
+
+Run directly with Java 21+:
+
+```bash
+java -jar build/emulinker.jar
+```
+
+## Configuration
+
+- App config: `src/main/resources/application.properties`
+- Access control rules: `src/main/resources/access.cfg`
+- Logging: `src/main/resources/logback.xml`
+
+For packaged installations (Arch Linux), config files are in `/etc/emulinker/`.
+
+## Admin, health, and metrics
+
+- Admin API: `/api/admin/**` (HTTP Basic; set `admin.username`/`admin.password`)
+- Health probes: `/healthz`, `/livez`, `/readyz`
+- Prometheus metrics: `/metrics`
+
+These endpoints are intended for cluster-internal access only.
+
+## License
+
+GPL-2.0. See `LICENSE`.
+
+## Credits
+
+- **Original Author:** Paul Cowan
+- **Contributors:** See [GitHub contributors](../../graphs/contributors)

@@ -2,13 +2,14 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.protocol.*;
-import org.emulinker.kaillera.model.event.*;
+import org.emulinker.kaillera.controller.v086.protocol.AllReady;
+import org.emulinker.kaillera.controller.v086.protocol.V086Message;
+import org.emulinker.kaillera.model.event.GameEvent;
 import org.emulinker.kaillera.model.exception.UserReadyException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserReadyAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(UserReadyAction.class);

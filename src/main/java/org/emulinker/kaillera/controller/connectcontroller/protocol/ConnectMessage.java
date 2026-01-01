@@ -1,9 +1,12 @@
 package org.emulinker.kaillera.controller.connectcontroller.protocol;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.*;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
-import org.emulinker.kaillera.controller.messaging.*;
+import org.emulinker.kaillera.controller.messaging.ByteBufferMessage;
+import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.util.EmuUtil;
 
 public abstract class ConnectMessage extends ByteBufferMessage {

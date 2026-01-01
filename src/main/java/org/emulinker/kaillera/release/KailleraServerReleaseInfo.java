@@ -11,12 +11,12 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
     private final String productName = "EmuLinker Kaillera Server BETA";
 
     private final int majorVersion = 1;
-    private final int minorVersion = 0;
-    private final int buildNumber = 2;
+    private final int minorVersion = 1;
+    private final int buildNumber = 0;
 
-    private final String releaseDate = "05/22/2006";
+    private final String releaseDate = "01/02/2026";
     private final String licenseInfo = "Usage of this sofware is subject to the terms found in the included license";
-    private final String website = "http://www.emulinker.org";
+    private final String website = "https://github.com/kidoz/emulinker";
 
     public KailleraServerReleaseInfo() {
         // generic constructor

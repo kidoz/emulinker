@@ -1,14 +1,15 @@
 package org.emulinker.net;
 
-import java.util.*;
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
+import org.emulinker.util.EmuUtil;
+import org.emulinker.util.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.emulinker.util.*;
 
 public abstract class UDPServer implements Executable {
     private static final Logger log = LoggerFactory.getLogger(UDPServer.class);

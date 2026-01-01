@@ -3,7 +3,8 @@ package org.emulinker.kaillera.controller;
 import java.net.InetSocketAddress;
 
 import org.emulinker.kaillera.model.KailleraServer;
-import org.emulinker.kaillera.model.exception.*;
+import org.emulinker.kaillera.model.exception.NewConnectionException;
+import org.emulinker.kaillera.model.exception.ServerFullException;
 
 public interface KailleraServerController {
 

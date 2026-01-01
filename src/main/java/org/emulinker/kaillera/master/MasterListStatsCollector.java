@@ -1,8 +1,10 @@
 package org.emulinker.kaillera.master;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.emulinker.kaillera.model.*;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraServer;
 
 public class MasterListStatsCollector implements StatsCollector {
     private ArrayList<String> startedGamesList = new ArrayList<String>();

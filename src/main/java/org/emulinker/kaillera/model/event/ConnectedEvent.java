@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.model.event;
 
-import org.emulinker.kaillera.model.*;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.kaillera.model.KailleraUser;
 
 public class ConnectedEvent implements UserEvent {
     private KailleraUser user;

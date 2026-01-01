@@ -1,6 +1,7 @@
 package org.emulinker.util;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.StringTokenizer;
 
 public class WildcardStringPattern {
     protected boolean equals;

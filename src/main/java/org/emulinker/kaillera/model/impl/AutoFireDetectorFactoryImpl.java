@@ -1,6 +1,6 @@
 package org.emulinker.kaillera.model.impl;
 
-import org.emulinker.kaillera.model.*;
+import org.emulinker.kaillera.model.KailleraGame;
 
 public class AutoFireDetectorFactoryImpl implements AutoFireDetectorFactory {
     public AutoFireDetector getInstance(KailleraGame game, int defaultSensitivity) {

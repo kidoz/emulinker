@@ -6,8 +6,6 @@ package org.emulinker.release;
  * ReleaseInfo is a top-level EmuLinker component; its implementation class is
  * loaded via Spring upon startup.
  *
- * @author Paul Cowan
- * @see www.emulinker.org
  */
 public interface ReleaseInfo {
     /**

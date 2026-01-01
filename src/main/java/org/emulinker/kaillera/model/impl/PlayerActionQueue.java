@@ -1,9 +1,5 @@
 package org.emulinker.kaillera.model.impl;
 
-import java.io.*;
-
-import org.emulinker.util.*;
-
 public class PlayerActionQueue {
     private int gameBufferSize;
     private int gameTimeoutMillis;

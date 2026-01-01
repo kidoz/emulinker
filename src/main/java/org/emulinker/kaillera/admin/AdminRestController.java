@@ -1,15 +1,22 @@
 package org.emulinker.kaillera.admin;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
-import org.emulinker.kaillera.admin.dto.*;
+
+import org.emulinker.kaillera.admin.dto.ControllerDTO;
+import org.emulinker.kaillera.admin.dto.GameDTO;
+import org.emulinker.kaillera.admin.dto.ServerInfoDTO;
+import org.emulinker.kaillera.admin.dto.UserDTO;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
+import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.util.EmuLinkerExecutor;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin")

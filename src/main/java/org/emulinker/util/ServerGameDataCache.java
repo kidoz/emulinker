@@ -1,6 +1,7 @@
 package org.emulinker.util;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
 
 // Adapted from http://www.smotricz.com/kabutz/Issue027.html
 
