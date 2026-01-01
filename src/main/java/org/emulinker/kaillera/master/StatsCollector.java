@@ -4,11 +4,10 @@ import java.util.List;
 
 import org.emulinker.kaillera.model.*;
 
-public interface StatsCollector
-{
-	void gameStarted(KailleraServer server, KailleraGame game);
+public interface StatsCollector {
+    void gameStarted(KailleraServer server, KailleraGame game);
 
-	List getStartedGamesList();
+    List getStartedGamesList();
 
-	void clearStartedGamesList();
+    void clearStartedGamesList();
 }

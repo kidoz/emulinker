@@ -34,24 +34,33 @@ public class EmuLinkerConfig {
     }
 
     @Bean
-    public AccessManager2 accessManager2(EmuLinkerExecutor executor, EmuLinkerPropertiesConfig config) throws Exception {
+    public AccessManager2 accessManager2(EmuLinkerExecutor executor,
+            EmuLinkerPropertiesConfig config) throws Exception {
         return new AccessManager2(executor);
     }
 
     @Bean
-    public ConnectController connectController(EmuLinkerExecutor executor, V086Controller v086Controller, AccessManager2 accessManager, EmuLinkerPropertiesConfig config) throws Exception {
-        KailleraServerController[] controllers = new KailleraServerController[] { v086Controller };
+    public ConnectController connectController(EmuLinkerExecutor executor,
+            V086Controller v086Controller, AccessManager2 accessManager,
+            EmuLinkerPropertiesConfig config) throws Exception {
+        KailleraServerController[] controllers = new KailleraServerController[]{v086Controller};
         return new ConnectController(executor, controllers, accessManager, config);
     }
 
     @Bean
-    public V086Controller v086Controller(KailleraServerImpl kailleraServer, EmuLinkerExecutor executor, AccessManager2 accessManager, EmuLinkerPropertiesConfig config) throws Exception {
+    public V086Controller v086Controller(KailleraServerImpl kailleraServer,
+            EmuLinkerExecutor executor, AccessManager2 accessManager,
+            EmuLinkerPropertiesConfig config) throws Exception {
         return new V086Controller(kailleraServer, executor, accessManager, config);
     }
 
     @Bean
-    public KailleraServerImpl kailleraServerImpl(EmuLinkerExecutor executor, AccessManager2 accessManager, EmuLinkerPropertiesConfig config, MasterListStatsCollector statsCollector, KailleraServerReleaseInfo releaseInfo, AutoFireDetectorFactoryImpl autoFireFactory) throws Exception {
-        return new KailleraServerImpl(executor, accessManager, config, statsCollector, releaseInfo, autoFireFactory);
+    public KailleraServerImpl kailleraServerImpl(EmuLinkerExecutor executor,
+            AccessManager2 accessManager, EmuLinkerPropertiesConfig config,
+            MasterListStatsCollector statsCollector, KailleraServerReleaseInfo releaseInfo,
+            AutoFireDetectorFactoryImpl autoFireFactory) throws Exception {
+        return new KailleraServerImpl(executor, accessManager, config, statsCollector, releaseInfo,
+                autoFireFactory);
     }
 
     @Bean
@@ -65,8 +74,12 @@ public class EmuLinkerConfig {
     }
 
     @Bean
-    public MasterListUpdaterImpl masterListUpdaterImpl(EmuLinkerPropertiesConfig config, EmuLinkerExecutor executor, ConnectController connectController, KailleraServerImpl kailleraServer, MasterListStatsCollector statsCollector, KailleraServerReleaseInfo releaseInfo) throws Exception {
-        return new MasterListUpdaterImpl(config, executor, connectController, kailleraServer, statsCollector, releaseInfo);
+    public MasterListUpdaterImpl masterListUpdaterImpl(EmuLinkerPropertiesConfig config,
+            EmuLinkerExecutor executor, ConnectController connectController,
+            KailleraServerImpl kailleraServer, MasterListStatsCollector statsCollector,
+            KailleraServerReleaseInfo releaseInfo) throws Exception {
+        return new MasterListUpdaterImpl(config, executor, connectController, kailleraServer,
+                statsCollector, releaseInfo);
     }
 
 }

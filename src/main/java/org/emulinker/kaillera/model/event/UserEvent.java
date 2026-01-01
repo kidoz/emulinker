@@ -2,7 +2,6 @@ package org.emulinker.kaillera.model.event;
 
 import org.emulinker.kaillera.model.KailleraUser;
 
-public interface UserEvent extends KailleraEvent
-{
-	KailleraUser getUser();
+public interface UserEvent extends KailleraEvent {
+    KailleraUser getUser();
 }

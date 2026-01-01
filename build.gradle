@@ -30,14 +30,8 @@ dependencies {
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
     // Compatibility replacements for local JARs
-    implementation 'org.apache.commons:commons-lang3:3.17.0'
-    implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'org.apache.commons:commons-configuration2:2.11.0'
-    implementation 'commons-codec:commons-codec:1.17.1'
     implementation 'commons-httpclient:commons-httpclient:3.1'
-    implementation 'commons-pool:commons-pool:1.6'
-    implementation 'xerces:xercesImpl:2.12.2'
-    implementation 'com.thoughtworks.xstream:xstream:1.4.21'
     implementation 'org.picocontainer:picocontainer:1.3' // Keep for now as some classes still import it
 
     // Logging: SLF4J + Logback (Spring Boot includes Logback by default)
@@ -51,7 +45,7 @@ dependencies {
 spotless {
     java {
         target 'src/*/java/**/*.java'
-        googleJavaFormat().aosp().reflowLongStrings()
+        eclipse('4.33').configFile(rootProject.file('config/eclipse-formatter.xml'))
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()

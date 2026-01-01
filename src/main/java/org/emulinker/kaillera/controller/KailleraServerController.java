@@ -6,17 +6,17 @@ import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.exception.*;
 import org.picocontainer.Startable;
 
-public interface KailleraServerController extends Startable
-{
-	int newConnection(InetSocketAddress clientSocketAddress, String protocol) throws ServerFullException, NewConnectionException;
+public interface KailleraServerController extends Startable {
+    int newConnection(InetSocketAddress clientSocketAddress, String protocol)
+            throws ServerFullException, NewConnectionException;
 
-	KailleraServer getServer();
+    KailleraServer getServer();
 
-	int getBufferSize();
+    int getBufferSize();
 
-	String getVersion();
+    String getVersion();
 
-	int getNumClients();
+    int getNumClients();
 
-	String[] getClientTypes();
+    String[] getClientTypes();
 }

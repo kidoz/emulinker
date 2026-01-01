@@ -1,41 +1,35 @@
 package org.emulinker.kaillera.controller.v086.action;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 
-public class KeepAliveAction implements V086Action
-{
-	//private static final Logger log = LoggerFactory.getLogger(KeepAliveAction.class);
-	private static final String		desc		= "KeepAliveAction";
-	private static KeepAliveAction	singleton	= new KeepAliveAction();
+public class KeepAliveAction implements V086Action {
+    // private static final Logger log =
+    // LoggerFactory.getLogger(KeepAliveAction.class);
+    private static final String desc = "KeepAliveAction";
+    private static KeepAliveAction singleton = new KeepAliveAction();
 
-	public static KeepAliveAction getInstance()
-	{
-		return singleton;
-	}
+    public static KeepAliveAction getInstance() {
+        return singleton;
+    }
 
-	private int	actionCount	= 0;
+    private int actionCount = 0;
 
-	private KeepAliveAction()
-	{
+    private KeepAliveAction() {
 
-	}
+    }
 
-	public int getActionPerformedCount()
-	{
-		return actionCount;
-	}
+    public int getActionPerformedCount() {
+        return actionCount;
+    }
 
-	public String toString()
-	{
-		return desc;
-	}
+    public String toString() {
+        return desc;
+    }
 
-	public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler) throws FatalActionException
-	{
-		actionCount++;
-		clientHandler.getUser().updateLastKeepAlive();
-	}
+    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+            throws FatalActionException {
+        actionCount++;
+        clientHandler.getUser().updateLastKeepAlive();
+    }
 }

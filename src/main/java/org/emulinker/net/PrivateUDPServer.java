@@ -8,46 +8,41 @@ import org.emulinker.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class PrivateUDPServer extends UDPServer
-{
-	private static final Logger log = LoggerFactory.getLogger(PrivateUDPServer.class);
+public abstract class PrivateUDPServer extends UDPServer {
+    private static final Logger log = LoggerFactory.getLogger(PrivateUDPServer.class);
 
-	private InetAddress			remoteAddress;
-	private InetSocketAddress	remoteSocketAddress;
+    private InetAddress remoteAddress;
+    private InetSocketAddress remoteSocketAddress;
 
-	public PrivateUDPServer(boolean shutdownOnExit, InetAddress remoteAddress)
-	{
-		super(shutdownOnExit);
-		this.remoteAddress = remoteAddress;
-	}
+    public PrivateUDPServer(boolean shutdownOnExit, InetAddress remoteAddress) {
+        super(shutdownOnExit);
+        this.remoteAddress = remoteAddress;
+    }
 
-	public InetAddress getRemoteInetAddress()
-	{
-		return remoteAddress;
-	}
+    public InetAddress getRemoteInetAddress() {
+        return remoteAddress;
+    }
 
-	public InetSocketAddress getRemoteSocketAddress()
-	{
-		return remoteSocketAddress;
-	}
+    public InetSocketAddress getRemoteSocketAddress() {
+        return remoteSocketAddress;
+    }
 
-	protected void handleReceived(ByteBuffer buffer, InetSocketAddress inboundSocketAddress)
-	{
-		if (remoteSocketAddress == null)
-			remoteSocketAddress = inboundSocketAddress;
-		else if (!inboundSocketAddress.equals(remoteSocketAddress))
-		{
-			log.warn("Rejecting packet received from wrong address: " + EmuUtil.formatSocketAddress(inboundSocketAddress) + " != " + EmuUtil.formatSocketAddress(remoteSocketAddress));
-			return;
-		}
+    protected void handleReceived(ByteBuffer buffer, InetSocketAddress inboundSocketAddress) {
+        if (remoteSocketAddress == null)
+            remoteSocketAddress = inboundSocketAddress;
+        else if (!inboundSocketAddress.equals(remoteSocketAddress)) {
+            log.warn("Rejecting packet received from wrong address: "
+                    + EmuUtil.formatSocketAddress(inboundSocketAddress) + " != "
+                    + EmuUtil.formatSocketAddress(remoteSocketAddress));
+            return;
+        }
 
-		handleReceived(buffer);
-	}
+        handleReceived(buffer);
+    }
 
-	protected abstract void handleReceived(ByteBuffer buffer);
+    protected abstract void handleReceived(ByteBuffer buffer);
 
-	protected void send(ByteBuffer buffer)
-	{
-		super.send(buffer, remoteSocketAddress);
-	}
+    protected void send(ByteBuffer buffer) {
+        super.send(buffer, remoteSocketAddress);
+    }
 }

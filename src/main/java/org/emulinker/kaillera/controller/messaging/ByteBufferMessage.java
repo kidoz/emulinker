@@ -6,75 +6,63 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class ByteBufferMessage
-{
-	protected static final Logger log = LoggerFactory.getLogger(ByteBufferMessage.class);
-//	public static Charset	charset	= Charset.forName("US-ASCII");
-//	public static Charset	charset	= Charset.forName("ISO-8859-1");
-//	public static Charset	charset	= Charset.forName("UTF-8");
-	public static Charset	charset = Charset.defaultCharset();
+public abstract class ByteBufferMessage {
+    protected static final Logger log = LoggerFactory.getLogger(ByteBufferMessage.class);
+    // public static Charset charset = Charset.forName("US-ASCII");
+    // public static Charset charset = Charset.forName("ISO-8859-1");
+    // public static Charset charset = Charset.forName("UTF-8");
+    public static Charset charset = Charset.defaultCharset();
 
-	static
-	{
-		String charsetName = System.getProperty("emulinker.charset");
-		if (charsetName != null)
-		{
-			try
-			{
-				if (Charset.isSupported(charsetName))
-					charset = Charset.forName(charsetName);
-				else
-					log.error("Charset " + charsetName + " is not supported!");
-			}
-			catch (Exception e)
-			{
-				log.error("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
-			}
-		}
-		
-		log.info("Using character set: " + charset.displayName());
-	}
+    static {
+        String charsetName = System.getProperty("emulinker.charset");
+        if (charsetName != null) {
+            try {
+                if (Charset.isSupported(charsetName))
+                    charset = Charset.forName(charsetName);
+                else
+                    log.error("Charset " + charsetName + " is not supported!");
+            } catch (Exception e) {
+                log.error("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
+            }
+        }
 
-	private ByteBuffer		buffer;
+        log.info("Using character set: " + charset.displayName());
+    }
 
-	public abstract int getLength();
+    private ByteBuffer buffer;
 
-	public abstract String getDescription();
+    public abstract int getLength();
 
-	public abstract String toString();
+    public abstract String getDescription();
 
-	protected void initBuffer()
-	{
-		initBuffer(getLength());
-	}
+    public abstract String toString();
 
-	private void initBuffer(int size)
-	{
-		buffer = getBuffer(size);
-	}
+    protected void initBuffer() {
+        initBuffer(getLength());
+    }
 
-	public void releaseBuffer()
-	{
+    private void initBuffer(int size) {
+        buffer = getBuffer(size);
+    }
 
-	}
+    public void releaseBuffer() {
 
-	public ByteBuffer toBuffer()
-	{
-		initBuffer();
-		writeTo(buffer);
-		buffer.flip();
-		return buffer;
-	}
+    }
 
-	public abstract void writeTo(ByteBuffer buffer);
+    public ByteBuffer toBuffer() {
+        initBuffer();
+        writeTo(buffer);
+        buffer.flip();
+        return buffer;
+    }
 
-	public static ByteBuffer getBuffer(int size)
-	{
-		return ByteBuffer.allocateDirect(size);
-	}
+    public abstract void writeTo(ByteBuffer buffer);
 
-	public static void releaseBuffer(ByteBuffer buffer)
-	{
-		// nothing to do since we aren't caching buffers anymore
-	}
+    public static ByteBuffer getBuffer(int size) {
+        return ByteBuffer.allocateDirect(size);
+    }
+
+    public static void releaseBuffer(ByteBuffer buffer) {
+        // nothing to do since we aren't caching buffers anymore
+    }
 }

@@ -4,19 +4,20 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.*;
 
 import org.apache.commons.configuration2.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class EmuLinkerExecutor extends ThreadPoolExecutor
-{
-	//private static final Logger log = LoggerFactory.getLogger(EmuLinkerXMLConfig.class);
+public class EmuLinkerExecutor extends ThreadPoolExecutor {
+    // private static final Logger log =
+    // LoggerFactory.getLogger(EmuLinkerXMLConfig.class);
 
-	//public EmuLinkerExecutor(Configuration config, BlockingQueue queue) throws NoSuchElementException
-	public EmuLinkerExecutor(Configuration config) throws NoSuchElementException
-	{
-		// super(config.getInt("threadPool.coreSize"), config.getInt("threadPool.maxSize"), config.getLong("threadPool.keepAlive"), TimeUnit.SECONDS, queue);
-		// super((config.getInt("server.maxUsers")*2)+10, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-		// super.prestartAllCoreThreads();
-		super(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-	}
+    // public EmuLinkerExecutor(Configuration config, BlockingQueue queue) throws
+    // NoSuchElementException
+    public EmuLinkerExecutor(Configuration config) throws NoSuchElementException {
+        // super(config.getInt("threadPool.coreSize"),
+        // config.getInt("threadPool.maxSize"), config.getLong("threadPool.keepAlive"),
+        // TimeUnit.SECONDS, queue);
+        // super((config.getInt("server.maxUsers")*2)+10, Integer.MAX_VALUE, 60L,
+        // TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+        // super.prestartAllCoreThreads();
+        super(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    }
 }

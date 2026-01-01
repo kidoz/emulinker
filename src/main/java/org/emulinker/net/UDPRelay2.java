@@ -11,285 +11,246 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.util.EmuUtil;
 
-public abstract class UDPRelay2
-{
-	private static final Logger log = LoggerFactory.getLogger(UDPRelay2.class);
+public abstract class UDPRelay2 {
+    private static final Logger log = LoggerFactory.getLogger(UDPRelay2.class);
 
-	public static final int		DEFAULT_BUFFER_SIZE	= 4096;
-	private static int			threadCounter		= 0;
+    public static final int DEFAULT_BUFFER_SIZE = 4096;
+    private static int threadCounter = 0;
 
-	protected int				listenPort;
-	protected int				bufferSize;
-	protected InetSocketAddress	serverSocketAddress;
-	protected boolean			started				= false;
-	protected boolean			stopFlag			= false;
-	protected Exception			exception;
-	protected Map<InetSocketAddress, RelayThread>		relayThreads		= new ConcurrentHashMap<>();
-	protected Map<Integer, DatagramChannel>			channels			= new ConcurrentHashMap<>();
+    protected int listenPort;
+    protected int bufferSize;
+    protected InetSocketAddress serverSocketAddress;
+    protected boolean started = false;
+    protected boolean stopFlag = false;
+    protected Exception exception;
+    protected Map<InetSocketAddress, RelayThread> relayThreads = new ConcurrentHashMap<>();
+    protected Map<Integer, DatagramChannel> channels = new ConcurrentHashMap<>();
 
-	public UDPRelay2(InetSocketAddress serverSocketAddress, int listenPort)
-	{
-		this(serverSocketAddress, listenPort, DEFAULT_BUFFER_SIZE);
-	}
+    public UDPRelay2(InetSocketAddress serverSocketAddress, int listenPort) {
+        this(serverSocketAddress, listenPort, DEFAULT_BUFFER_SIZE);
+    }
 
-	public UDPRelay2(InetSocketAddress serverSocketAddress, int listenPort, int bufferSize)
-	{
-		this.serverSocketAddress = serverSocketAddress;
-		this.listenPort = listenPort;
-		this.bufferSize = bufferSize;
-	}
+    public UDPRelay2(InetSocketAddress serverSocketAddress, int listenPort, int bufferSize) {
+        this.serverSocketAddress = serverSocketAddress;
+        this.listenPort = listenPort;
+        this.bufferSize = bufferSize;
+    }
 
-	public int getListenPort()
-	{
-		return listenPort;
-	}
+    public int getListenPort() {
+        return listenPort;
+    }
 
-	public InetSocketAddress getServerSocketAddress()
-	{
-		return serverSocketAddress;
-	}
+    public InetSocketAddress getServerSocketAddress() {
+        return serverSocketAddress;
+    }
 
-	public int getBufferSize()
-	{
-		return bufferSize;
-	}
+    public int getBufferSize() {
+        return bufferSize;
+    }
 
-	public void setBufferSize(int bufferSize)
-	{
-		this.bufferSize = bufferSize;
-	}
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 
-	public Exception getException()
-	{
-		return exception;
-	}
+    public Exception getException() {
+        return exception;
+    }
 
-	public boolean isStarted()
-	{
-		return started;
-	}
+    public boolean isStarted() {
+        return started;
+    }
 
-	protected abstract ByteBuffer processClientToServer(ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress);
+    protected abstract ByteBuffer processClientToServer(ByteBuffer receiveBuffer,
+            InetSocketAddress fromAddress, InetSocketAddress toAddress);
 
-	protected abstract ByteBuffer processServerToClient(ByteBuffer receiveBuffer, InetSocketAddress fromAddress, InetSocketAddress toAddress);
+    protected abstract ByteBuffer processServerToClient(ByteBuffer receiveBuffer,
+            InetSocketAddress fromAddress, InetSocketAddress toAddress);
 
-	public synchronized void start() throws IOException
-	{
-		if (!started)
-		{
-			stopFlag = false;
-			relayThreads.put(serverSocketAddress, new RelayThread(listenPort, serverSocketAddress));
-			started = true;
-		}
-		else
-		{
-			log.warn("Already started");
-		}
-	}
+    public synchronized void start() throws IOException {
+        if (!started) {
+            stopFlag = false;
+            relayThreads.put(serverSocketAddress, new RelayThread(listenPort, serverSocketAddress));
+            started = true;
+        } else {
+            log.warn("Already started");
+        }
+    }
 
-	public synchronized void stop()
-	{
-		if (started)
-		{
-			log.debug("Stoping...");
+    public synchronized void stop() {
+        if (started) {
+            log.debug("Stoping...");
 
-			stopFlag = true;
+            stopFlag = true;
 
-			for (RelayThread thread : relayThreads.values())
-			{
-				thread.close();
-			}
+            for (RelayThread thread : relayThreads.values()) {
+                thread.close();
+            }
 
-			started = false;
-		}
-		else
-		{
-			log.warn("Not running");
-		}
-	}
+            started = false;
+        } else {
+            log.warn("Not running");
+        }
+    }
 
-	// TODO: Make Relay work when server is locahost
-	protected class RelayThread extends Thread
-	{
-		protected int				port;
+    // TODO: Make Relay work when server is locahost
+    protected class RelayThread extends Thread {
+        protected int port;
 
-		protected DatagramChannel	channel;
+        protected DatagramChannel channel;
 
-		protected InetSocketAddress	forwardAddress;
+        protected InetSocketAddress forwardAddress;
 
-		protected String			name;
+        protected String name;
 
-		protected long				lastActivity;
+        protected long lastActivity;
 
-		protected boolean			running	= false;
+        protected boolean running = false;
 
-		protected RelayThread(InetSocketAddress forwardAddress) throws IOException
-		{
-			this(-1, forwardAddress);
-		}
+        protected RelayThread(InetSocketAddress forwardAddress) throws IOException {
+            this(-1, forwardAddress);
+        }
 
-		protected RelayThread(int port, InetSocketAddress forwardAddress) throws IOException
-		{
-			if (port > 0)
-			{
-				channel = channels.get(port);
-				if(channel == null)
-				{
-					channel = DatagramChannel.open();
-					channel.socket().bind(new InetSocketAddress(port));
-					channels.put(port, channel);
-					log.debug("Created new DatagramChannel bound to specific port " + channel.socket().getLocalPort() + " that will forward to " + EmuUtil.formatSocketAddress(forwardAddress));
-				}
-				else
-				{
-					log.debug("Using previously created DatagramChannel bound to port " + channel.socket().getLocalPort() + " that will forward to " + EmuUtil.formatSocketAddress(forwardAddress));
-				}
-			}
-			else
-			{
-				channel = DatagramChannel.open();
-				channel.socket().bind(null);
-				log.debug("Creating new DatagramChannel bound to arbitrary port " + channel.socket().getLocalPort() + " that will forward to " + EmuUtil.formatSocketAddress(forwardAddress));
-			}
+        protected RelayThread(int port, InetSocketAddress forwardAddress) throws IOException {
+            if (port > 0) {
+                channel = channels.get(port);
+                if (channel == null) {
+                    channel = DatagramChannel.open();
+                    channel.socket().bind(new InetSocketAddress(port));
+                    channels.put(port, channel);
+                    log.debug("Created new DatagramChannel bound to specific port "
+                            + channel.socket().getLocalPort() + " that will forward to "
+                            + EmuUtil.formatSocketAddress(forwardAddress));
+                } else {
+                    log.debug("Using previously created DatagramChannel bound to port "
+                            + channel.socket().getLocalPort() + " that will forward to "
+                            + EmuUtil.formatSocketAddress(forwardAddress));
+                }
+            } else {
+                channel = DatagramChannel.open();
+                channel.socket().bind(null);
+                log.debug("Creating new DatagramChannel bound to arbitrary port "
+                        + channel.socket().getLocalPort() + " that will forward to "
+                        + EmuUtil.formatSocketAddress(forwardAddress));
+            }
 
-			lastActivity = System.currentTimeMillis();
+            lastActivity = System.currentTimeMillis();
 
-			this.forwardAddress = forwardAddress;
-			this.name = "RelayThread." + threadCounter++ + ": " + channel.socket().getLocalPort() + "->" + EmuUtil.formatSocketAddress(forwardAddress);
-			this.start();
+            this.forwardAddress = forwardAddress;
+            this.name = "RelayThread." + threadCounter++ + ": " + channel.socket().getLocalPort()
+                    + "->" + EmuUtil.formatSocketAddress(forwardAddress);
+            this.start();
 
-			while (!running)
-			{
-				try
-				{
-					Thread.sleep(100);
-				}
-				catch (Exception e)
-				{
-					log.error("Sleep Interrupted!", e);
-				}
-			}
-		}
+            while (!running) {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    log.error("Sleep Interrupted!", e);
+                }
+            }
+        }
 
-		public String toString()
-		{
-			return name;
-		}
+        public String toString() {
+            return name;
+        }
 
-		public InetSocketAddress getForwardAddress()
-		{
-			return forwardAddress;
-		}
+        public InetSocketAddress getForwardAddress() {
+            return forwardAddress;
+        }
 
-		public long getLastActivity()
-		{
-			return lastActivity;
-		}
+        public long getLastActivity() {
+            return lastActivity;
+        }
 
-		public DatagramChannel getChannel()
-		{
-			return channel;
-		}
+        public DatagramChannel getChannel() {
+            return channel;
+        }
 
-		public void send(ByteBuffer buffer, InetSocketAddress target) throws IOException
-		{
-			// log.debug("Port " + channel.socket().getLocalPort() + " sending
-			// to " + EmuUtil.formatSocketAddress(target) + ": " +
-			// EmuUtil.dumpBuffer(buffer));
-			channel.send(buffer, target);
-			lastActivity = System.currentTimeMillis();
-		}
+        public void send(ByteBuffer buffer, InetSocketAddress target) throws IOException {
+            // log.debug("Port " + channel.socket().getLocalPort() + " sending
+            // to " + EmuUtil.formatSocketAddress(target) + ": " +
+            // EmuUtil.dumpBuffer(buffer));
+            channel.send(buffer, target);
+            lastActivity = System.currentTimeMillis();
+        }
 
-		public void close()
-		{
-			try
-			{
-				channel.close();
-			}
-			catch (Exception e)
-			{
-			}
-		}
+        public void close() {
+            try {
+                channel.close();
+            } catch (Exception e) {
+            }
+        }
 
-		public void run()
-		{
-			log.debug(name + " Running");
+        public void run() {
+            log.debug(name + " Running");
 
-			try
-			{
-				ByteBuffer receiveBuffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+            try {
+                ByteBuffer receiveBuffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
 
-				while (!stopFlag)
-				{
-					running = true;
+                while (!stopFlag) {
+                    running = true;
 
-					receiveBuffer.clear();
+                    receiveBuffer.clear();
 
-					InetSocketAddress fromAddress = (InetSocketAddress) channel.receive(receiveBuffer);
-					receiveBuffer.flip();
+                    InetSocketAddress fromAddress = (InetSocketAddress) channel
+                            .receive(receiveBuffer);
+                    receiveBuffer.flip();
 
-					lastActivity = System.currentTimeMillis();
+                    lastActivity = System.currentTimeMillis();
 
-					ByteBuffer sendBuffer = null;
+                    ByteBuffer sendBuffer = null;
 
-					if (fromAddress.equals(getServerSocketAddress()))
-					{
-						// log.debug("Server at " +
-						// EmuUtil.formatSocketAddress(fromAddress) + " sent " +
-						// receiveBuffer.limit() + " bytes to relay port " +
-						// channel.socket().getLocalPort() + " which it will
-						// forward to " +
-						// EmuUtil.formatSocketAddress(getForwardAddress()));
-						// log.debug("Buffer Dump: " +
-						// EmuUtil.dumpBuffer(receiveBuffer));
-						sendBuffer = processServerToClient(receiveBuffer, fromAddress, getForwardAddress());
-					}
-					else
-					{
-						// log.debug("Client at " +
-						// EmuUtil.formatSocketAddress(fromAddress) + " sent " +
-						// receiveBuffer.limit() + " bytes to relay port " +
-						// channel.socket().getLocalPort() + " which it will
-						// forward to " +
-						// EmuUtil.formatSocketAddress(getForwardAddress()));
-						// log.debug("Buffer Dump: " +
-						// EmuUtil.dumpBuffer(receiveBuffer));
-						sendBuffer = processClientToServer(receiveBuffer, fromAddress, getForwardAddress());
-					}
+                    if (fromAddress.equals(getServerSocketAddress())) {
+                        // log.debug("Server at " +
+                        // EmuUtil.formatSocketAddress(fromAddress) + " sent " +
+                        // receiveBuffer.limit() + " bytes to relay port " +
+                        // channel.socket().getLocalPort() + " which it will
+                        // forward to " +
+                        // EmuUtil.formatSocketAddress(getForwardAddress()));
+                        // log.debug("Buffer Dump: " +
+                        // EmuUtil.dumpBuffer(receiveBuffer));
+                        sendBuffer = processServerToClient(receiveBuffer, fromAddress,
+                                getForwardAddress());
+                    } else {
+                        // log.debug("Client at " +
+                        // EmuUtil.formatSocketAddress(fromAddress) + " sent " +
+                        // receiveBuffer.limit() + " bytes to relay port " +
+                        // channel.socket().getLocalPort() + " which it will
+                        // forward to " +
+                        // EmuUtil.formatSocketAddress(getForwardAddress()));
+                        // log.debug("Buffer Dump: " +
+                        // EmuUtil.dumpBuffer(receiveBuffer));
+                        sendBuffer = processClientToServer(receiveBuffer, fromAddress,
+                                getForwardAddress());
+                    }
 
-					if (sendBuffer == null || sendBuffer.limit() <= 0)
-						continue;
+                    if (sendBuffer == null || sendBuffer.limit() <= 0)
+                        continue;
 
-					RelayThread responseThread = relayThreads.get(fromAddress);
-					if (responseThread == null)
-					{
-						log.debug("No RelayThread is registered to forward to " + EmuUtil.formatSocketAddress(fromAddress) + "... creating new RelayThread");
-						responseThread = new RelayThread(fromAddress);
-						relayThreads.put(fromAddress, responseThread);
-					}
+                    RelayThread responseThread = relayThreads.get(fromAddress);
+                    if (responseThread == null) {
+                        log.debug("No RelayThread is registered to forward to "
+                                + EmuUtil.formatSocketAddress(fromAddress)
+                                + "... creating new RelayThread");
+                        responseThread = new RelayThread(fromAddress);
+                        relayThreads.put(fromAddress, responseThread);
+                    }
 
-					responseThread.send(sendBuffer, getForwardAddress());
-				}
-			}
-			catch (IOException e)
-			{
-				log.warn(name + " caught IOException", e);
-				if (exception != null)
-					exception = e;
-			}
-			catch (Exception e)
-			{
-				log.error(name + " caught unexpected exception", e);
-				if (exception != null)
-					exception = e;
-			}
-			finally
-			{
-				UDPRelay2.this.stop();
-				running = false;
-			}
+                    responseThread.send(sendBuffer, getForwardAddress());
+                }
+            } catch (IOException e) {
+                log.warn(name + " caught IOException", e);
+                if (exception != null)
+                    exception = e;
+            } catch (Exception e) {
+                log.error(name + " caught unexpected exception", e);
+                if (exception != null)
+                    exception = e;
+            } finally {
+                UDPRelay2.this.stop();
+                running = false;
+            }
 
-			log.debug(name + " Exiting");
-		}
-	}
+            log.debug(name + " Exiting");
+        }
+    }
 }

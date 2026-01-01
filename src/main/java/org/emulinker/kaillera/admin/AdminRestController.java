@@ -19,7 +19,8 @@ public class AdminRestController {
     private final EmuLinkerExecutor executor;
 
     @Autowired
-    public AdminRestController(KailleraServer kailleraServer, ConnectController connectController, EmuLinkerExecutor executor) {
+    public AdminRestController(KailleraServer kailleraServer, ConnectController connectController,
+            EmuLinkerExecutor executor) {
         this.kailleraServer = kailleraServer;
         this.connectController = connectController;
         this.executor = executor;
@@ -33,12 +34,13 @@ public class AdminRestController {
         info.put("build", kailleraServer.getReleaseInfo().getBuildNumber());
         info.put("running", true);
         info.put("connectPort", connectController.getBindPort());
-        info.put("uptimeMinutes", (System.currentTimeMillis() - connectController.getStartTime()) / 60000);
+        info.put("uptimeMinutes",
+                (System.currentTimeMillis() - connectController.getStartTime()) / 60000);
         info.put("userCount", kailleraServer.getNumUsers());
         info.put("maxUsers", kailleraServer.getMaxUsers());
         info.put("gameCount", kailleraServer.getNumGames());
         info.put("maxGames", kailleraServer.getMaxGames());
-        
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("requestCount", connectController.getRequestCount());
         stats.put("connectCount", connectController.getConnectCount());
@@ -66,7 +68,8 @@ public class AdminRestController {
             u.put("status", KailleraUser.STATUS_NAMES[user.getStatus()]);
             u.put("connectionType", KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
             u.put("ping", user.getPing());
-            u.put("address", user.getSocketAddress().getAddress().getHostAddress() + ":" + user.getSocketAddress().getPort());
+            u.put("address", user.getSocketAddress().getAddress().getHostAddress() + ":"
+                    + user.getSocketAddress().getPort());
             u.put("connectTime", user.getConnectTime());
             return u;
         }).collect(Collectors.toList());
