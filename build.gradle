@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.0'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'com.diffplug.spotless' version '6.25.0'
+    id 'checkstyle'
+}
+
+group = 'org.emulinker'
+version = '1.0.2'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    
+    // Compatibility replacements for local JARs
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-configuration2:2.11.0'
+    implementation 'commons-codec:commons-codec:1.17.1'
+    implementation 'commons-logging:commons-logging:1.3.4'
+    implementation 'commons-httpclient:commons-httpclient:3.1'
+    implementation 'commons-pool:commons-pool:1.6'
+    implementation 'xerces:xercesImpl:2.12.2'
+    implementation 'com.thoughtworks.xstream:xstream:1.4.21'
+    implementation 'org.picocontainer:picocontainer:1.3' // Keep for now as some classes still import it
+    
+    // Logging (Spring Boot uses Logback by default)
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        googleJavaFormat().aosp().reflowLongStrings()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+checkstyle {
+    toolVersion = '10.21.1'
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    ignoreFailures = true  // Set to false once legacy code is cleaned up
+    maxWarnings = 100      // Gradually reduce as code is improved
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+}
+
+jar {
+    enabled = false // Use bootJar for executable
+}
+
+bootJar {
+    archiveFileName = 'emulinker.jar'
+    destinationDirectory = file('build')
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.debug = true
+    options.compilerArgs << "-Werror"
+    options.compilerArgs << "-Xlint:deprecation"
+    options.compilerArgs << "-Xlint:unchecked"
+}

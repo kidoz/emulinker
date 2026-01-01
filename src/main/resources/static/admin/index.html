@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EmuLinker Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="logo">
+      <i class="fas fa-server"></i>
+      <span>EmuLinker</span>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#" class="nav-link active" data-view="overview"><i class="fas fa-chart-line"></i> Overview</a></li>
+        <li><a href="#" class="nav-link" data-view="users"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="#" class="nav-link" data-view="games"><i class="fas fa-gamepad"></i> Games</a></li>
+        <li><a href="#" class="nav-link" data-view="controllers"><i class="fas fa-sliders-h"></i> Controllers</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <h1 id="view-title">Dashboard Overview</h1>
+      <button class="btn btn--primary" id="refresh-btn">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </header>
+
+    <section id="overview-view">
+      <div class="stats-grid">
+        <div class="card">
+          <div class="stat-label">Server Status</div>
+          <div class="stat-value" id="server-status" style="color: var(--success-color);">Online</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value" id="user-count">0 / 0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Active Games</div>
+          <div class="stat-value" id="game-count">0 / 0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Uptime</div>
+          <div class="stat-value" id="uptime">0m</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card">
+          <div class="stat-label">Connect Attempts</div>
+          <div class="stat-value" id="stat-requests">0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Successful Connects</div>
+          <div class="stat-value" id="stat-connects">0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Protocol Errors</div>
+          <div class="stat-value" id="stat-errors" style="color: var(--danger-color);">0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Thread Pool (Act/Size)</div>
+          <div class="stat-value" id="stat-pool">0 / 0</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="users-view" style="display: none;">
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Connect Type</th>
+              <th>Ping</th>
+              <th>Address</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="games-view" style="display: none;">
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ROM Name</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th>Players</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="games-table-body">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="controllers-view" style="display: none;">
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Buffer Size</th>
+              <th>Active Clients</th>
+              <th>Protocols</th>
+            </tr>
+          </thead>
+          <tbody id="controllers-table-body">
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/admin.ts"></script>
+</body>
+
+</html>
