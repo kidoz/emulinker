@@ -3,8 +3,8 @@ package org.emulinker.release;
 /**
  * Provides release information about the project.
  *
- * ReleaseInfo is a top-level EmuLinker component; it's implementation class is
- * loaded via PicoContainer upon startup.
+ * ReleaseInfo is a top-level EmuLinker component; its implementation class is
+ * loaded via Spring upon startup.
  *
  * @author Paul Cowan
  * @see www.emulinker.org

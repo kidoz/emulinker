@@ -8,9 +8,8 @@ import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.util.WildcardStringPattern;
-import org.picocontainer.Startable;
 
-public class AccessManager2 implements AccessManager, Startable, Runnable {
+public class AccessManager2 implements AccessManager, Runnable {
     static {
         java.security.Security.setProperty("networkaddress.cache.ttl", "60");
         java.security.Security.setProperty("networkaddress.cache.negative.ttl", "60");

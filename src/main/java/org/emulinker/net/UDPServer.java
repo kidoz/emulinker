@@ -9,9 +9,8 @@ import java.nio.channels.DatagramChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.util.*;
-import org.picocontainer.Startable;
 
-public abstract class UDPServer implements Executable, Startable {
+public abstract class UDPServer implements Executable {
     private static final Logger log = LoggerFactory.getLogger(UDPServer.class);
     /*
      * private static int artificalPacketLossPercentage = 0; private static int

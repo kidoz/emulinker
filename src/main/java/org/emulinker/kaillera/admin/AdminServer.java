@@ -1,7 +1,8 @@
 package org.emulinker.kaillera.admin;
 
-import org.picocontainer.Startable;
+public interface AdminServer {
 
-public interface AdminServer extends Startable {
+    void start();
 
+    void stop();
 }

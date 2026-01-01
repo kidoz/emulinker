@@ -3,8 +3,6 @@ package org.emulinker.kaillera.master.client;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.picocontainer.Startable;
-
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.httpclient.*;
 import org.slf4j.Logger;
@@ -17,7 +15,7 @@ import org.emulinker.kaillera.model.*;
 import org.emulinker.util.Executable;
 import org.emulinker.release.*;
 
-public class MasterListUpdaterImpl implements MasterListUpdater, Executable, Startable {
+public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     private static final Logger log = LoggerFactory.getLogger(MasterListUpdaterImpl.class);
 
     private ThreadPoolExecutor threadPool;

@@ -4,9 +4,12 @@ import java.net.InetSocketAddress;
 
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.exception.*;
-import org.picocontainer.Startable;
 
-public interface KailleraServerController extends Startable {
+public interface KailleraServerController {
+
+    void start();
+
+    void stop();
     int newConnection(InetSocketAddress clientSocketAddress, String protocol)
             throws ServerFullException, NewConnectionException;
 

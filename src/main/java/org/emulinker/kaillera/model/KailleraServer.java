@@ -6,9 +6,12 @@ import java.util.Collection;
 import org.emulinker.release.*;
 import org.emulinker.kaillera.model.event.KailleraEventListener;
 import org.emulinker.kaillera.model.exception.*;
-import org.picocontainer.Startable;
 
-public interface KailleraServer extends Startable {
+public interface KailleraServer {
+
+    void start();
+
+    void stop();
     ReleaseInfo getReleaseInfo();
 
     int getNumUsers();
