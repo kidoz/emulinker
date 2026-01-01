@@ -11,11 +11,11 @@ public class PlayerActionQueue {
 
     private int thisPlayerNumber;
     private KailleraUserImpl thisPlayer;
-    private boolean synched = false;
-    private PlayerTimeoutException lastTimeout;
+    private volatile boolean synched = false;
+    private volatile PlayerTimeoutException lastTimeout;
 
-    private byte[] array;
-    private int[] heads;
+    private final byte[] array;
+    private final int[] heads;
     private int tail = 0;
 
     // private OutputStream os;
@@ -46,16 +46,11 @@ public class PlayerActionQueue {
         return thisPlayer;
     }
 
-    public void setSynched(boolean synched) {
+    public synchronized void setSynched(boolean synched) {
         this.synched = synched;
 
         if (!synched) {
-            synchronized (this) {
-                notifyAll();
-            }
-            /*
-             * try { os.flush(); os.close(); } catch(Exception e) { e.printStackTrace(); }
-             */
+            notifyAll();
         }
     }
 
@@ -71,7 +66,7 @@ public class PlayerActionQueue {
         return lastTimeout;
     }
 
-    public void addActions(byte[] actions) {
+    public synchronized void addActions(byte[] actions) {
         if (!synched)
             return;
 
@@ -80,21 +75,17 @@ public class PlayerActionQueue {
             tail = ((tail + 1) % gameBufferSize);
         }
 
-        synchronized (this) {
-            notifyAll();
-        }
-
+        notifyAll();
         lastTimeout = null;
     }
 
-    public void getAction(int playerNumber, byte[] actions, int location, int actionLength)
-            throws PlayerTimeoutException {
-        synchronized (this) {
-            if (getSize(playerNumber) < actionLength && synched) {
-                try {
-                    wait(gameTimeoutMillis);
-                } catch (InterruptedException e) {
-                }
+    public synchronized void getAction(int playerNumber, byte[] actions, int location,
+            int actionLength) throws PlayerTimeoutException {
+        if (getSize(playerNumber) < actionLength && synched) {
+            try {
+                wait(gameTimeoutMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -108,11 +99,7 @@ public class PlayerActionQueue {
 
         if (!synched)
             return;
-        /*
-         * if(capture) { try { os.write(actions,0,actions.length);
-         * System.out.println("write " + actions.length + " bytes"); } catch(Exception
-         * e) { e.printStackTrace(); } }
-         */
+
         throw new PlayerTimeoutException(thisPlayerNumber, thisPlayer);
     }
 

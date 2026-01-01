@@ -105,20 +105,11 @@ public class AccessManager2 implements AccessManager, Runnable {
                     break;
 
                 synchronized (this) {
-                    for (TempBan tempBan : tempBanList) {
-                        if (tempBan.isExpired())
-                            tempBanList.remove(tempBan);
-                    }
-
-                    for (TempAdmin tempAdmin : tempAdminList) {
-                        if (tempAdmin.isExpired())
-                            tempAdminList.remove(tempAdmin);
-                    }
-
-                    for (Silence silence : silenceList) {
-                        if (silence.isExpired())
-                            silenceList.remove(silence);
-                    }
+                    // Use removeIf to safely remove expired entries without
+                    // ConcurrentModificationException
+                    tempBanList.removeIf(TempBan::isExpired);
+                    tempAdminList.removeIf(TempAdmin::isExpired);
+                    silenceList.removeIf(Silence::isExpired);
 
                     for (UserAccess userAccess : userList) {
                         userAccess.refreshDNS();
@@ -156,20 +147,20 @@ public class AccessManager2 implements AccessManager, Runnable {
         emulatorList.clear();
         addressList.clear();
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(accessFile));
-            String line = null;
+        try (BufferedReader reader = new BufferedReader(new FileReader(accessFile))) {
+            String line;
             while ((line = reader.readLine()) != null) {
-                if (line.length() == 0 || line.startsWith("#") || line.startsWith("//"))
+                if (line.isEmpty() || line.startsWith("#") || line.startsWith("//"))
                     continue;
 
-                StringTokenizer st = new StringTokenizer(line, ",");
-                if (st.countTokens() < 3) {
+                String[] tokens = line.split(",");
+                if (tokens.length < 3) {
                     log.error("Failed to load access line, too few tokens: " + line);
                     continue;
                 }
 
-                String type = st.nextToken();
+                String type = tokens[0].trim();
+                StringTokenizer st = new StringTokenizer(line.substring(type.length() + 1), ",");
 
                 try {
                     if (type.equalsIgnoreCase("user"))
@@ -186,8 +177,6 @@ public class AccessManager2 implements AccessManager, Runnable {
                     log.error("Failed to load access line: " + e.getMessage() + ": " + line);
                 }
             }
-
-            reader.close();
         } catch (IOException e) {
             log.error("Failed to load access file: " + e.getMessage(), e);
         }

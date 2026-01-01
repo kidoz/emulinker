@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +25,14 @@ public class GameOwnerCommandAction implements V086Action {
         return singleton;
     }
 
-    private int actionCount = 0;
+    private final AtomicInteger actionCount = new AtomicInteger(0);
 
     private GameOwnerCommandAction() {
 
     }
 
     public int getActionPerformedCount() {
-        return actionCount;
+        return actionCount.get();
     }
 
     public String toString() {

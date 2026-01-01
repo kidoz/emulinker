@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +22,19 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
         return singleton;
     }
 
-    private int actionCount = 0;
-    private int handledCount = 0;
+    private final AtomicInteger actionCount = new AtomicInteger(0);
+    private final AtomicInteger handledCount = new AtomicInteger(0);
 
     private JoinGameAction() {
 
     }
 
     public int getActionPerformedCount() {
-        return actionCount;
+        return actionCount.get();
     }
 
     public int getHandledEventCount() {
-        return handledCount;
+        return handledCount.get();
     }
 
     public String toString() {
@@ -45,7 +46,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
         if (!(message instanceof JoinGame_Request))
             throw new FatalActionException("Received incorrect instance of JoinGame: " + message);
 
-        actionCount++;
+        actionCount.incrementAndGet();
 
         JoinGame_Request joinGameRequest = (JoinGame_Request) message;
 
@@ -65,7 +66,7 @@ public class JoinGameAction implements V086Action, V086GameEventHandler {
     }
 
     public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
-        handledCount++;
+        handledCount.incrementAndGet();
 
         UserJoinedGameEvent userJoinedEvent = (UserJoinedGameEvent) event;
         KailleraUser thisUser = clientHandler.getUser();

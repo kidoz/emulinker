@@ -4,6 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.6'
     id 'com.diffplug.spotless' version '6.25.0'
     id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.26'
 }
 
 group = 'org.emulinker'
@@ -27,6 +28,7 @@ configurations.all {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
     // Compatibility replacements for local JARs
@@ -39,6 +41,7 @@ dependencies {
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -63,11 +66,25 @@ spotless {
 checkstyle {
     toolVersion = '10.21.1'
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-    ignoreFailures = true  // Set to false once legacy code is cleaned up
+    ignoreFailures = false
     maxWarnings = 100      // Gradually reduce as code is improved
 }
 
 tasks.withType(Checkstyle) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+}
+
+spotbugs {
+    toolVersion = '4.8.6'
+    ignoreFailures = false
+    effort = 'max'
+    reportLevel = 'low'
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
     reports {
         xml.required = false
         html.required = true

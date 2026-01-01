@@ -78,13 +78,18 @@ public final class KailleraGameImpl implements KailleraGame {
     }
 
     public KailleraUser getPlayer(int playerNumber) {
-        if (playerNumber > players.size()) {
+        if (playerNumber <= 0 || playerNumber > players.size()) {
             log.error(this + ": getPlayer(" + playerNumber + ") failed! (size = " + players.size() //$NON-NLS-1$ //$NON-NLS-2$
                     + ")"); //$NON-NLS-1$
             return null;
         }
 
-        return players.get((playerNumber - 1));
+        try {
+            return players.get(playerNumber - 1);
+        } catch (IndexOutOfBoundsException e) {
+            log.error(this + ": getPlayer(" + playerNumber + ") index out of bounds", e); //$NON-NLS-1$ //$NON-NLS-2$
+            return null;
+        }
     }
 
     public int getNumPlayers() {

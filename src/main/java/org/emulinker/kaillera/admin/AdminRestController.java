@@ -2,6 +2,7 @@ package org.emulinker.kaillera.admin;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.emulinker.kaillera.admin.dto.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
@@ -27,76 +28,50 @@ public class AdminRestController {
     }
 
     @GetMapping("/server-info")
-    public Map<String, Object> getServerInfo() {
-        Map<String, Object> info = new HashMap<>();
-        info.put("serverName", kailleraServer.getReleaseInfo().getProductName());
-        info.put("version", kailleraServer.getReleaseInfo().getVersionString());
-        info.put("build", kailleraServer.getReleaseInfo().getBuildNumber());
-        info.put("running", true);
-        info.put("connectPort", connectController.getBindPort());
-        info.put("uptimeMinutes",
-                (System.currentTimeMillis() - connectController.getStartTime()) / 60000);
-        info.put("userCount", kailleraServer.getNumUsers());
-        info.put("maxUsers", kailleraServer.getMaxUsers());
-        info.put("gameCount", kailleraServer.getNumGames());
-        info.put("maxGames", kailleraServer.getMaxGames());
+    public ServerInfoDTO getServerInfo() {
+        ServerInfoDTO.StatsDTO stats = new ServerInfoDTO.StatsDTO(
+                connectController.getRequestCount(), connectController.getConnectCount(),
+                connectController.getProtocolErrorCount(),
+                connectController.getDeniedServerFullCount(),
+                connectController.getDeniedOtherCount());
 
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("requestCount", connectController.getRequestCount());
-        stats.put("connectCount", connectController.getConnectCount());
-        stats.put("protocolErrors", connectController.getProtocolErrorCount());
-        stats.put("deniedFull", connectController.getDeniedServerFullCount());
-        stats.put("deniedOther", connectController.getDeniedOtherCount());
-        info.put("stats", stats);
+        ServerInfoDTO.ThreadPoolDTO threadPool = new ServerInfoDTO.ThreadPoolDTO(
+                executor.getActiveCount(), executor.getPoolSize(), executor.getMaximumPoolSize(),
+                executor.getTaskCount());
 
-        Map<String, Object> pool = new HashMap<>();
-        pool.put("active", executor.getActiveCount());
-        pool.put("poolSize", executor.getPoolSize());
-        pool.put("maxPoolSize", executor.getMaximumPoolSize());
-        pool.put("taskCount", executor.getTaskCount());
-        info.put("threadPool", pool);
-
-        return info;
+        return new ServerInfoDTO(kailleraServer.getReleaseInfo().getProductName(),
+                kailleraServer.getReleaseInfo().getVersionString(),
+                kailleraServer.getReleaseInfo().getBuildNumber(), true,
+                connectController.getBindPort(),
+                (System.currentTimeMillis() - connectController.getStartTime()) / 60000,
+                kailleraServer.getNumUsers(), kailleraServer.getMaxUsers(),
+                kailleraServer.getNumGames(), kailleraServer.getMaxGames(), stats, threadPool);
     }
 
     @GetMapping("/users")
-    public List<Map<String, Object>> getUsers() {
-        return kailleraServer.getUsers().stream().map(user -> {
-            Map<String, Object> u = new HashMap<>();
-            u.put("id", user.getID());
-            u.put("name", user.getName());
-            u.put("status", KailleraUser.STATUS_NAMES[user.getStatus()]);
-            u.put("connectionType", KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
-            u.put("ping", user.getPing());
-            u.put("address", user.getSocketAddress().getAddress().getHostAddress() + ":"
-                    + user.getSocketAddress().getPort());
-            u.put("connectTime", user.getConnectTime());
-            return u;
-        }).collect(Collectors.toList());
+    public List<UserDTO> getUsers() {
+        return kailleraServer.getUsers().stream().map(user -> new UserDTO(user.getID(),
+                user.getName(), KailleraUser.STATUS_NAMES[user.getStatus()],
+                KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()], user.getPing(),
+                user.getSocketAddress().getAddress().getHostAddress() + ":"
+                        + user.getSocketAddress().getPort(),
+                user.getConnectTime())).collect(Collectors.toList());
     }
 
     @GetMapping("/games")
-    public List<Map<String, Object>> getGames() {
-        return kailleraServer.getGames().stream().map(game -> {
-            Map<String, Object> g = new HashMap<>();
-            g.put("id", game.getID());
-            g.put("rom", game.getRomName());
-            g.put("owner", game.getOwner().getName());
-            g.put("status", KailleraGame.STATUS_NAMES[game.getStatus()]);
-            g.put("players", game.getNumPlayers());
-            return g;
-        }).collect(Collectors.toList());
+    public List<GameDTO> getGames() {
+        return kailleraServer.getGames().stream()
+                .map(game -> new GameDTO(game.getID(), game.getRomName(), game.getOwner().getName(),
+                        KailleraGame.STATUS_NAMES[game.getStatus()], game.getNumPlayers()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/controllers")
-    public List<Map<String, Object>> getControllers() {
-        return connectController.getControllers().stream().map(controller -> {
-            Map<String, Object> c = new HashMap<>();
-            c.put("version", controller.getVersion());
-            c.put("bufferSize", controller.getBufferSize());
-            c.put("numClients", controller.getNumClients());
-            c.put("clientTypes", controller.getClientTypes());
-            return c;
-        }).collect(Collectors.toList());
+    public List<ControllerDTO> getControllers() {
+        return connectController.getControllers().stream()
+                .map(controller -> new ControllerDTO(controller.getVersion(),
+                        controller.getBufferSize(), controller.getNumClients(),
+                        Arrays.asList(controller.getClientTypes())))
+                .collect(Collectors.toList());
     }
 }

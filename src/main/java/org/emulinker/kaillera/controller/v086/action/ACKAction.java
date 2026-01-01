@@ -1,6 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +18,8 @@ public class ACKAction implements V086Action, V086UserEventHandler {
     private static ACKAction singleton = new ACKAction();
     private static int numAcksForSpeedTest = 3;
 
-    private int actionCount = 0;
-    private int handledCount = 0;
+    private final AtomicInteger actionCount = new AtomicInteger(0);
+    private final AtomicInteger handledCount = new AtomicInteger(0);
 
     public static ACKAction getInstance() {
         return singleton;
@@ -29,11 +30,11 @@ public class ACKAction implements V086Action, V086UserEventHandler {
     }
 
     public int getActionPerformedCount() {
-        return actionCount;
+        return actionCount.get();
     }
 
     public int getHandledEventCount() {
-        return handledCount;
+        return handledCount.get();
     }
 
     public String toString() {
@@ -42,7 +43,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
             throws FatalActionException {
-        actionCount++;
+        actionCount.incrementAndGet();
 
         KailleraUser user = clientHandler.getUser();
         if (user.isLoggedIn())
@@ -81,7 +82,7 @@ public class ACKAction implements V086Action, V086UserEventHandler {
     }
 
     public void handleEvent(UserEvent event, V086Controller.V086ClientHandler clientHandler) {
-        handledCount++;
+        handledCount.incrementAndGet();
 
         ConnectedEvent connectedEvent = (ConnectedEvent) event;
 

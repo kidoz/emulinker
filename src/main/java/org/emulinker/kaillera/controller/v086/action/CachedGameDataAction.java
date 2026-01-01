@@ -1,5 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
@@ -19,14 +21,14 @@ public class CachedGameDataAction implements V086Action {
         return singleton;
     }
 
-    private int actionCount = 0;
+    private final AtomicInteger actionCount = new AtomicInteger(0);
 
     private CachedGameDataAction() {
 
     }
 
     public int getActionPerformedCount() {
-        return actionCount;
+        return actionCount.get();
     }
 
     public String toString() {

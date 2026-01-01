@@ -3,6 +3,8 @@ package org.emulinker.kaillera.controller.connectcontroller;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import org.emulinker.util.EmuLinkerExecutor;
 
 import org.apache.commons.configuration2.*;
@@ -20,21 +22,21 @@ import org.emulinker.util.EmuUtil;
 public class ConnectController extends UDPServer {
     private static final Logger log = LoggerFactory.getLogger(ConnectController.class);
 
-    private EmuLinkerExecutor threadPool;
-    private AccessManager accessManager;
-    private Map<String, KailleraServerController> controllersMap;
+    private final EmuLinkerExecutor threadPool;
+    private final AccessManager accessManager;
+    private final Map<String, KailleraServerController> controllersMap;
 
-    private int bufferSize = 0;
+    private int bufferSize;
 
-    private long startTime;
-    private int requestCount = 0;
-    private int messageFormatErrorCount = 0;
-    private int protocolErrorCount = 0;
-    private int deniedServerFullCount = 0;
-    private int deniedOtherCount = 0;
-    private int failedToStartCount = 0;
-    private int connectedCount = 0;
-    private int pingCount = 0;
+    private final AtomicLong startTime = new AtomicLong(0);
+    private final AtomicInteger requestCount = new AtomicInteger(0);
+    private final AtomicInteger messageFormatErrorCount = new AtomicInteger(0);
+    private final AtomicInteger protocolErrorCount = new AtomicInteger(0);
+    private final AtomicInteger deniedServerFullCount = new AtomicInteger(0);
+    private final AtomicInteger deniedOtherCount = new AtomicInteger(0);
+    private final AtomicInteger failedToStartCount = new AtomicInteger(0);
+    private final AtomicInteger connectedCount = new AtomicInteger(0);
+    private final AtomicInteger pingCount = new AtomicInteger(0);
 
     public ConnectController(EmuLinkerExecutor threadPool,
             KailleraServerController[] controllersArray, AccessManager accessManager,
@@ -74,7 +76,7 @@ public class ConnectController extends UDPServer {
     }
 
     public long getStartTime() {
-        return startTime;
+        return startTime.get();
     }
 
     public int getBufferSize() {
@@ -82,35 +84,35 @@ public class ConnectController extends UDPServer {
     }
 
     public int getRequestCount() {
-        return requestCount;
+        return requestCount.get();
     }
 
     public int getMessageFormatErrorCount() {
-        return messageFormatErrorCount;
+        return messageFormatErrorCount.get();
     }
 
     public int getProtocolErrorCount() {
-        return protocolErrorCount;
+        return protocolErrorCount.get();
     }
 
     public int getDeniedServerFullCount() {
-        return deniedServerFullCount;
+        return deniedServerFullCount.get();
     }
 
     public int getDeniedOtherCount() {
-        return deniedOtherCount;
+        return deniedOtherCount.get();
     }
 
     public int getFailedToStartCount() {
-        return failedToStartCount;
+        return failedToStartCount.get();
     }
 
     public int getConnectCount() {
-        return connectedCount;
+        return connectedCount.get();
     }
 
     public int getPingCount() {
-        return pingCount;
+        return pingCount.get();
     }
 
     protected ByteBuffer getBuffer() {
@@ -132,12 +134,12 @@ public class ConnectController extends UDPServer {
     }
 
     public synchronized void start() {
-        startTime = System.currentTimeMillis();
-        log.debug(toString() + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
+        startTime.set(System.currentTimeMillis());
+        log.debug(this + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
         threadPool.execute(this);
         Thread.yield();
-        log.debug(toString() + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
+        log.debug(this + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
     }
 
@@ -149,14 +151,14 @@ public class ConnectController extends UDPServer {
 
     protected synchronized void handleReceived(ByteBuffer buffer,
             InetSocketAddress fromSocketAddress) {
-        requestCount++;
+        requestCount.incrementAndGet();
 
-        ConnectMessage inMessage = null;
+        ConnectMessage inMessage;
 
         try {
             inMessage = ConnectMessage.parse(buffer);
         } catch (MessageFormatException e) {
-            messageFormatErrorCount++;
+            messageFormatErrorCount.incrementAndGet();
             buffer.rewind();
             log.warn("Received invalid message from "
                     + EmuUtil.formatSocketAddress(fromSocketAddress) + ": "
@@ -169,26 +171,24 @@ public class ConnectController extends UDPServer {
         // structure, so I'm going to handle it all in this class alone
 
         if (inMessage instanceof ConnectMessage_PING) {
-            pingCount++;
+            pingCount.incrementAndGet();
             log.debug("Ping from: " + EmuUtil.formatSocketAddress(fromSocketAddress));
             send(new ConnectMessage_PONG(), fromSocketAddress);
             return;
         }
 
-        if (!(inMessage instanceof ConnectMessage_HELLO)) {
-            messageFormatErrorCount++;
+        if (!(inMessage instanceof ConnectMessage_HELLO connectMessage)) {
+            messageFormatErrorCount.incrementAndGet();
             log.warn("Received unexpected message type from "
                     + EmuUtil.formatSocketAddress(fromSocketAddress) + ": " + inMessage);
             return;
         }
 
-        ConnectMessage_HELLO connectMessage = (ConnectMessage_HELLO) inMessage;
-
         // now we need to find the specific server this client is request to
         // connect to using the client type
         KailleraServerController protocolController = getController(connectMessage.getProtocol());
         if (protocolController == null) {
-            protocolErrorCount++;
+            protocolErrorCount.incrementAndGet();
             log.error("Client requested an unhandled protocol "
                     + EmuUtil.formatSocketAddress(fromSocketAddress) + ": "
                     + connectMessage.getProtocol());
@@ -196,39 +196,36 @@ public class ConnectController extends UDPServer {
         }
 
         if (!accessManager.isAddressAllowed(fromSocketAddress.getAddress())) {
-            deniedOtherCount++;
+            deniedOtherCount.incrementAndGet();
             log.warn("AccessManager denied connection from "
                     + EmuUtil.formatSocketAddress(fromSocketAddress));
-            return;
         } else {
-            int privatePort = -1;
+            int privatePort;
 
             try {
                 privatePort = protocolController.newConnection(fromSocketAddress,
                         connectMessage.getProtocol());
 
                 if (privatePort <= 0) {
-                    failedToStartCount++;
+                    failedToStartCount.incrementAndGet();
                     log.error(protocolController + " failed to start for "
                             + EmuUtil.formatSocketAddress(fromSocketAddress));
                     return;
                 }
 
-                connectedCount++;
+                connectedCount.incrementAndGet();
                 log.debug(protocolController + " allocated port " + privatePort + " to client from "
                         + fromSocketAddress.getAddress().getHostAddress());
                 send(new ConnectMessage_HELLOD00D(privatePort), fromSocketAddress);
             } catch (ServerFullException e) {
-                deniedServerFullCount++;
+                deniedServerFullCount.incrementAndGet();
                 log.debug("Sending server full response to "
                         + EmuUtil.formatSocketAddress(fromSocketAddress));
                 send(new ConnectMessage_TOO(), fromSocketAddress);
-                return;
             } catch (NewConnectionException e) {
-                deniedOtherCount++;
+                deniedOtherCount.incrementAndGet();
                 log.warn(protocolController + " denied connection from "
                         + EmuUtil.formatSocketAddress(fromSocketAddress) + ": " + e.getMessage());
-                return;
             }
         }
     }

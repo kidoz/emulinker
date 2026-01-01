@@ -1,5 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
@@ -16,14 +18,14 @@ public class CloseGameAction implements V086ServerEventHandler {
         return singleton;
     }
 
-    private int handledCount;
+    private final AtomicInteger handledCount = new AtomicInteger(0);
 
     private CloseGameAction() {
 
     }
 
     public int getHandledEventCount() {
-        return handledCount;
+        return handledCount.get();
     }
 
     public String toString() {
@@ -31,7 +33,7 @@ public class CloseGameAction implements V086ServerEventHandler {
     }
 
     public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
-        handledCount++;
+        handledCount.incrementAndGet();
 
         GameClosedEvent gameClosedEvent = (GameClosedEvent) event;
 

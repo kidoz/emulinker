@@ -1,5 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
@@ -16,14 +18,14 @@ public class GameInfoAction implements V086GameEventHandler {
         return singleton;
     }
 
-    private int handledCount = 0;
+    private final AtomicInteger handledCount = new AtomicInteger(0);
 
     private GameInfoAction() {
 
     }
 
     public int getHandledEventCount() {
-        return handledCount;
+        return handledCount.get();
     }
 
     public String toString() {
@@ -31,7 +33,7 @@ public class GameInfoAction implements V086GameEventHandler {
     }
 
     public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
-        handledCount++;
+        handledCount.incrementAndGet();
 
         GameInfoEvent infoEvent = (GameInfoEvent) event;
 

@@ -16,39 +16,42 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     private static final Logger log = LoggerFactory.getLogger(KailleraUserImpl.class);
     private static final String EMULINKER_CLIENT_NAME = "Emulinker Suprclient";
 
-    private KailleraServerImpl server;
-    private KailleraGameImpl game;
+    private final KailleraServerImpl server;
+    private volatile KailleraGameImpl game;
 
-    private int id;
-    private String name;
-    private String protocol;
-    private String clientType;
-    private byte connectionType;
-    private int ping;
-    private InetSocketAddress connectSocketAddress;
-    private InetSocketAddress clientSocketAddress;
-    private int status;
-    private boolean loggedIn;
-    private String toString;
-    private int access;
-    private boolean emulinkerClient;
+    private final int id;
+    private volatile String name;
+    private final String protocol;
+    private volatile String clientType;
+    private volatile byte connectionType;
+    private volatile int ping;
+    private final InetSocketAddress connectSocketAddress;
+    private volatile InetSocketAddress clientSocketAddress;
+    private volatile int status;
+    private volatile boolean loggedIn;
+    private volatile String toString;
+    private volatile int access;
+    private volatile boolean emulinkerClient;
 
-    private long connectTime;
-    private long lastActivity;
-    private long lastKeepAlive;
-    private long lastChatTime;
-    private long lastCreateGameTime;
-    private long lastTimeout;
+    private final long connectTime;
+    private volatile long lastActivity;
+    private volatile long lastKeepAlive;
+    private volatile long lastChatTime;
+    private volatile long lastCreateGameTime;
+    private volatile long lastTimeout;
 
-    private int playerNumber = -1;
+    private volatile int playerNumber = -1;
 
-    private long gameDataErrorTime = -1;
+    private volatile long gameDataErrorTime = -1;
 
-    private boolean isRunning = false;
-    private boolean stopFlag = false;
+    private volatile boolean isRunning = false;
+    private volatile boolean stopFlag = false;
 
-    private KailleraEventListener listener;
-    private BlockingQueue<KailleraEvent> eventQueue = new LinkedBlockingQueue<KailleraEvent>();
+    private static final int MAX_EVENT_QUEUE_SIZE = 1000;
+
+    private final KailleraEventListener listener;
+    private final BlockingQueue<KailleraEvent> eventQueue = new LinkedBlockingQueue<>(
+            MAX_EVENT_QUEUE_SIZE);
 
     public KailleraUserImpl(int userID, String protocol, InetSocketAddress connectSocketAddress,
             KailleraEventListener listener, KailleraServerImpl server) {
@@ -97,7 +100,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     }
 
     public void setLoggedIn(boolean loggedIn) {
-        loggedIn = false;
+        this.loggedIn = loggedIn;
     }
 
     public String getName() {
@@ -494,7 +497,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
             return;
         }
 
-        eventQueue.offer(event);
+        if (!eventQueue.offer(event)) {
+            log.warn(this + ": event queue full, dropping event: " + event); //$NON-NLS-1$
+        }
     }
 
     public void run() {

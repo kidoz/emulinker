@@ -14,7 +14,7 @@ import org.emulinker.util.*;
 public abstract class UDPRelay implements Runnable {
     protected static final Logger log = LoggerFactory.getLogger(UDPRelay.class);
 
-    protected static ExecutorService threadPool = Executors.newCachedThreadPool();
+    protected static ExecutorService threadPool = Executors.newVirtualThreadPerTaskExecutor();
 
     protected DatagramChannel listenChannel;
 

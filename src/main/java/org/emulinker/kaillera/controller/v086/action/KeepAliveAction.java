@@ -1,5 +1,7 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.emulinker.kaillera.controller.v086.V086Controller;
 import org.emulinker.kaillera.controller.v086.protocol.*;
 
@@ -13,14 +15,14 @@ public class KeepAliveAction implements V086Action {
         return singleton;
     }
 
-    private int actionCount = 0;
+    private final AtomicInteger actionCount = new AtomicInteger(0);
 
     private KeepAliveAction() {
 
     }
 
     public int getActionPerformedCount() {
-        return actionCount;
+        return actionCount.get();
     }
 
     public String toString() {
@@ -29,7 +31,7 @@ public class KeepAliveAction implements V086Action {
 
     public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
             throws FatalActionException {
-        actionCount++;
+        actionCount.incrementAndGet();
         clientHandler.getUser().updateLastKeepAlive();
     }
 }
