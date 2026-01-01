@@ -7,6 +7,7 @@ import java.util.concurrent.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.WildcardStringPattern;
 
 public class AccessManager2 implements AccessManager, Runnable {
@@ -17,7 +18,7 @@ public class AccessManager2 implements AccessManager, Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(AccessManager2.class);
 
-    private ThreadPoolExecutor threadPool;
+    private EmuLinkerExecutor threadPool;
     private boolean isRunning = false;
     private boolean stopFlag = false;
 
@@ -32,7 +33,7 @@ public class AccessManager2 implements AccessManager, Runnable {
     private List<TempAdmin> tempAdminList = new CopyOnWriteArrayList<TempAdmin>();
     private List<Silence> silenceList = new CopyOnWriteArrayList<Silence>();
 
-    public AccessManager2(ThreadPoolExecutor threadPool)
+    public AccessManager2(EmuLinkerExecutor threadPool)
             throws NoSuchElementException, FileNotFoundException {
         this.threadPool = threadPool;
 

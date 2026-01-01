@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.connectcontroller;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
+import org.emulinker.util.EmuLinkerExecutor;
 
 import org.apache.commons.configuration2.*;
 import org.apache.commons.configuration2.ex.*;
@@ -20,7 +20,7 @@ import org.emulinker.util.EmuUtil;
 public class ConnectController extends UDPServer {
     private static final Logger log = LoggerFactory.getLogger(ConnectController.class);
 
-    private ThreadPoolExecutor threadPool;
+    private EmuLinkerExecutor threadPool;
     private AccessManager accessManager;
     private Map<String, KailleraServerController> controllersMap;
 
@@ -36,7 +36,7 @@ public class ConnectController extends UDPServer {
     private int connectedCount = 0;
     private int pingCount = 0;
 
-    public ConnectController(ThreadPoolExecutor threadPool,
+    public ConnectController(EmuLinkerExecutor threadPool,
             KailleraServerController[] controllersArray, AccessManager accessManager,
             Configuration config)
             throws NoSuchElementException, ConfigurationException, BindException {

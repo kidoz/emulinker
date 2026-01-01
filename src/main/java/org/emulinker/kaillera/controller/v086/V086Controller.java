@@ -3,9 +3,11 @@ package org.emulinker.kaillera.controller.v086;
 import java.net.InetSocketAddress;
 import java.nio.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.configuration2.*;
+import org.emulinker.util.EmuLinkerExecutor;
 import org.apache.commons.configuration2.ex.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,7 @@ public class V086Controller implements KailleraServerController {
     private int bufferSize = 4096;
     private boolean isRunning = false;
 
-    private ThreadPoolExecutor threadPool;
+    private EmuLinkerExecutor threadPool;
     private KailleraServer server;
     private AccessManager accessManager;
     private String[] clientTypes;
@@ -46,7 +48,7 @@ public class V086Controller implements KailleraServerController {
 
     private V086Action[] actions = new V086Action[25];
 
-    public V086Controller(KailleraServer server, ThreadPoolExecutor threadPool,
+    public V086Controller(KailleraServer server, EmuLinkerExecutor threadPool,
             AccessManager accessManager, Configuration config)
             throws NoSuchElementException, ConfigurationException {
         this.threadPool = threadPool;

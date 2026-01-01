@@ -1,23 +1,165 @@
 package org.emulinker.util;
 
-import java.util.NoSuchElementException;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.configuration2.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class EmuLinkerExecutor extends ThreadPoolExecutor {
-    // private static final Logger log =
-    // LoggerFactory.getLogger(EmuLinkerXMLConfig.class);
+/**
+ * ExecutorService implementation using Java 21 virtual threads (Project Loom).
+ *
+ * <p>Virtual threads enable high concurrency with low resource usage - each task gets its own
+ * lightweight virtual thread that is scheduled by the JVM rather than the OS.
+ *
+ * <p>This class provides compatibility methods (getActiveCount, getPoolSize) for existing
+ * debug logging that previously relied on ThreadPoolExecutor.
+ */
+public class EmuLinkerExecutor implements ExecutorService {
+    private static final Logger log = LoggerFactory.getLogger(EmuLinkerExecutor.class);
 
-    // public EmuLinkerExecutor(Configuration config, BlockingQueue queue) throws
-    // NoSuchElementException
-    public EmuLinkerExecutor(Configuration config) throws NoSuchElementException {
-        // super(config.getInt("threadPool.coreSize"),
-        // config.getInt("threadPool.maxSize"), config.getLong("threadPool.keepAlive"),
-        // TimeUnit.SECONDS, queue);
-        // super((config.getInt("server.maxUsers")*2)+10, Integer.MAX_VALUE, 60L,
-        // TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
-        // super.prestartAllCoreThreads();
-        super(5, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+    private final ExecutorService delegate;
+    private final AtomicInteger activeCount = new AtomicInteger(0);
+    private final AtomicInteger totalSubmitted = new AtomicInteger(0);
+
+    public EmuLinkerExecutor(Object config) {
+        this.delegate = Executors.newVirtualThreadPerTaskExecutor();
+        log.info("EmuLinkerExecutor initialized with virtual threads (Project Loom)");
+    }
+
+    /**
+     * Returns the approximate number of threads that are actively executing tasks.
+     * Provided for compatibility with existing debug logging.
+     */
+    public int getActiveCount() {
+        return activeCount.get();
+    }
+
+    /**
+     * Returns the total number of tasks that have been submitted.
+     * Provided for compatibility with existing debug logging.
+     */
+    public int getPoolSize() {
+        return totalSubmitted.get();
+    }
+
+    /**
+     * Returns Integer.MAX_VALUE since virtual threads have no practical limit.
+     * Provided for compatibility with admin REST API.
+     */
+    public int getMaximumPoolSize() {
+        return Integer.MAX_VALUE;
+    }
+
+    /**
+     * Returns the total number of tasks submitted (same as poolSize for virtual threads).
+     * Provided for compatibility with admin REST API.
+     */
+    public long getTaskCount() {
+        return totalSubmitted.get();
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        totalSubmitted.incrementAndGet();
+        activeCount.incrementAndGet();
+        delegate.execute(() -> {
+            try {
+                command.run();
+            } finally {
+                activeCount.decrementAndGet();
+            }
+        });
+    }
+
+    @Override
+    public void shutdown() {
+        delegate.shutdown();
+    }
+
+    @Override
+    public List<Runnable> shutdownNow() {
+        return delegate.shutdownNow();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return delegate.isShutdown();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return delegate.isTerminated();
+    }
+
+    @Override
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate.awaitTermination(timeout, unit);
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        totalSubmitted.incrementAndGet();
+        activeCount.incrementAndGet();
+        return delegate.submit(() -> {
+            try {
+                return task.call();
+            } finally {
+                activeCount.decrementAndGet();
+            }
+        });
+    }
+
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        totalSubmitted.incrementAndGet();
+        activeCount.incrementAndGet();
+        return delegate.submit(() -> {
+            try {
+                task.run();
+            } finally {
+                activeCount.decrementAndGet();
+            }
+        }, result);
+    }
+
+    @Override
+    public Future<?> submit(Runnable task) {
+        totalSubmitted.incrementAndGet();
+        activeCount.incrementAndGet();
+        return delegate.submit(() -> {
+            try {
+                task.run();
+            } finally {
+                activeCount.decrementAndGet();
+            }
+        });
+    }
+
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
+            throws InterruptedException {
+        return delegate.invokeAll(tasks);
+    }
+
+    @Override
+    public <T> List<Future<T>> invokeAll(
+            Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+            throws InterruptedException {
+        return delegate.invokeAll(tasks, timeout, unit);
+    }
+
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
+            throws InterruptedException, ExecutionException {
+        return delegate.invokeAny(tasks);
+    }
+
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return delegate.invokeAny(tasks, timeout, unit);
     }
 }

@@ -17,7 +17,7 @@ public class AutoFireScanner2 implements AutoFireDetector {
             {3, 11}, {4, 9}, {5, 7}, {6, 5} // 5 is most sensitive
     };
 
-    protected static ExecutorService executor = Executors.newCachedThreadPool();
+    protected static ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     protected KailleraGame game;
     protected int sensitivity;

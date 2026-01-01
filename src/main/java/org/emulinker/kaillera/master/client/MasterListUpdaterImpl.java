@@ -1,7 +1,6 @@
 package org.emulinker.kaillera.master.client;
 
 import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.httpclient.*;
@@ -12,13 +11,14 @@ import org.emulinker.kaillera.master.*;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.StatsCollector;
 import org.emulinker.kaillera.model.*;
+import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.Executable;
 import org.emulinker.release.*;
 
 public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     private static final Logger log = LoggerFactory.getLogger(MasterListUpdaterImpl.class);
 
-    private ThreadPoolExecutor threadPool;
+    private EmuLinkerExecutor threadPool;
     private ConnectController connectController;
     private KailleraServer kailleraServer;
     private StatsCollector statsCollector;
@@ -35,7 +35,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     private boolean stopFlag = false;
     private boolean isRunning = false;
 
-    public MasterListUpdaterImpl(Configuration config, ThreadPoolExecutor threadPool,
+    public MasterListUpdaterImpl(Configuration config, EmuLinkerExecutor threadPool,
             ConnectController connectController, KailleraServer kailleraServer,
             StatsCollector statsCollector, ReleaseInfo releaseInfo) throws Exception {
         this.threadPool = threadPool;

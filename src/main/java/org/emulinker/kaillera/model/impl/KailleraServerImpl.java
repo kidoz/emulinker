@@ -2,7 +2,7 @@ package org.emulinker.kaillera.model.impl;
 
 import java.net.InetSocketAddress;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.text.*;
 
 import org.apache.commons.configuration2.*;
@@ -16,6 +16,7 @@ import org.emulinker.kaillera.model.*;
 import org.emulinker.kaillera.model.event.*;
 import org.emulinker.kaillera.model.exception.*;
 import org.emulinker.util.*;
+import org.emulinker.util.EmuLinkerExecutor;
 
 public class KailleraServerImpl implements KailleraServer, Executable {
     protected static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
@@ -50,7 +51,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     protected int connectionCounter = 1;
     protected int gameCounter = 1;
 
-    protected ThreadPoolExecutor threadPool = null;
+    protected EmuLinkerExecutor threadPool = null;
     protected AccessManager accessManager;
     protected StatsCollector statsCollector;
     protected ReleaseInfo releaseInfo;
@@ -59,7 +60,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     protected Map<Integer, KailleraUserImpl> users;
     protected Map<Integer, KailleraGameImpl> games;
 
-    public KailleraServerImpl(ThreadPoolExecutor threadPool, AccessManager accessManager,
+    public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
             Configuration config, StatsCollector statsCollector, ReleaseInfo releaseInfo,
             AutoFireDetectorFactory autoFireDetectorFactory)
             throws NoSuchElementException, ConfigurationException {
@@ -225,7 +226,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         return allowMultipleConnections;
     }
 
-    public ThreadPoolExecutor getThreadPool() {
+    public EmuLinkerExecutor getThreadPool() {
         return threadPool;
     }
 
