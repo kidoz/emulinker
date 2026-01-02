@@ -8,14 +8,14 @@ import org.emulinker.util.EmuUtil;
  * also formats a welcome message for printing at server startup.
  */
 public final class KailleraServerReleaseInfo implements ReleaseInfo {
-    private final String productName = "Kaillux Kaillera Server BETA";
+    private final String productName = "Kaillux Kaillera Server";
 
     private final int majorVersion = 1;
-    private final int minorVersion = 1;
+    private final int minorVersion = 2;
     private final int buildNumber = 0;
 
-    private final String releaseDate = "01/02/2026";
-    private final String licenseInfo = "Usage of this sofware is subject to the terms found in the included license";
+    private final String releaseDate = "01/03/2026";
+    private final String licenseInfo = "Usage of this software is subject to the terms found in the included license";
     private final String website = "https://github.com/kidoz/kaillux";
 
     public KailleraServerReleaseInfo() {
