@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ExecutorService implementation using Java 21 virtual threads (Project Loom).
+ * ExecutorService implementation using Java 25 virtual threads (Project Loom).
  *
  * <p>
  * Virtual threads enable high concurrency with low resource usage - each task

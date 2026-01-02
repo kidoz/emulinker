@@ -1,5 +1,5 @@
 # Build stage
-FROM eclipse-temurin:21-jdk-jammy AS build
+FROM eclipse-temurin:25-jdk-noble AS build
 WORKDIR /app
 
 # Copy gradle files for caching
@@ -19,7 +19,7 @@ COPY src src
 RUN ./gradlew bootJar --no-daemon
 
 # Run stage
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-noble
 WORKDIR /app
 
 # Copy the executable jar from the build stage

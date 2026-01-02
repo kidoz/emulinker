@@ -1,8 +1,8 @@
 # Kaillux
 
-![Java](https://img.shields.io/badge/Java-21-007396?logo=java&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-6DB33F?logo=springboot&logoColor=white)
-![Gradle](https://img.shields.io/badge/Gradle-8.x-02303A?logo=gradle&logoColor=white)
+![Java](https://img.shields.io/badge/Java-25-007396?logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.9-6DB33F?logo=springboot&logoColor=white)
+![Gradle](https://img.shields.io/badge/Gradle-9.x-02303A?logo=gradle&logoColor=white)
 ![License](https://img.shields.io/badge/License-GPL--2.0-blue)
 
 Kaillux is a Kaillera network server that enables online multiplayer for
@@ -10,7 +10,7 @@ emulators by routing player input over the network.
 
 ## Highlights
 
-- Modernized Java 21 + Spring Boot build
+- Modernized Java 25 + Spring Boot build
 - Admin API and health/metrics endpoints for ops visibility
 - File-based access control with temporary bans and silencing
 - Arch Linux packaging with systemd service
@@ -57,7 +57,7 @@ docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27899:27889-27899/udp kaillu
 
 ### Manual
 
-Run directly with Java 21+:
+Run directly with Java 25+:
 
 ```bash
 java -jar build/kaillux.jar
