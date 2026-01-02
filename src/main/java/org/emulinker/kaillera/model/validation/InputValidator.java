@@ -1,0 +1,226 @@
+package org.emulinker.kaillera.model.validation;
+
+/**
+ * Centralized input validation for Kaillera protocol messages. Provides
+ * consistent validation rules to prevent security issues like injection attacks
+ * and data corruption.
+ */
+public final class InputValidator {
+
+    private InputValidator() {
+        // Utility class
+    }
+
+    /**
+     * Maximum length for user names to prevent memory abuse.
+     */
+    public static final int MAX_USERNAME_LENGTH = 64;
+
+    /**
+     * Maximum length for game/ROM names.
+     */
+    public static final int MAX_GAMENAME_LENGTH = 128;
+
+    /**
+     * Maximum length for chat messages.
+     */
+    public static final int MAX_CHAT_LENGTH = 512;
+
+    /**
+     * Maximum length for client type/emulator name.
+     */
+    public static final int MAX_CLIENT_NAME_LENGTH = 64;
+
+    /**
+     * Validates a string does not contain control characters or dangerous Unicode.
+     *
+     * @param str
+     *            the string to validate
+     * @return true if the string is safe, false otherwise
+     */
+    public static boolean isValidString(String str) {
+        if (str == null) {
+            return true;
+        }
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (!isValidCharacter(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if a character is valid (not a control character or dangerous
+     * Unicode).
+     *
+     * @param c
+     *            the character to check
+     * @return true if the character is valid
+     */
+    public static boolean isValidCharacter(char c) {
+        // Reject control characters (< 32), DEL (127), and ISO control chars
+        if (c < 32 || c == 127 || Character.isISOControl(c)) {
+            return false;
+        }
+        // Reject Unicode direction override characters (potential spoofing)
+        if (c == '\u202A' || c == '\u202B' || c == '\u202C' || c == '\u202D' || c == '\u202E'
+                || c == '\u2066' || c == '\u2067' || c == '\u2068' || c == '\u2069') {
+            return false;
+        }
+        // Reject zero-width characters (potential spoofing)
+        if (c == '\u200B' || c == '\u200C' || c == '\u200D' || c == '\uFEFF') {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Sanitizes a string by removing invalid characters.
+     *
+     * @param str
+     *            the string to sanitize
+     * @return the sanitized string
+     */
+    public static String sanitize(String str) {
+        if (str == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (isValidCharacter(c)) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Validates a username.
+     *
+     * @param username
+     *            the username to validate
+     * @param maxLength
+     *            the maximum allowed length (0 for no limit)
+     * @return null if valid, error message if invalid
+     */
+    public static String validateUsername(String username, int maxLength) {
+        if (username == null || username.trim().isEmpty()) {
+            return "Username cannot be empty";
+        }
+        if (maxLength > 0 && username.length() > maxLength) {
+            return "Username too long (max " + maxLength + " characters)";
+        }
+        if (!isValidString(username)) {
+            return "Username contains invalid characters";
+        }
+        return null;
+    }
+
+    /**
+     * Validates a game/ROM name.
+     *
+     * @param gameName
+     *            the game name to validate
+     * @param maxLength
+     *            the maximum allowed length (0 for no limit)
+     * @return null if valid, error message if invalid
+     */
+    public static String validateGameName(String gameName, int maxLength) {
+        if (gameName == null || gameName.trim().isEmpty()) {
+            return "Game name cannot be empty";
+        }
+        if (maxLength > 0 && gameName.length() > maxLength) {
+            return "Game name too long (max " + maxLength + " characters)";
+        }
+        if (!isValidString(gameName)) {
+            return "Game name contains invalid characters";
+        }
+        return null;
+    }
+
+    /**
+     * Validates a chat message.
+     *
+     * @param message
+     *            the message to validate
+     * @param maxLength
+     *            the maximum allowed length (0 for no limit)
+     * @return null if valid, error message if invalid
+     */
+    public static String validateChatMessage(String message, int maxLength) {
+        if (message == null || message.trim().isEmpty()) {
+            return "Message cannot be empty";
+        }
+        if (maxLength > 0 && message.length() > maxLength) {
+            return "Message too long (max " + maxLength + " characters)";
+        }
+        if (!isValidString(message)) {
+            return "Message contains invalid characters";
+        }
+        return null;
+    }
+
+    /**
+     * Validates a connection type byte value.
+     *
+     * @param connectionType
+     *            the connection type to validate
+     * @return null if valid, error message if invalid
+     */
+    public static String validateConnectionType(byte connectionType) {
+        if (connectionType < 1 || connectionType > 6) {
+            return "Invalid connection type: " + connectionType;
+        }
+        return null;
+    }
+
+    /**
+     * Validates a ping value.
+     *
+     * @param ping
+     *            the ping to validate
+     * @param maxPing
+     *            the maximum allowed ping (0 for no limit)
+     * @return null if valid, error message if invalid
+     */
+    public static String validatePing(int ping, int maxPing) {
+        if (ping < 0) {
+            return "Invalid ping: " + ping;
+        }
+        if (maxPing > 0 && ping > maxPing) {
+            return "Ping too high: " + ping + " > " + maxPing;
+        }
+        return null;
+    }
+
+    /**
+     * Validates a user ID.
+     *
+     * @param userId
+     *            the user ID to validate
+     * @return null if valid, error message if invalid
+     */
+    public static String validateUserId(int userId) {
+        if (userId <= 0 || userId > 0xFFFF) {
+            return "Invalid user ID: " + userId;
+        }
+        return null;
+    }
+
+    /**
+     * Validates a game ID.
+     *
+     * @param gameId
+     *            the game ID to validate
+     * @return null if valid, error message if invalid
+     */
+    public static String validateGameId(int gameId) {
+        if (gameId <= 0 || gameId > 0xFFFF) {
+            return "Invalid game ID: " + gameId;
+        }
+        return null;
+    }
+}

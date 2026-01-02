@@ -257,10 +257,20 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         lastKeepAlive = now;
     }
 
+    @Override
     public boolean equals(Object obj) {
-        if (obj instanceof KailleraUserImpl && ((KailleraUserImpl) obj).getID() == getID())
+        if (this == obj) {
             return true;
+        }
+        if (obj instanceof KailleraUserImpl other) {
+            return other.getID() == getID();
+        }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 
     public String toString() {

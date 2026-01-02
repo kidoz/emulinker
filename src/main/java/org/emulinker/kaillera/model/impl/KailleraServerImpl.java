@@ -476,70 +476,100 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         users.put(userListKey, userImpl);
         userImpl.addEvent(new ConnectedEvent(this, user));
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.debug("Interrupted during login initialization", e);
-        }
+        // Release lock before sleeping to allow other logins to proceed
+        // The user is already fully logged in at this point
+        sendLoginNotificationsAsync(userImpl, access);
+    }
 
-        addEvent(new UserJoinedEvent(this, user));
+    /**
+     * Sends login notifications asynchronously to avoid blocking the synchronized
+     * login method. This allows other users to login concurrently while
+     * notifications are being sent.
+     */
+    private void sendLoginNotificationsAsync(KailleraUserImpl userImpl, int access) {
+        threadPool.execute(() -> {
+            try {
+                // Small delay to allow client to process ConnectedEvent
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.debug("Interrupted during login initialization", e);
-        }
+            addEvent(new UserJoinedEvent(this, userImpl));
 
-        for (String loginMessage : loginMessages)
-            userImpl.addEvent(new InfoMessageEvent(user, loginMessage));
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
 
-        if (access > AccessManager.ACCESS_NORMAL)
-            log.info(user + " logged in successfully with " + AccessManager.ACCESS_NAMES[access]
-                    + " access!");
-        else
-            log.info(user + " logged in successfully");
+            for (String loginMessage : loginMessages) {
+                userImpl.addEvent(new InfoMessageEvent(userImpl, loginMessage));
+            }
 
-        String announcement = accessManager.getAnnouncement(user.getSocketAddress().getAddress());
-        if (announcement != null)
-            announce(announcement, false);
+            if (access > AccessManager.ACCESS_NORMAL) {
+                log.info(userImpl + " logged in successfully with "
+                        + AccessManager.ACCESS_NAMES[access] + " access!");
+            } else {
+                log.info(userImpl + " logged in successfully");
+            }
 
-        if (access == AccessManager.ACCESS_ADMIN)
-            userImpl.addEvent(new InfoMessageEvent(user,
-                    EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
-
-        // this is fairly ugly
-        if (user.isEmuLinkerClient()) {
-            userImpl.addEvent(new InfoMessageEvent(user, ":ACCESS=" + userImpl.getAccessStr()));
+            String announcement = accessManager
+                    .getAnnouncement(userImpl.getSocketAddress().getAddress());
+            if (announcement != null) {
+                announce(announcement, false);
+            }
 
             if (access == AccessManager.ACCESS_ADMIN) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(":USERINFO=");
-                int sbCount = 0;
-                for (KailleraUserImpl u3 : getUsers()) {
-                    if (!u3.isLoggedIn())
-                        continue;
-
-                    sb.append(u3.getID());
-                    sb.append(",");
-                    sb.append(u3.getConnectSocketAddress().getAddress().getHostAddress());
-                    sb.append(",");
-                    sb.append(u3.getAccessStr());
-                    sb.append(";");
-                    sbCount++;
-
-                    if (sb.length() > 300) {
-                        ((KailleraUserImpl) user)
-                                .addEvent(new InfoMessageEvent(user, sb.toString()));
-                        sb = new StringBuilder();
-                        sb.append(":USERINFO=");
-                        sbCount = 0;
-                    }
-                }
-                if (sbCount > 0)
-                    ((KailleraUserImpl) user).addEvent(new InfoMessageEvent(user, sb.toString()));
+                userImpl.addEvent(new InfoMessageEvent(userImpl,
+                        EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
             }
+
+            // Send EmuLinker client-specific info
+            if (userImpl.isEmuLinkerClient()) {
+                userImpl.addEvent(
+                        new InfoMessageEvent(userImpl, ":ACCESS=" + userImpl.getAccessStr()));
+
+                if (access == AccessManager.ACCESS_ADMIN) {
+                    sendAdminUserInfo(userImpl);
+                }
+            }
+        });
+    }
+
+    /**
+     * Sends user info to admin EmuLinker clients.
+     */
+    private void sendAdminUserInfo(KailleraUserImpl admin) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(":USERINFO=");
+        int sbCount = 0;
+
+        for (KailleraUserImpl u3 : getUsers()) {
+            if (!u3.isLoggedIn()) {
+                continue;
+            }
+
+            sb.append(u3.getID());
+            sb.append(",");
+            sb.append(u3.getConnectSocketAddress().getAddress().getHostAddress());
+            sb.append(",");
+            sb.append(u3.getAccessStr());
+            sb.append(";");
+            sbCount++;
+
+            if (sb.length() > 300) {
+                admin.addEvent(new InfoMessageEvent(admin, sb.toString()));
+                sb = new StringBuilder();
+                sb.append(":USERINFO=");
+                sbCount = 0;
+            }
+        }
+
+        if (sbCount > 0) {
+            admin.addEvent(new InfoMessageEvent(admin, sb.toString()));
         }
     }
 

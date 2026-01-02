@@ -15,56 +15,55 @@ import org.emulinker.kaillera.model.exception.QuitGameException;
 import org.emulinker.kaillera.model.exception.ServerFullException;
 
 /**
- * Service layer for user management operations.
- *
- * <p>
- * Handles user lifecycle (connection, login, logout) and user lookups.
+ * Service interface for user management operations. Separates user lifecycle
+ * management from the main server implementation for better testability and
+ * separation of concerns.
  */
 public interface UserService {
 
     /**
-     * Creates a new connection for an incoming client.
+     * Creates a new connection for a user.
      *
      * @param clientSocketAddress
      *            the client's socket address
      * @param protocol
      *            the protocol version
      * @param listener
-     *            the event listener for the user
+     *            the event listener for this user
      * @return the newly created user
      * @throws ServerFullException
      *             if the server is at capacity
      * @throws NewConnectionException
-     *             if connection cannot be established
+     *             if the connection cannot be created
      */
     KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol,
             KailleraEventListener listener) throws ServerFullException, NewConnectionException;
 
     /**
-     * Logs in a user after connection and speed test.
+     * Validates and logs in a user.
      *
      * @param user
      *            the user to log in
      * @throws LoginException
-     *             if login fails
+     *             for login failures
      */
     void login(KailleraUser user) throws LoginException;
 
     /**
-     * Logs out a user and cleans up their resources.
+     * Logs out a user from the server.
      *
      * @param user
-     *            the user to log out
+     *            the user to quit
      * @param message
      *            the quit message
      * @throws QuitException
-     *             if quit operation fails
+     *             if quit fails
      * @throws DropGameException
-     *             if dropping the game fails
+     *             if dropping from game fails
      * @throws QuitGameException
-     *             if quitting the game fails
+     *             if quitting game fails
      * @throws CloseGameException
-     *             if closing the game fails
+     *             if closing game fails
      */
     void quit(KailleraUser user, String message)
             throws QuitException, DropGameException, QuitGameException, CloseGameException;
@@ -74,28 +73,28 @@ public interface UserService {
      *
      * @param userId
      *            the user ID
-     * @return the user, or empty if not found
+     * @return Optional containing the user, or empty if not found
      */
     Optional<KailleraUser> findUser(int userId);
 
     /**
-     * Returns all connected users.
+     * Gets all connected users.
      *
-     * @return collection of all users
+     * @return collection of users
      */
     Collection<? extends KailleraUser> getAllUsers();
 
     /**
-     * Returns the current number of connected users.
+     * Gets the number of currently connected users.
      *
      * @return the user count
      */
     int getUserCount();
 
     /**
-     * Returns the maximum allowed users.
+     * Gets the maximum number of users allowed.
      *
-     * @return the max user count
+     * @return the maximum user count
      */
     int getMaxUsers();
 }

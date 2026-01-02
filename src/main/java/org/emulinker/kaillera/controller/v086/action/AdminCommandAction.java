@@ -208,33 +208,34 @@ public final class AdminCommandAction implements V086Action {
     private void processSilence(String message, KailleraServerImpl server, KailleraUserImpl admin,
             V086Controller.V086ClientHandler clientHandler)
             throws ActionException, MessageFormatException {
-        Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-        try {
+        try (Scanner scanner = new Scanner(message).useDelimiter(" ")) { //$NON-NLS-1$
             scanner.next();
             int userID = scanner.nextInt();
             int minutes = scanner.nextInt();
 
             KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
-            if (user == null)
+            if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound") + userID); //$NON-NLS-1$
+            }
 
-            if (user.getID() == admin.getID())
+            if (user.getID() == admin.getID()) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.CanNotSilenceSelf")); //$NON-NLS-1$
+            }
 
             int access = server.getAccessManager()
                     .getAccess(user.getConnectSocketAddress().getAddress());
-            if (access == AccessManager.ACCESS_ADMIN)
+            if (access == AccessManager.ACCESS_ADMIN) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.CanNotSilenceAdmin")); //$NON-NLS-1$
+            }
 
             server.getAccessManager().addSilenced(
                     user.getConnectSocketAddress().getAddress().getHostAddress(), minutes);
             server.announce(
                     EmuLang.getString("AdminCommandAction.Silenced", minutes, user.getName()), //$NON-NLS-1$
-                    false); // $NON-NLS-2$
+                    false);
         } catch (NoSuchElementException e) {
             throw new ActionException(EmuLang.getString("AdminCommandAction.SilenceError")); //$NON-NLS-1$
         }
@@ -243,24 +244,25 @@ public final class AdminCommandAction implements V086Action {
     private void processKick(String message, KailleraServerImpl server, KailleraUserImpl admin,
             V086Controller.V086ClientHandler clientHandler)
             throws ActionException, MessageFormatException {
-        Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-        try {
+        try (Scanner scanner = new Scanner(message).useDelimiter(" ")) { //$NON-NLS-1$
             scanner.next();
             int userID = scanner.nextInt();
 
             KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
-            if (user == null)
+            if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound", userID)); //$NON-NLS-1$
+            }
 
-            if (user.getID() == admin.getID())
+            if (user.getID() == admin.getID()) {
                 throw new ActionException(EmuLang.getString("AdminCommandAction.CanNotKickSelf")); //$NON-NLS-1$
+            }
 
             int access = server.getAccessManager()
                     .getAccess(user.getConnectSocketAddress().getAddress());
-            if (access == AccessManager.ACCESS_ADMIN)
+            if (access == AccessManager.ACCESS_ADMIN) {
                 throw new ActionException(EmuLang.getString("AdminCommandAction.CanNotKickAdmin")); //$NON-NLS-1$
+            }
 
             user.quit(EmuLang.getString("AdminCommandAction.QuitKicked")); //$NON-NLS-1$
         } catch (NoSuchElementException e) {
@@ -271,24 +273,24 @@ public final class AdminCommandAction implements V086Action {
     private void processCloseGame(String message, KailleraServerImpl server, KailleraUserImpl admin,
             V086Controller.V086ClientHandler clientHandler)
             throws ActionException, MessageFormatException {
-        Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-        try {
+        try (Scanner scanner = new Scanner(message).useDelimiter(" ")) { //$NON-NLS-1$
             scanner.next();
             int gameID = scanner.nextInt();
 
             KailleraGameImpl game = (KailleraGameImpl) server.getGame(gameID);
-            if (game == null)
+            if (game == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.GameNotFound", gameID)); //$NON-NLS-1$
+            }
 
             KailleraUserImpl owner = (KailleraUserImpl) game.getOwner();
             int access = server.getAccessManager()
                     .getAccess(owner.getConnectSocketAddress().getAddress());
 
-            if (access == AccessManager.ACCESS_ADMIN && owner.isLoggedIn())
+            if (access == AccessManager.ACCESS_ADMIN && owner.isLoggedIn()) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.CanNotCloseAdminGame")); //$NON-NLS-1$
+            }
 
             owner.quitGame();
         } catch (NoSuchElementException e) {
@@ -299,32 +301,33 @@ public final class AdminCommandAction implements V086Action {
     private void processBan(String message, KailleraServerImpl server, KailleraUserImpl admin,
             V086Controller.V086ClientHandler clientHandler)
             throws ActionException, MessageFormatException {
-        Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-        try {
+        try (Scanner scanner = new Scanner(message).useDelimiter(" ")) { //$NON-NLS-1$
             scanner.next();
             int userID = scanner.nextInt();
             int minutes = scanner.nextInt();
 
             KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
-            if (user == null)
+            if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound", userID)); //$NON-NLS-1$
+            }
 
-            if (user.getID() == admin.getID())
+            if (user.getID() == admin.getID()) {
                 throw new ActionException(EmuLang.getString("AdminCommandAction.CanNotBanSelf")); //$NON-NLS-1$
+            }
 
             int access = server.getAccessManager()
                     .getAccess(user.getConnectSocketAddress().getAddress());
-            if (access == AccessManager.ACCESS_ADMIN)
+            if (access == AccessManager.ACCESS_ADMIN) {
                 throw new ActionException(EmuLang.getString("AdminCommandAction.CanNotBanAdmin")); //$NON-NLS-1$
+            }
 
             user.quit(EmuLang.getString("AdminCommandAction.QuitBanned")); //$NON-NLS-1$
 
             server.getAccessManager().addTempBan(
                     user.getConnectSocketAddress().getAddress().getHostAddress(), minutes);
             server.announce(EmuLang.getString("AdminCommandAction.Banned", minutes, user.getName()), //$NON-NLS-1$
-                    false); // $NON-NLS-2$
+                    false);
         } catch (NoSuchElementException e) {
             throw new ActionException(EmuLang.getString("AdminCommandAction.BanError")); //$NON-NLS-1$
         }
@@ -333,30 +336,31 @@ public final class AdminCommandAction implements V086Action {
     private void processTempAdmin(String message, KailleraServerImpl server, KailleraUserImpl admin,
             V086Controller.V086ClientHandler clientHandler)
             throws ActionException, MessageFormatException {
-        Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-        try {
+        try (Scanner scanner = new Scanner(message).useDelimiter(" ")) { //$NON-NLS-1$
             scanner.next();
             int userID = scanner.nextInt();
             int minutes = scanner.nextInt();
 
             KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
-            if (user == null)
+            if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound", userID)); //$NON-NLS-1$
+            }
 
-            if (user.getID() == admin.getID())
+            if (user.getID() == admin.getID()) {
                 throw new ActionException(EmuLang.getString("AdminCommandAction.AlreadyAdmin")); //$NON-NLS-1$
+            }
 
             int access = server.getAccessManager()
                     .getAccess(user.getConnectSocketAddress().getAddress());
-            if (access == AccessManager.ACCESS_ADMIN)
+            if (access == AccessManager.ACCESS_ADMIN) {
                 throw new ActionException(EmuLang.getString("AdminCommandAction.UserAlreadyAdmin")); //$NON-NLS-1$
+            }
 
             server.getAccessManager().addTempAdmin(
                     user.getConnectSocketAddress().getAddress().getHostAddress(), minutes);
             server.announce(EmuLang.getString("AdminCommandAction.TempAdminGranted", minutes, //$NON-NLS-1$
-                    user.getName()), false); // $NON-NLS-2$
+                    user.getName()), false);
         } catch (NoSuchElementException e) {
             throw new ActionException(EmuLang.getString("AdminCommandAction.TempAdminError")); //$NON-NLS-1$
         }
@@ -385,9 +389,7 @@ public final class AdminCommandAction implements V086Action {
     private void processGameAnnounce(String message, KailleraServerImpl server,
             KailleraUserImpl admin, V086Controller.V086ClientHandler clientHandler)
             throws ActionException, MessageFormatException {
-        Scanner scanner = new Scanner(message).useDelimiter(" "); //$NON-NLS-1$
-
-        try {
+        try (Scanner scanner = new Scanner(message).useDelimiter(" ")) { //$NON-NLS-1$
             scanner.next();
             int gameID = scanner.nextInt();
 
@@ -398,9 +400,10 @@ public final class AdminCommandAction implements V086Action {
             }
 
             KailleraGameImpl game = (KailleraGameImpl) server.getGame(gameID);
-            if (game == null)
+            if (game == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.GameNoutFound") + gameID); //$NON-NLS-1$
+            }
 
             game.announce(sb.toString());
         } catch (NoSuchElementException e) {

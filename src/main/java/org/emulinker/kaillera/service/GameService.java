@@ -14,25 +14,24 @@ import org.emulinker.kaillera.model.exception.QuitGameException;
 import org.emulinker.kaillera.model.exception.StartGameException;
 
 /**
- * Service layer for game lifecycle management.
- *
- * <p>
- * Handles game creation, joining, starting, and cleanup.
+ * Service interface for game lifecycle management. Separates game operations
+ * from the main server implementation for better testability and separation of
+ * concerns.
  */
 public interface GameService {
 
     /**
-     * Creates a new game hosted by the given user.
+     * Creates a new game.
      *
      * @param user
      *            the user creating the game
      * @param romName
-     *            the ROM name for the game
-     * @return the created game
+     *            the ROM/game name
+     * @return the newly created game
      * @throws CreateGameException
-     *             if game creation fails
+     *             if the game cannot be created
      * @throws FloodException
-     *             if the user is creating games too fast
+     *             if the user is creating games too frequently
      */
     KailleraGame createGame(KailleraUser user, String romName)
             throws CreateGameException, FloodException;
@@ -43,45 +42,45 @@ public interface GameService {
      * @param user
      *            the user joining
      * @param gameId
-     *            the ID of the game to join
+     *            the game ID to join
      * @return the joined game
      * @throws JoinGameException
-     *             if join fails
+     *             if the user cannot join
      */
     KailleraGame joinGame(KailleraUser user, int gameId) throws JoinGameException;
 
     /**
-     * Starts the game.
+     * Starts a game.
      *
      * @param user
-     *            the user requesting to start (must be owner)
+     *            the user requesting the start
      * @throws StartGameException
      *             if the game cannot be started
      */
     void startGame(KailleraUser user) throws StartGameException;
 
     /**
-     * Quits the user from their current game.
+     * Removes a user from a game (quit).
      *
      * @param user
      *            the user quitting
-     * @throws DropGameException
-     *             if drop fails
      * @throws QuitGameException
-     *             if quit fails
+     *             if the quit fails
      * @throws CloseGameException
-     *             if game close fails
+     *             if closing the game fails
+     * @throws DropGameException
+     *             if dropping fails
      */
     void quitGame(KailleraUser user)
             throws DropGameException, QuitGameException, CloseGameException;
 
     /**
-     * Drops the user from their current game.
+     * Drops a user from a running game.
      *
      * @param user
      *            the user dropping
      * @throws DropGameException
-     *             if drop fails
+     *             if the drop fails
      */
     void dropGame(KailleraUser user) throws DropGameException;
 
@@ -90,28 +89,28 @@ public interface GameService {
      *
      * @param gameId
      *            the game ID
-     * @return the game, or empty if not found
+     * @return Optional containing the game, or empty if not found
      */
     Optional<KailleraGame> findGame(int gameId);
 
     /**
-     * Returns all active games.
+     * Gets all active games.
      *
-     * @return collection of all games
+     * @return collection of active games
      */
     Collection<? extends KailleraGame> getAllGames();
 
     /**
-     * Returns the current number of active games.
+     * Gets the number of active games.
      *
      * @return the game count
      */
     int getGameCount();
 
     /**
-     * Returns the maximum allowed games.
+     * Gets the maximum number of games allowed.
      *
-     * @return the max game count
+     * @return the maximum game count
      */
     int getMaxGames();
 }
