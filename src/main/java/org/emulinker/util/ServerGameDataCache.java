@@ -46,7 +46,16 @@ public class ServerGameDataCache implements GameDataCache {
 
     public int indexOf(byte[] data) {
         Integer i = map.get(Arrays.hashCode(data));
-        return (i == null ? -1 : unconvert(i));
+        if (i == null) {
+            return -1;
+        }
+        // Verify actual data match to handle hash collisions
+        int logicalIndex = unconvert(i);
+        byte[] cached = array[i];
+        if (cached == null || !Arrays.equals(cached, data)) {
+            return -1;
+        }
+        return logicalIndex;
     }
 
     public byte[] get(int index) {

@@ -129,9 +129,6 @@ public class ConnectController extends UDPServer {
     }
 
     public String toString() {
-        // return "ConnectController[port=" + getBindPort() + " isRunning=" +
-        // isRunning() + "]";
-        // return "ConnectController[port=" + getBindPort() + "]";
         if (getBindPort() > 0)
             return "ConnectController(" + getBindPort() + ")";
         else
@@ -139,11 +136,16 @@ public class ConnectController extends UDPServer {
     }
 
     public synchronized void start() {
+        if (isRunning()) {
+            log.debug(this + " start request ignored: already running!");
+            return;
+        }
+
+        super.start();
         startTime.set(System.currentTimeMillis());
         log.debug(this + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
         threadPool.execute(this);
-        Thread.yield();
         log.debug(this + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
     }

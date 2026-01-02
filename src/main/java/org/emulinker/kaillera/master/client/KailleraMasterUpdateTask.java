@@ -1,6 +1,5 @@
 package org.emulinker.kaillera.master.client;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
@@ -34,13 +33,12 @@ public class KailleraMasterUpdateTask implements MasterListUpdateTask {
     }
 
     public void touchMaster() {
-        List createdGamesList = statsCollector.getStartedGamesList();
+        List<String> createdGamesList = statsCollector.getStartedGamesList();
 
         StringBuilder createdGames = new StringBuilder();
         synchronized (createdGamesList) {
-            Iterator iter = createdGamesList.iterator();
-            while (iter.hasNext()) {
-                createdGames.append(iter.next());
+            for (String game : createdGamesList) {
+                createdGames.append(game);
                 createdGames.append("|");
             }
 

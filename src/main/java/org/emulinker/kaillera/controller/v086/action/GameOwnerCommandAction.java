@@ -78,6 +78,13 @@ public final class GameOwnerCommandAction implements V086Action {
     }
 
     private void autoFireHelp(KailleraGameImpl game) {
+        if (game.getAutoFireDetector() == null) {
+            game.announce(EmuLang.getString("GameOwnerCommandAction.HelpSensitivity")); //$NON-NLS-1$
+            game.announce(EmuLang.getString("GameOwnerCommandAction.HelpDisable")); //$NON-NLS-1$
+            game.announce(EmuLang.getString("GameOwnerCommandAction.HelpCurrentSensitivity", 0) //$NON-NLS-1$
+                    + EmuLang.getString("GameOwnerCommandAction.HelpDisabled")); //$NON-NLS-1$
+            return;
+        }
         int cur = game.getAutoFireDetector().getSensitivity();
         game.announce(EmuLang.getString("GameOwnerCommandAction.HelpSensitivity")); //$NON-NLS-1$
         game.announce(EmuLang.getString("GameOwnerCommandAction.HelpDisable")); //$NON-NLS-1$
@@ -99,17 +106,26 @@ public final class GameOwnerCommandAction implements V086Action {
             return;
         }
 
-        String command = st.nextToken();
+        st.nextToken(); // skip command token
         String sensitivityStr = st.nextToken();
-        int sensitivity = -1;
+        int sensitivity;
 
         try {
             sensitivity = Integer.parseInt(sensitivityStr);
         } catch (NumberFormatException e) {
+            log.debug("Invalid autofire sensitivity value: {}", sensitivityStr);
+            autoFireHelp(game);
+            return;
         }
 
         if (sensitivity > 5 || sensitivity < 0) {
             autoFireHelp(game);
+            return;
+        }
+
+        if (game.getAutoFireDetector() == null) {
+            game.announce(EmuLang.getString("GameOwnerCommandAction.CommandFailed", //$NON-NLS-1$
+                    "Autofire detector not available")); //$NON-NLS-1$
             return;
         }
 

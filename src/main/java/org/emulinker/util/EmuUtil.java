@@ -2,6 +2,7 @@ package org.emulinker.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -11,13 +12,24 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class EmuUtil {
+    private static final Logger log = LoggerFactory.getLogger(EmuUtil.class);
+
     private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
             'B', 'C', 'D', 'E', 'F'};
 
     public static final String LB = System.getProperty("line.separator");
 
-    public static DateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    // Thread-safe DateFormat using ThreadLocal
+    private static final ThreadLocal<DateFormat> DATE_FORMAT_TL = ThreadLocal
+            .withInitial(() -> new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"));
+
+    public static DateFormat getDateFormat() {
+        return DATE_FORMAT_TL.get();
+    }
 
     public static boolean systemIsWindows() {
         if (File.separatorChar == '\\')
@@ -30,20 +42,18 @@ public class EmuUtil {
             File file = new File(filename);
             return loadProperties(file);
         } catch (Exception e) {
-            // log some kind of error here
+            log.error("Failed to load properties from {}: {}", filename, e.getMessage());
             return null;
         }
     }
 
     public static Properties loadProperties(File file) {
-        Properties p = null;
-        try {
-            FileInputStream in = new FileInputStream(file);
-            p = new Properties();
+        Properties p = new Properties();
+        try (FileInputStream in = new FileInputStream(file)) {
             p.load(in);
-            in.close();
-        } catch (Throwable e) {
-            // log the error
+        } catch (IOException e) {
+            log.error("Failed to load properties from {}: {}", file.getPath(), e.getMessage());
+            return null;
         }
         return p;
     }

@@ -2,28 +2,34 @@ package org.emulinker.kaillera.controller.messaging;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class ByteBufferMessage {
     protected static final Logger log = LoggerFactory.getLogger(ByteBufferMessage.class);
-    public static Charset charset = Charset.defaultCharset();
+
+    // Default to UTF-8 for consistent cross-platform behavior.
+    // Can be overridden via -Demulinker.charset=<charset> system property.
+    public static Charset charset = StandardCharsets.UTF_8;
 
     static {
         String charsetName = System.getProperty("emulinker.charset");
         if (charsetName != null) {
             try {
-                if (Charset.isSupported(charsetName))
+                if (Charset.isSupported(charsetName)) {
                     charset = Charset.forName(charsetName);
-                else
-                    log.error("Charset " + charsetName + " is not supported!");
+                } else {
+                    log.error("Charset {} is not supported, using UTF-8", charsetName);
+                }
             } catch (Exception e) {
-                log.error("Failed to load charset " + charsetName + ": " + e.getMessage(), e);
+                log.error("Failed to load charset {}: {}, using UTF-8", charsetName,
+                        e.getMessage());
             }
         }
 
-        log.info("Using character set: " + charset.displayName());
+        log.info("Using character set: {}", charset.displayName());
     }
 
     private ByteBuffer buffer;

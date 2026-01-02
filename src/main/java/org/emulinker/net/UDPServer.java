@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 
 import org.emulinker.util.EmuUtil;
@@ -14,10 +15,13 @@ import org.slf4j.LoggerFactory;
 public abstract class UDPServer implements Executable {
     private static final Logger log = LoggerFactory.getLogger(UDPServer.class);
 
+    // Socket timeout in ms - allows periodic check of stopFlag during shutdown
+    private static final int SOCKET_TIMEOUT_MS = 1000;
+
     private int bindPort;
     private DatagramChannel channel;
-    private boolean isRunning = false;
-    private boolean stopFlag = false;
+    private volatile boolean isRunning = false;
+    private volatile boolean stopFlag = false;
 
     public UDPServer() {
         this(true);
@@ -45,7 +49,7 @@ public abstract class UDPServer implements Executable {
     }
 
     public boolean isConnected() {
-        return channel.isConnected();
+        return channel != null && channel.isConnected();
     }
 
     public synchronized void start() {
@@ -95,6 +99,8 @@ public abstract class UDPServer implements Executable {
 
             channel.socket().setReceiveBufferSize(bufferSize);
             channel.socket().setSendBufferSize(bufferSize);
+            // Set socket timeout to allow graceful shutdown
+            channel.socket().setSoTimeout(SOCKET_TIMEOUT_MS);
         } catch (IOException e) {
             throw new BindException("Failed to bind to port " + port, port, e);
         }
@@ -144,6 +150,11 @@ public abstract class UDPServer implements Executable {
                     buffer.flip();
                     handleReceived(buffer, fromSocketAddress);
                     releaseBuffer(buffer);
+                } catch (ClosedChannelException e) {
+                    // Channel was closed (expected during shutdown)
+                    // Note: AsynchronousCloseException is a subclass of ClosedChannelException
+                    log.debug("Channel closed on port {}", getBindPort());
+                    break;
                 } catch (SocketException e) {
                     if (stopFlag)
                         break;

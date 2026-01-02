@@ -284,7 +284,10 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         sb.append(" protocol="); //$NON-NLS-1$
         sb.append(getProtocol());
         sb.append(" status="); //$NON-NLS-1$
-        sb.append(KailleraUser.STATUS_NAMES[getStatus()]);
+        int statusIdx = getStatus();
+        sb.append(statusIdx >= 0 && statusIdx < KailleraUser.STATUS_NAMES.length
+                ? KailleraUser.STATUS_NAMES[statusIdx]
+                : "Unknown(" + statusIdx + ")");
         sb.append(" name="); //$NON-NLS-1$
         sb.append(getName());
         sb.append(" clientType="); //$NON-NLS-1$
@@ -292,7 +295,10 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         sb.append(" ping="); //$NON-NLS-1$
         sb.append(getPing());
         sb.append(" connectionType="); //$NON-NLS-1$
-        sb.append(KailleraUser.CONNECTION_TYPE_NAMES[getConnectionType()]);
+        int connTypeIdx = getConnectionType();
+        sb.append(connTypeIdx >= 0 && connTypeIdx < KailleraUser.CONNECTION_TYPE_NAMES.length
+                ? KailleraUser.CONNECTION_TYPE_NAMES[connTypeIdx]
+                : "Unknown(" + connTypeIdx + ")");
         sb.append(" remoteAddress="); //$NON-NLS-1$
         sb.append((getSocketAddress() == null
                 ? EmuUtil.formatSocketAddress(getConnectSocketAddress())
@@ -314,12 +320,17 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
             }
 
             stopFlag = true;
+        }
 
-            try {
-                Thread.sleep(500);
-            } catch (Exception e) {
-            }
+        // Sleep outside synchronized block to avoid blocking other threads
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.debug("Stop sleep interrupted", e);
+        }
 
+        synchronized (this) {
             addEvent(new StopFlagEvent());
         }
 

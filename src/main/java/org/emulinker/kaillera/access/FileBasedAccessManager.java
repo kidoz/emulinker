@@ -20,16 +20,16 @@ import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.WildcardStringPattern;
 
 public class FileBasedAccessManager implements AccessManager, Runnable {
-    static {
-        java.security.Security.setProperty("networkaddress.cache.ttl", "60");
-        java.security.Security.setProperty("networkaddress.cache.negative.ttl", "60");
-    }
+    // Note: DNS cache TTLs should be configured at JVM level via:
+    // -Dnetworkaddress.cache.ttl=60 -Dnetworkaddress.cache.negative.ttl=60
+    // or in $JAVA_HOME/conf/security/java.security
 
     private static final Logger log = LoggerFactory.getLogger(FileBasedAccessManager.class);
+    private static final String DEFAULT_ACCESS_FILE = "access.cfg";
 
     private EmuLinkerExecutor threadPool;
-    private boolean isRunning = false;
-    private boolean stopFlag = false;
+    private volatile boolean isRunning = false;
+    private volatile boolean stopFlag = false;
 
     private File accessFile;
     private long lastLoadModifiedTime = -1;
@@ -44,24 +44,52 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
 
     public FileBasedAccessManager(EmuLinkerExecutor threadPool)
             throws NoSuchElementException, FileNotFoundException {
+        this(threadPool, null);
+    }
+
+    public FileBasedAccessManager(EmuLinkerExecutor threadPool, String accessFilePath)
+            throws NoSuchElementException, FileNotFoundException {
         this.threadPool = threadPool;
 
-        URL url = FileBasedAccessManager.class.getResource("/access.cfg");
-        if (url == null)
-            throw new FileNotFoundException("Resource not found: /access.conf");
+        // Try to find access file in order of preference:
+        // 1. Explicitly provided path
+        // 2. File in current working directory
+        // 3. Classpath resource (for development/testing)
+        if (accessFilePath != null && !accessFilePath.isEmpty()) {
+            accessFile = new File(accessFilePath);
+        } else {
+            // Try current working directory first
+            File cwdFile = new File(DEFAULT_ACCESS_FILE);
+            if (cwdFile.exists() && cwdFile.canRead()) {
+                accessFile = cwdFile;
+                log.info("Using access file from current directory: {}", cwdFile.getAbsolutePath());
+            } else {
+                // Fallback to classpath resource (only works outside fat jars)
+                URL url = FileBasedAccessManager.class.getResource("/" + DEFAULT_ACCESS_FILE);
+                if (url == null) {
+                    throw new FileNotFoundException("Access file not found. Place "
+                            + DEFAULT_ACCESS_FILE
+                            + " in the application directory or specify path via configuration.");
+                }
 
-        try {
-            accessFile = new File(url.toURI());
-        } catch (URISyntaxException e) {
-            throw new FileNotFoundException(e.getMessage());
+                try {
+                    accessFile = new File(url.toURI());
+                } catch (URISyntaxException e) {
+                    throw new FileNotFoundException(
+                            "Cannot read access file from classpath in packaged deployment. "
+                                    + "Place " + DEFAULT_ACCESS_FILE
+                                    + " in the application directory.");
+                }
+            }
         }
 
         if (!accessFile.exists())
-            throw new FileNotFoundException("Resource not found: /access.conf");
+            throw new FileNotFoundException("Access file not found: " + accessFile.getPath());
 
         if (!accessFile.canRead())
-            throw new FileNotFoundException("Can not read: /access.conf");
+            throw new FileNotFoundException("Cannot read access file: " + accessFile.getPath());
 
+        log.info("Loading access rules from: {}", accessFile.getAbsolutePath());
         loadAccess();
 
         threadPool.execute(this);
@@ -72,7 +100,6 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         log.debug("FileBasedAccessManager thread starting (ThreadPool:"
                 + threadPool.getActiveCount() + "/" + threadPool.getPoolSize() + ")");
         threadPool.execute(this);
-        Thread.yield();
     }
 
     public boolean isRunning() {
@@ -581,9 +608,7 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         }
 
         protected boolean isExpired() {
-            if (System.currentTimeMillis() > (startTime + (minutes * 60000)))
-                return true;
-            return false;
+            return System.currentTimeMillis() > (startTime + (minutes * 60000));
         }
 
         protected boolean matches(String address) {
@@ -625,9 +650,7 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         }
 
         protected boolean isExpired() {
-            if (System.currentTimeMillis() > (startTime + (minutes * 60000)))
-                return true;
-            return false;
+            return System.currentTimeMillis() > (startTime + (minutes * 60000));
         }
 
         protected boolean matches(String address) {
@@ -669,9 +692,7 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         }
 
         protected boolean isExpired() {
-            if (System.currentTimeMillis() > (startTime + (minutes * 60000)))
-                return true;
-            return false;
+            return System.currentTimeMillis() > (startTime + (minutes * 60000));
         }
 
         protected boolean matches(String address) {

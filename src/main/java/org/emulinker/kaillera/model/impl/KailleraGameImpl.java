@@ -36,17 +36,17 @@ import org.emulinker.util.EmuLang;
 public final class KailleraGameImpl implements KailleraGame {
     private static final Logger log = LoggerFactory.getLogger(KailleraGameImpl.class);
 
-    private int id;
-    private String romName;
-    private String toString;
-    private Date startDate;
+    private final int id;
+    private final String romName;
+    private final String toString;
+    private final Date startDate;
 
-    private int bufferSize;
-    private int timeoutMillis;
-    private int desynchTimeouts;
+    private final int bufferSize;
+    private final int timeoutMillis;
+    private final int desynchTimeouts;
 
-    private KailleraServerImpl server;
-    private KailleraUserImpl owner;
+    private final KailleraServerImpl server;
+    private final KailleraUserImpl owner;
     private List<KailleraUserImpl> players = new CopyOnWriteArrayList<KailleraUserImpl>();
     private StatsCollector statsCollector;
 
@@ -86,7 +86,7 @@ public final class KailleraGameImpl implements KailleraGame {
     }
 
     public Date getStartDate() {
-        return startDate;
+        return new Date(startDate.getTime());
     }
 
     public KailleraUser getOwner() {
@@ -94,7 +94,11 @@ public final class KailleraGameImpl implements KailleraGame {
     }
 
     public int getPlayerNumber(KailleraUser user) {
-        return (players.indexOf(user) + 1);
+        int index = players.indexOf(user);
+        if (index < 0) {
+            return -1; // Player not found
+        }
+        return index + 1;
     }
 
     public KailleraUser getPlayer(int playerNumber) {
@@ -117,7 +121,7 @@ public final class KailleraGameImpl implements KailleraGame {
     }
 
     public List<KailleraUserImpl> getPlayers() {
-        return players;
+        return List.copyOf(players);
     }
 
     public int getStatus() {
@@ -431,8 +435,11 @@ public final class KailleraGameImpl implements KailleraGame {
 
         if (getSynchedCount() < 2 && synched) {
             synched = false;
-            for (PlayerActionQueue q : playerActionQueues)
-                q.setSynched(false);
+            PlayerActionQueue[] queues = playerActionQueues;
+            if (queues != null) {
+                for (PlayerActionQueue q : queues)
+                    q.setSynched(false);
+            }
             log.info(this + ": game desynched: less than 2 players playing!"); //$NON-NLS-1$
         }
 
@@ -474,8 +481,11 @@ public final class KailleraGameImpl implements KailleraGame {
 
         if (synched) {
             synched = false;
-            for (PlayerActionQueue q : playerActionQueues)
-                q.setSynched(false);
+            PlayerActionQueue[] queues = playerActionQueues;
+            if (queues != null) {
+                for (PlayerActionQueue q : queues)
+                    q.setSynched(false);
+            }
             log.info(this + ": game desynched: game closed!"); //$NON-NLS-1$
         }
 
@@ -503,8 +513,11 @@ public final class KailleraGameImpl implements KailleraGame {
 
             if (getSynchedCount() < 2 && synched) {
                 synched = false;
-                for (PlayerActionQueue q : playerActionQueues)
-                    q.setSynched(false);
+                PlayerActionQueue[] queues = playerActionQueues;
+                if (queues != null) {
+                    for (PlayerActionQueue q : queues)
+                        q.setSynched(false);
+                }
                 log.info(this + ": game desynched: less than 2 players synched!"); //$NON-NLS-1$
             }
         }
@@ -616,8 +629,11 @@ public final class KailleraGameImpl implements KailleraGame {
 
             if (getSynchedCount() < 2) {
                 synched = false;
-                for (PlayerActionQueue q : playerActionQueues)
-                    q.setSynched(false);
+                PlayerActionQueue[] queues = playerActionQueues;
+                if (queues != null) {
+                    for (PlayerActionQueue q : queues)
+                        q.setSynched(false);
+                }
                 log.info(this + ": game desynched: less than 2 players synched!"); //$NON-NLS-1$
             }
         }

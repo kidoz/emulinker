@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 public abstract class PrivateUDPServer extends UDPServer {
     private static final Logger log = LoggerFactory.getLogger(PrivateUDPServer.class);
 
-    private InetAddress remoteAddress;
-    private InetSocketAddress remoteSocketAddress;
+    private final InetAddress remoteAddress;
+    private volatile InetSocketAddress remoteSocketAddress;
 
     public PrivateUDPServer(boolean shutdownOnExit, InetAddress remoteAddress) {
         super(shutdownOnExit);

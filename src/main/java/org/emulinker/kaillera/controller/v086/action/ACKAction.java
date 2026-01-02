@@ -53,7 +53,7 @@ public final class ACKAction implements V086Action, V086UserEventHandler {
         clientHandler.addSpeedMeasurement();
 
         if (clientHandler.getSpeedMeasurementCount() > numAcksForSpeedTest) {
-            user.setPing(clientHandler.getAverageNetworkSpeed());
+            // Use best (lowest) ping for the user's displayed ping value
             user.setPing(clientHandler.getBestNetworkSpeed());
 
             log.debug("Calculated " + user + " ping time: average="

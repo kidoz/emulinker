@@ -514,7 +514,8 @@ public final class AdminCommandAction implements V086Action {
     private void sleep(int ms) {
         try {
             Thread.sleep(ms);
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }

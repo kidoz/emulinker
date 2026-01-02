@@ -12,7 +12,15 @@ import org.emulinker.util.UnsignedUtil;
 public class V086Bundle extends ByteBufferMessage {
     public static final String DESC = "Kaillera v.086 Message Bundle";
 
-    // protected List<V086Message> messages;
+    /** Minimum buffer length required to parse a bundle header */
+    private static final int MIN_BUFFER_LENGTH = 5;
+
+    /** Maximum number of messages allowed per bundle */
+    private static final int MAX_MESSAGE_COUNT = 32;
+
+    /** Minimum bytes per message header (message number + length) */
+    private static final int MESSAGE_HEADER_SIZE = 6;
+
     protected V086Message[] messages;
     protected int numToWrite;
     protected int length = -1;
@@ -43,10 +51,11 @@ public class V086Bundle extends ByteBufferMessage {
 
     public int getLength() {
         if (length == -1) {
+            length = 0; // Initialize to 0 before summing
             for (int i = 0; i < numToWrite; i++) {
-                if (messages[i] == null)
+                if (messages[i] == null) {
                     break;
-
+                }
                 length += messages[i].getLength();
             }
         }
@@ -88,22 +97,17 @@ public class V086Bundle extends ByteBufferMessage {
             throws ParseException, V086BundleFormatException, MessageFormatException {
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        if (buffer.limit() < 5)
+        if (buffer.limit() < MIN_BUFFER_LENGTH)
             throw new V086BundleFormatException("Invalid buffer length: " + buffer.limit());
 
-        // again no real need for unsigned
-        // int messageCount = UnsignedUtil.getUnsignedByte(buffer);
         int messageCount = buffer.get();
 
-        if (messageCount <= 0 || messageCount > 32) // what should the max be?
+        if (messageCount <= 0 || messageCount > MAX_MESSAGE_COUNT)
             throw new V086BundleFormatException("Invalid message count: " + messageCount);
 
-        if (buffer.limit() < (1 + (messageCount * 6)))
+        if (buffer.limit() < (1 + (messageCount * MESSAGE_HEADER_SIZE)))
             throw new V086BundleFormatException("Invalid bundle length: " + buffer.limit());
 
-        // List<V086Message> messages = new ArrayList<V086Message>(3);
-        // Stack<V086Message> messages = new Stack<V086Message>();
-        // LinkedList<V086Message> messages = new LinkedList<V086Message>();
         V086Message[] messages = new V086Message[messageCount];
         int parsedCount;
         for (parsedCount = 0; parsedCount < messageCount; parsedCount++) {

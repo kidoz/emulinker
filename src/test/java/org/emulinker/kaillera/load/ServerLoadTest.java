@@ -385,7 +385,7 @@ class ServerLoadTest {
         }
 
         @Override
-        public List getStartedGamesList() {
+        public List<String> getStartedGamesList() {
             return List.of();
         }
 

@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
 public abstract class UDPRelay implements Runnable {
     protected static final Logger log = LoggerFactory.getLogger(UDPRelay.class);
 
-    private static final ExecutorService THREAD_POOL = Executors.newVirtualThreadPerTaskExecutor();
+    // Instance-level thread pool to avoid shutdown affecting other instances
+    private final ExecutorService threadPool = Executors.newVirtualThreadPerTaskExecutor();
 
     protected DatagramChannel listenChannel;
 
@@ -37,7 +38,7 @@ public abstract class UDPRelay implements Runnable {
 
         log.info("Bound to port " + listenPort);
 
-        THREAD_POOL.execute(this);
+        threadPool.execute(this);
     }
 
     public int getListenPort() {
@@ -74,7 +75,7 @@ public abstract class UDPRelay implements Runnable {
                     }
 
                     clients.put(clientAddress, clientHandler);
-                    THREAD_POOL.execute(clientHandler);
+                    threadPool.execute(clientHandler);
                 }
 
                 buffer.flip();
@@ -86,9 +87,10 @@ public abstract class UDPRelay implements Runnable {
             try {
                 listenChannel.close();
             } catch (Exception e) {
+                log.debug("Error closing listen channel", e);
             }
 
-            THREAD_POOL.shutdownNow();
+            threadPool.shutdownNow();
         }
 
         log.info("Main port " + listenPort + " thread exiting...");
@@ -143,6 +145,7 @@ public abstract class UDPRelay implements Runnable {
                 try {
                     clientChannel.close();
                 } catch (Exception e) {
+                    log.debug("Error closing client channel", e);
                 }
 
                 clients.remove(clientSocketAddress);

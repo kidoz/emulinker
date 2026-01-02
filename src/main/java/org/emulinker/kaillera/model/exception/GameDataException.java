@@ -11,7 +11,22 @@ public class GameDataException extends ActionException {
             int numPlayers) {
         super(message);
 
+        // Validate inputs to prevent overflow
+        if (actionsPerMessage <= 0 || numPlayers <= 0 || data == null || data.length == 0) {
+            return;
+        }
+
         int bytesPerAction = (data.length / actionsPerMessage);
+        if (bytesPerAction <= 0) {
+            return;
+        }
+
+        // Check for integer overflow before allocation
+        if (numPlayers > Integer.MAX_VALUE / actionsPerMessage
+                || (numPlayers * actionsPerMessage) > Integer.MAX_VALUE / bytesPerAction) {
+            return;
+        }
+
         int arraySize = (numPlayers * actionsPerMessage * bytesPerAction);
         response = new byte[arraySize];
         for (int actionCounter = 0; actionCounter < actionsPerMessage; actionCounter++) {

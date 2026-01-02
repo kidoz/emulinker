@@ -1,5 +1,7 @@
 package org.emulinker.kaillera.service.impl;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +20,19 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * Handles admin operations via the underlying KailleraServer and AccessManager.
+ *
+ * <p>
+ * <b>Proxy/NAT Awareness:</b> This implementation uses
+ * {@code KailleraUser.getConnectSocketAddress()} to obtain IP addresses for
+ * ban/silence operations. If the server runs behind a reverse proxy, load
+ * balancer, or NAT, this address may represent the proxy rather than the actual
+ * client. For proxy deployments, consider:
+ * <ul>
+ * <li>Using X-Forwarded-For or similar headers (requires protocol-level
+ * changes)</li>
+ * <li>Running the server without a proxy for UDP traffic</li>
+ * <li>Configuring proxy protocol support if available</li>
+ * </ul>
  */
 public class ServerAdminServiceImpl implements ServerAdminService {
 
@@ -67,7 +82,8 @@ public class ServerAdminServiceImpl implements ServerAdminService {
         }
 
         // Silence is typically handled via access control rules.
-        // This would require integration with AccessManager.
+        String ipAddress = target.getConnectSocketAddress().getAddress().getHostAddress();
+        accessManager.addSilenced(ipAddress, durationMinutes);
         log.info("Admin {} silenced user {} for {} minutes", admin.getName(), target.getName(),
                 durationMinutes);
         return true;
@@ -88,6 +104,7 @@ public class ServerAdminServiceImpl implements ServerAdminService {
 
         // Ban the IP through AccessManager.
         String ipAddress = target.getConnectSocketAddress().getAddress().getHostAddress();
+        accessManager.addTempBan(ipAddress, durationMinutes);
         log.info("Admin {} banned user {} (IP: {}) for {} minutes", admin.getName(),
                 target.getName(), ipAddress, durationMinutes);
 
@@ -105,6 +122,14 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     public boolean unbanIp(final KailleraUser admin, final String ipAddress) {
         if (!isAdmin(admin)) {
             log.warn("Non-admin {} attempted to unban IP {}", admin.getName(), ipAddress);
+            return false;
+        }
+
+        try {
+            InetAddress address = InetAddress.getByName(ipAddress);
+            accessManager.clearTemp(address);
+        } catch (UnknownHostException e) {
+            log.warn("Invalid IP address {} for unban", ipAddress);
             return false;
         }
 

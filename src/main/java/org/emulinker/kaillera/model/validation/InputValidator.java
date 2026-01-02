@@ -223,4 +223,53 @@ public final class InputValidator {
         }
         return null;
     }
+
+    /**
+     * Sanitizes a string for safe logging by removing/replacing newlines and
+     * control characters that could be used for log injection attacks.
+     *
+     * @param str
+     *            the string to sanitize for logging
+     * @return the sanitized string safe for logging
+     */
+    public static String sanitizeForLog(String str) {
+        if (str == null) {
+            return "<null>";
+        }
+        if (str.isEmpty()) {
+            return "<empty>";
+        }
+        StringBuilder sb = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == '\n' || c == '\r') {
+                sb.append("\\n");
+            } else if (c == '\t') {
+                sb.append("\\t");
+            } else if (c < 32 || c == 127 || Character.isISOControl(c)) {
+                sb.append("\\x").append(String.format("%02X", (int) c));
+            } else {
+                sb.append(c);
+            }
+        }
+        // Limit length to prevent log flooding
+        if (sb.length() > 256) {
+            return sb.substring(0, 253) + "...";
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Validates a network port number.
+     *
+     * @param port
+     *            the port to validate
+     * @return null if valid, error message if invalid
+     */
+    public static String validatePort(int port) {
+        if (port < 1 || port > 65535) {
+            return "Invalid port: " + port + " (must be 1-65535)";
+        }
+        return null;
+    }
 }

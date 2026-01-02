@@ -66,22 +66,32 @@ public class AutoFireScanner implements AutoFireDetector {
         if (sensitivity <= 0 || scanningJobs == null)
             return;
 
-        scanningJobs[(playerNumber - 1)].stop();
+        int index = playerNumber - 1;
+        if (index < 0 || index >= scanningJobs.length || scanningJobs[index] == null)
+            return;
+
+        scanningJobs[index].stop();
     }
 
     public void stop() {
         if (sensitivity <= 0 || scanningJobs == null)
             return;
 
-        for (int i = 0; i < scanningJobs.length; i++)
-            scanningJobs[i].stop();
+        for (int i = 0; i < scanningJobs.length; i++) {
+            if (scanningJobs[i] != null)
+                scanningJobs[i].stop();
+        }
     }
 
     public void addData(int playerNumber, byte[] data, int bytesPerAction) {
         if (sensitivity <= 0 || scanningJobs == null)
             return;
 
-        scanningJobs[(playerNumber - 1)].addData(data, bytesPerAction);
+        int index = playerNumber - 1;
+        if (index < 0 || index >= scanningJobs.length || scanningJobs[index] == null)
+            return;
+
+        scanningJobs[index].addData(data, bytesPerAction);
     }
 
     protected class ScanningJob implements Runnable {
@@ -110,26 +120,34 @@ public class AutoFireScanner implements AutoFireDetector {
         }
 
         protected synchronized void addData(byte[] data, int bytesPerAction) {
-            if ((pos + data.length) >= sizeLimit) {
-                int firstSize = (sizeLimit - pos);
-                // log.debug("firstSize="+firstSize);
-                System.arraycopy(data, 0, buffer[tail], pos, firstSize);
-                tail = ((tail + 1) % bufferSize);
-                // log.debug("tail="+tail);
-                System.arraycopy(data, firstSize, buffer[tail], 0, (data.length - firstSize));
-                pos = (data.length - firstSize);
-                // log.debug("pos="+pos);
-                size++;
+            if (sizeLimit <= 0) {
+                return;
+            }
 
-                if (this.bytesPerAction <= 0)
-                    this.bytesPerAction = bytesPerAction;
+            int offset = 0;
+            int remaining = data.length;
 
-                if (!running)
-                    EXECUTOR.submit(this);
-            } else {
-                System.arraycopy(data, 0, buffer[tail], pos, data.length);
-                pos += data.length;
-                // log.debug("pos="+pos);
+            while (remaining > 0) {
+                int space = sizeLimit - pos;
+                int copySize = Math.min(remaining, space);
+                System.arraycopy(data, offset, buffer[tail], pos, copySize);
+                pos += copySize;
+                offset += copySize;
+                remaining -= copySize;
+
+                if (pos >= sizeLimit) {
+                    tail = ((tail + 1) % bufferSize);
+                    pos = 0;
+                    size++;
+
+                    if (this.bytesPerAction <= 0) {
+                        this.bytesPerAction = bytesPerAction;
+                    }
+
+                    if (!running) {
+                        EXECUTOR.submit(this);
+                    }
+                }
             }
         }
 
@@ -242,7 +260,7 @@ public class AutoFireScanner implements AutoFireDetector {
                             gameImpl.announce(EmuLang.getString("AutoFireScanner2.AutoFireDetected", //$NON-NLS-1$
                                     user.getName()));
                             log.info("AUTOUSERDUMP\t" //$NON-NLS-1$
-                                    + EmuUtil.DATE_FORMAT.format(gameImpl.getStartDate()) + "\t" //$NON-NLS-1$
+                                    + EmuUtil.getDateFormat().format(gameImpl.getStartDate()) + "\t" //$NON-NLS-1$
                                     + (aSequence < bSequence ? aSequence : bSequence) + "\t" //$NON-NLS-1$
                                     + game.getID() + "\t" //$NON-NLS-1$
                                     + game.getRomName() + "\t" + user.getName() + "\t" //$NON-NLS-1$ //$NON-NLS-2$

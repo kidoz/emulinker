@@ -1,12 +1,11 @@
 package org.emulinker.kaillera.model.impl;
 
 public class PlayerActionQueue {
-    private int gameBufferSize;
-    private int gameTimeoutMillis;
-    private boolean capture;
+    private final int gameBufferSize;
+    private final int gameTimeoutMillis;
 
-    private int thisPlayerNumber;
-    private KailleraUserImpl thisPlayer;
+    private final int thisPlayerNumber;
+    private final KailleraUserImpl thisPlayer;
     private volatile boolean synched = false;
     private volatile PlayerTimeoutException lastTimeout;
 
@@ -14,24 +13,15 @@ public class PlayerActionQueue {
     private final int[] heads;
     private int tail = 0;
 
-    // private OutputStream os;
-    // private InputStream is;
-
     public PlayerActionQueue(int playerNumber, KailleraUserImpl player, int numPlayers,
             int gameBufferSize, int gameTimeoutMillis, boolean capture) {
         this.thisPlayerNumber = playerNumber;
         this.thisPlayer = player;
         this.gameBufferSize = gameBufferSize;
         this.gameTimeoutMillis = gameTimeoutMillis;
-        this.capture = capture;
 
         array = new byte[gameBufferSize];
         heads = new int[numPlayers];
-        /*
-         * if(capture) { try { os = new BufferedOutputStream(new
-         * FileOutputStream("test.cap")); } catch(Exception e) { e.printStackTrace(); }
-         * }
-         */
     }
 
     public int getPlayerNumber() {
@@ -87,11 +77,18 @@ public class PlayerActionQueue {
                     + ", actionLength=" + actionLength + ", array.length=" + actions.length);
         }
 
-        if (getSize(playerNumber) < actionLength && synched) {
+        // Use while loop to handle spurious wakeups
+        long deadline = System.currentTimeMillis() + gameTimeoutMillis;
+        while (getSize(playerNumber) < actionLength && synched) {
+            long remaining = deadline - System.currentTimeMillis();
+            if (remaining <= 0) {
+                break;
+            }
             try {
-                wait(gameTimeoutMillis);
+                wait(remaining);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                break;
             }
         }
 

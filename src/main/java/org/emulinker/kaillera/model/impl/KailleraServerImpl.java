@@ -242,7 +242,6 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 + threadPool.getPoolSize() + ")");
         stopFlag = false;
         threadPool.execute(this);
-        Thread.yield();
     }
 
     public synchronized void stop() {
@@ -315,7 +314,6 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         log.debug(user + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
         threadPool.execute(user);
-        Thread.yield();
         log.debug(user + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
         users.put(userID, user);
@@ -864,11 +862,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
      *
      * @param str
      *            the string to check
-     * @return true if illegal characters are found
+     * @return true if null, empty, or illegal characters are found
      */
     private boolean containsIllegalCharacters(String str) {
-        if (str == null) {
-            return false;
+        if (str == null || str.isEmpty()) {
+            return true; // Null/empty strings are invalid
         }
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);

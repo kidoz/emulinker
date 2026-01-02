@@ -1,5 +1,7 @@
 package org.emulinker.config;
 
+import java.util.List;
+
 import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -25,7 +27,9 @@ public class SecurityConfig {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     private static final String DEFAULT_USERNAME = "admin";
-    private static final String DEFAULT_PASSWORD = "changeme";
+    // List of insecure default passwords that should trigger a warning
+    private static final List<String> INSECURE_PASSWORDS = List.of("changeme", "admin", "password",
+            "123456");
 
     @Value("${admin.username:admin}")
     private String adminUsername;
@@ -35,11 +39,20 @@ public class SecurityConfig {
 
     @PostConstruct
     public void validateCredentials() {
-        if (DEFAULT_USERNAME.equals(adminUsername) || DEFAULT_PASSWORD.equals(adminPassword)) {
+        boolean insecureUsername = DEFAULT_USERNAME.equals(adminUsername);
+        boolean insecurePassword = INSECURE_PASSWORDS.stream()
+                .anyMatch(p -> p.equalsIgnoreCase(adminPassword));
+
+        if (insecureUsername || insecurePassword) {
             log.error("*".repeat(70));
-            log.error("* SECURITY WARNING: Default admin credentials are in use!");
+            log.error("* SECURITY WARNING: Insecure admin credentials detected!");
             log.error("* Change admin.username and admin.password in application.properties");
-            log.error("* Current username: {}", adminUsername);
+            if (insecureUsername) {
+                log.error("* Current username '{}' is a default value", adminUsername);
+            }
+            if (insecurePassword) {
+                log.error("* Current password is a commonly used insecure password");
+            }
             log.error("* This is a security risk in production environments!");
             log.error("*".repeat(70));
         }

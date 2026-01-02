@@ -13,14 +13,6 @@ public class WildcardStringPattern {
     private String endString = "";
     private LinkedList<String> containsStrings = new LinkedList<String>();
 
-    public static void main(String[] args) {
-        WildcardStringPattern test = new WildcardStringPattern(args[0]);
-        for (int i = 1; i < args.length; i++) {
-            boolean match = test.match(args[i]);
-            System.out.println(args[i] + " = " + match);
-        }
-    }
-
     public WildcardStringPattern(String pattern) {
         if (pattern == null || pattern.equals("")) {
             // match() function will always return true.
@@ -106,11 +98,14 @@ public class WildcardStringPattern {
         // an endsWith or contains. In either case, it must start
         // with "*".
 
-        String s = startString;
-        s += "*";
-        for (String pattern : containsStrings)
-            s += (String) pattern + "*";
-        s += endString;
-        return s;
+        StringBuilder sb = new StringBuilder();
+        sb.append(startString);
+        sb.append("*");
+        for (String pattern : containsStrings) {
+            sb.append(pattern);
+            sb.append("*");
+        }
+        sb.append(endString);
+        return sb.toString();
     }
 }

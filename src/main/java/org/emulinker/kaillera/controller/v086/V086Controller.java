@@ -171,6 +171,8 @@ public final class V086Controller implements KailleraServerController {
                 // pause very briefly to give the OS a chance to free a port
                 Thread.sleep(5);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
 
@@ -197,7 +199,7 @@ public final class V086Controller implements KailleraServerController {
     }
 
     public final class V086ClientHandler extends PrivateUDPServer implements KailleraEventListener {
-        private KailleraUser user;
+        private volatile KailleraUser user;
         private int messageNumberCounter = 0;
         private int prevMessageNumber = -1;
         private int lastMessageNumber = -1;
@@ -317,7 +319,6 @@ public final class V086Controller implements KailleraServerController {
             log.debug(toString() + " thread starting (ThreadPool:" + threadPool.getActiveCount()
                     + "/" + threadPool.getPoolSize() + ")");
             threadPool.execute(this);
-            Thread.yield();
 
             /*
              * long s = System.currentTimeMillis(); while (!isBound() &&
@@ -342,7 +343,7 @@ public final class V086Controller implements KailleraServerController {
                 int port = -1;
                 if (isBound())
                     port = getBindPort();
-                log.debug(this.toString() + " Stoping!");
+                log.debug(this.toString() + " Stopping!");
                 super.stop();
 
                 if (port > 0) {
@@ -352,9 +353,10 @@ public final class V086Controller implements KailleraServerController {
                 }
             }
 
-            if (user != null) {
-                clientHandlers.remove(user.getID());
-                user.stop();
+            KailleraUser localUser = user;
+            if (localUser != null) {
+                clientHandlers.remove(localUser.getID());
+                localUser.stop();
                 user = null;
             }
         }
@@ -433,7 +435,6 @@ public final class V086Controller implements KailleraServerController {
                 }
             } catch (FatalActionException e) {
                 log.warn(toString() + " fatal action, closing connection: " + e.getMessage());
-                Thread.yield();
                 stop();
             }
         }

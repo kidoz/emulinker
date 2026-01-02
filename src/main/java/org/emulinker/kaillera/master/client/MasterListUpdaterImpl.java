@@ -31,8 +31,8 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
     private EmuLinkerMasterUpdateTask emulinkerMasterTask;
     private KailleraMasterUpdateTask kailleraMasterTask;
 
-    private boolean stopFlag = false;
-    private boolean isRunning = false;
+    private volatile boolean stopFlag = false;
+    private volatile boolean isRunning = false;
 
     public MasterListUpdaterImpl(MasterListConfig config, EmuLinkerExecutor threadPool,
             ConnectController connectController, KailleraServer kailleraServer,
@@ -76,7 +76,6 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
             log.debug("MasterListUpdater thread starting (ThreadPool:" + threadPool.getActiveCount()
                     + "/" + threadPool.getPoolSize() + ")");
             threadPool.execute(this);
-            Thread.yield();
             log.debug("MasterListUpdater thread started (ThreadPool:" + threadPool.getActiveCount()
                     + "/" + threadPool.getPoolSize() + ")");
         }
@@ -103,14 +102,16 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
             while (!stopFlag) {
                 try {
                     Thread.sleep(60000);
-                } catch (Exception e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
 
                 if (stopFlag)
                     break;
 
                 log.info("MasterListUpdater touching masters...");
-                List createdGamesList = statsCollector.getStartedGamesList();
+                List<String> createdGamesList = statsCollector.getStartedGamesList();
 
                 if (emulinkerMasterTask != null)
                     emulinkerMasterTask.touchMaster();

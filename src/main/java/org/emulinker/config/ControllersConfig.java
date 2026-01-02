@@ -2,6 +2,7 @@ package org.emulinker.config;
 
 import java.util.List;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -45,6 +46,7 @@ public class ControllersConfig {
     public static class Connect {
 
         @Min(1)
+        @Max(65535)
         private int port = 27888;
 
         @Min(1)
@@ -73,6 +75,7 @@ public class ControllersConfig {
     public static class V086 {
 
         @Min(1)
+        @Max(65535)
         private int portRangeStart = 27889;
 
         @Min(0)
