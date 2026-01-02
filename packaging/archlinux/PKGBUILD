@@ -1,28 +1,28 @@
 # Maintainer: Your Name <your.email@example.com>
-pkgname=emulinker
+pkgname=kaillux
 pkgver=1.1.0
 pkgrel=1
 pkgdesc="Kaillera network server for emulator-based online multiplayer gaming"
 arch=('any')
-url="https://github.com/kidoz/emulinker"
+url="https://github.com/kidoz/kaillux"
 license=('GPL-2.0-only')
 depends=('java-runtime>=21')
 makedepends=('java-environment>=21' 'git')
-backup=('etc/emulinker/application.properties'
-        'etc/emulinker/access.cfg'
-        'etc/emulinker/logback.xml')
-install=emulinker.install
+backup=('etc/kaillux/application.properties'
+        'etc/kaillux/access.cfg'
+        'etc/kaillux/logback.xml')
+install=kaillux.install
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz"
-        'emulinker.service'
-        'emulinker.sysusers'
-        'emulinker.tmpfiles')
+        'kaillux.service'
+        'kaillux.sysusers'
+        'kaillux.tmpfiles')
 sha256sums=('SKIP'
             'SKIP'
             'SKIP'
             'SKIP')
 
 # For local development, use this instead:
-# source=("git+file:///path/to/local/emulinker")
+# source=("git+file:///path/to/local/kaillux")
 
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"
@@ -35,7 +35,7 @@ package() {
     cd "${srcdir}/${pkgname}-${pkgver}"
 
     # Install JAR file
-    install -Dm644 "build/emulinker.jar" "${pkgdir}/usr/share/java/${pkgname}/${pkgname}.jar"
+    install -Dm644 "build/kaillux.jar" "${pkgdir}/usr/share/java/${pkgname}/${pkgname}.jar"
 
     # Install configuration files
     install -Dm644 "src/main/resources/application.properties" "${pkgdir}/etc/${pkgname}/application.properties"
@@ -45,27 +45,27 @@ package() {
     # Install wrapper script
     install -Dm755 /dev/stdin "${pkgdir}/usr/bin/${pkgname}" << 'EOF'
 #!/bin/bash
-# EmuLinker Kaillera Server launcher
+# Kaillux Kaillera Server launcher
 
-EMULINKER_JAR="/usr/share/java/emulinker/emulinker.jar"
-EMULINKER_CONF="/etc/emulinker"
-EMULINKER_OPTS="${EMULINKER_OPTS:--Xms64m -Xmx256m}"
+KAILLUX_JAR="/usr/share/java/kaillux/kaillux.jar"
+KAILLUX_CONF="/etc/kaillux"
+KAILLUX_OPTS="${KAILLUX_OPTS:--Xms64m -Xmx256m}"
 
 exec /usr/bin/java \
-    ${EMULINKER_OPTS} \
-    -jar "${EMULINKER_JAR}" \
-    --spring.config.location="file:${EMULINKER_CONF}/" \
+    ${KAILLUX_OPTS} \
+    -jar "${KAILLUX_JAR}" \
+    --spring.config.location="file:${KAILLUX_CONF}/" \
     "$@"
 EOF
 
     # Install systemd service
-    install -Dm644 "${srcdir}/emulinker.service" "${pkgdir}/usr/lib/systemd/system/${pkgname}.service"
+    install -Dm644 "${srcdir}/kaillux.service" "${pkgdir}/usr/lib/systemd/system/${pkgname}.service"
 
-    # Install sysusers.d configuration (creates emulinker user)
-    install -Dm644 "${srcdir}/emulinker.sysusers" "${pkgdir}/usr/lib/sysusers.d/${pkgname}.conf"
+    # Install sysusers.d configuration (creates kaillux user)
+    install -Dm644 "${srcdir}/kaillux.sysusers" "${pkgdir}/usr/lib/sysusers.d/${pkgname}.conf"
 
-    # Install tmpfiles.d configuration (creates /var/lib/emulinker)
-    install -Dm644 "${srcdir}/emulinker.tmpfiles" "${pkgdir}/usr/lib/tmpfiles.d/${pkgname}.conf"
+    # Install tmpfiles.d configuration (creates /var/lib/kaillux)
+    install -Dm644 "${srcdir}/kaillux.tmpfiles" "${pkgdir}/usr/lib/tmpfiles.d/${pkgname}.conf"
 
     # Install documentation
     install -Dm644 "README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"

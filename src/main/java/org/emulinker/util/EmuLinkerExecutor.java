@@ -35,7 +35,7 @@ public class EmuLinkerExecutor implements ExecutorService {
 
     public EmuLinkerExecutor() {
         this.delegate = Executors.newVirtualThreadPerTaskExecutor();
-        log.info("EmuLinkerExecutor initialized with virtual threads (Project Loom)");
+        log.info("Kaillux executor initialized with virtual threads (Project Loom)");
     }
 
     /**

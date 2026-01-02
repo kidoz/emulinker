@@ -9,9 +9,9 @@
 
     <!-- Rolling File Appender -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>emulinker.log</file>
+        <file>kaillux.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>emulinker.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>kaillux.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>5</maxHistory>
             <totalSizeCap>100MB</totalSizeCap>
@@ -39,7 +39,7 @@
     <!-- Hibernate/JPA (if used in future) -->
     <logger name="org.hibernate" level="WARN"/>
 
-    <!-- EmuLinker specific loggers - configure as needed -->
+    <!-- Kaillux specific loggers - configure as needed -->
     <logger name="org.emulinker" level="DEBUG"/>
     <logger name="org.emulinker.kaillera.controller" level="DEBUG"/>
     <logger name="org.emulinker.kaillera.model" level="DEBUG"/>

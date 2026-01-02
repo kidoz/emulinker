@@ -525,7 +525,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                         EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
             }
 
-            // Send EmuLinker client-specific info
+            // Send Kaillux client-specific info
             if (userImpl.isEmuLinkerClient()) {
                 userImpl.addEvent(
                         new InfoMessageEvent(userImpl, ":ACCESS=" + userImpl.getAccessStr()));
@@ -538,7 +538,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     /**
-     * Sends user info to admin EmuLinker clients.
+     * Sends user info to admin Kaillux clients.
      */
     private void sendAdminUserInfo(KailleraUserImpl admin) {
         StringBuilder sb = new StringBuilder();

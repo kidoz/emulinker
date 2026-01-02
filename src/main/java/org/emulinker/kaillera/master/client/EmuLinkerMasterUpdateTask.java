@@ -59,9 +59,9 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
                 props.load(new StringReader(response));
             }
 
-            log.info("Touching EmuLinker Master done");
+            log.info("Touching Kaillux master list done");
         } catch (Exception e) {
-            log.error("Failed to touch EmuLinker Master: " + e.getMessage());
+            log.error("Failed to touch Kaillux master list: " + e.getMessage());
         }
 
         String updateAvailable = props.getProperty("updateAvailable");
@@ -69,7 +69,7 @@ public class EmuLinkerMasterUpdateTask implements MasterListUpdateTask {
             String latestVersion = props.getProperty("latest");
             String notes = props.getProperty("notes");
             StringBuilder sb = new StringBuilder();
-            sb.append("A updated version of EmuLinker is available: ");
+            sb.append("A updated version of Kaillux is available: ");
             sb.append(latestVersion);
             if (notes != null) {
                 sb.append(" (");

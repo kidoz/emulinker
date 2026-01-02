@@ -1,0 +1,2 @@
+# Create kaillux system user and group
+u kaillux - "Kaillux Kaillera Server" /var/lib/kaillux

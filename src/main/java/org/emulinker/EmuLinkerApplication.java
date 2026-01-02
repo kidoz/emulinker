@@ -16,9 +16,9 @@ public class EmuLinkerApplication {
     @Bean
     public CommandLineRunner startupRunner(ReleaseInfo releaseInfo) {
         return args -> {
-            System.out.println("EmuLinker server Starting...");
+            System.out.println("Kaillux server Starting...");
             System.out.println(releaseInfo.getWelcome());
-            System.out.println("EmuLinker server is running @ " + new Date());
+            System.out.println("Kaillux server is running @ " + new Date());
         };
     }
 }

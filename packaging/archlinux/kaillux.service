@@ -1,21 +1,21 @@
 [Unit]
-Description=EmuLinker Kaillera Server
-Documentation=https://github.com/kidoz/emulinker
+Description=Kaillux Kaillera Server
+Documentation=https://github.com/kidoz/kaillux
 After=network.target
 
 [Service]
 Type=simple
-User=emulinker
-Group=emulinker
+User=kaillux
+Group=kaillux
 
 # Java options
-Environment="EMULINKER_OPTS=-Xms64m -Xmx256m"
+Environment="KAILLUX_OPTS=-Xms64m -Xmx256m"
 
 # Working directory for logs
-WorkingDirectory=/var/lib/emulinker
+WorkingDirectory=/var/lib/kaillux
 
 # Start command
-ExecStart=/usr/bin/emulinker
+ExecStart=/usr/bin/kaillux
 
 # Restart on failure
 Restart=on-failure
@@ -34,7 +34,7 @@ RestrictRealtime=true
 RestrictSUIDSGID=true
 
 # Allow write to working directory and logs
-ReadWritePaths=/var/lib/emulinker
+ReadWritePaths=/var/lib/kaillux
 
 # Network access
 RestrictAddressFamilies=AF_INET AF_INET6

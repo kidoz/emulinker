@@ -108,7 +108,7 @@ jar {
 }
 
 bootJar {
-    archiveFileName = 'emulinker.jar'
+    archiveFileName = 'kaillux.jar'
     destinationDirectory = file('build')
 }
 

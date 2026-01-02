@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class MasterListConfig {
 
-    private String serverName = "EmuLinker Server";
+    private String serverName = "Kaillux Server";
 
     private String serverLocation = "Unknown";
 

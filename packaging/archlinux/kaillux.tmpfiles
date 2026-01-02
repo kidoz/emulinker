@@ -1,0 +1,2 @@
+# Create runtime directories for Kaillux
+d /var/lib/kaillux 0750 kaillux kaillux -

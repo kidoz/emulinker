@@ -3,7 +3,7 @@ package org.emulinker.release;
 /**
  * Provides release information about the project.
  *
- * ReleaseInfo is a top-level EmuLinker component; its implementation class is
+ * ReleaseInfo is a top-level Kaillux component; its implementation class is
  * loaded via Spring upon startup.
  *
  */

@@ -46,8 +46,8 @@ admin-fix:
 
 # Build Docker image
 docker-build:
-    docker build -t emulinker .
+    docker build -t kaillux .
 
 # Run application in Docker
 docker-run:
-    docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27924:27889-27924/udp emulinker
+    docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27924:27889-27924/udp kaillux

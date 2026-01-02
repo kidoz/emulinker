@@ -4,11 +4,11 @@ import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuUtil;
 
 /**
- * Provides release and build information for the EmuLinker project. This class
+ * Provides release and build information for the Kaillux project. This class
  * also formats a welcome message for printing at server startup.
  */
 public final class KailleraServerReleaseInfo implements ReleaseInfo {
-    private final String productName = "EmuLinker Kaillera Server BETA";
+    private final String productName = "Kaillux Kaillera Server BETA";
 
     private final int majorVersion = 1;
     private final int minorVersion = 1;
@@ -16,7 +16,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
 
     private final String releaseDate = "01/02/2026";
     private final String licenseInfo = "Usage of this sofware is subject to the terms found in the included license";
-    private final String website = "https://github.com/kidoz/emulinker";
+    private final String website = "https://github.com/kidoz/kaillux";
 
     public KailleraServerReleaseInfo() {
         // generic constructor
@@ -52,7 +52,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
     }
 
     /**
-     * Returns the version number for the EmuLinker server in the form
+     * Returns the version number for the Kaillux server in the form
      * <p>
      * <i>major</i>.<i>minor</i>
      * </p>

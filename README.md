@@ -1,11 +1,11 @@
-# EmuLinker
+# Kaillux
 
 ![Java](https://img.shields.io/badge/Java-21-007396?logo=java&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-6DB33F?logo=springboot&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-8.x-02303A?logo=gradle&logoColor=white)
 ![License](https://img.shields.io/badge/License-GPL--2.0-blue)
 
-EmuLinker is a Kaillera network server that enables online multiplayer for
+Kaillux is a Kaillera network server that enables online multiplayer for
 emulators by routing player input over the network.
 
 ## Highlights
@@ -26,7 +26,7 @@ Build the server:
 Run the JAR:
 
 ```bash
-java -jar build/emulinker.jar
+java -jar build/kaillux.jar
 ```
 
 ## Installation
@@ -43,16 +43,16 @@ makepkg -si
 Start the service:
 
 ```bash
-sudo systemctl enable --now emulinker
+sudo systemctl enable --now kaillux
 ```
 
-Configuration files are installed to `/etc/emulinker/`.
+Configuration files are installed to `/etc/kaillux/`.
 
 ### Docker
 
 ```bash
-docker build -t emulinker .
-docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27899:27889-27899/udp emulinker
+docker build -t kaillux .
+docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27899:27889-27899/udp kaillux
 ```
 
 ### Manual
@@ -60,7 +60,7 @@ docker run -p 8080:8080 -p 27888:27888/udp -p 27889-27899:27889-27899/udp emulin
 Run directly with Java 21+:
 
 ```bash
-java -jar build/emulinker.jar
+java -jar build/kaillux.jar
 ```
 
 ## Configuration
@@ -69,7 +69,7 @@ java -jar build/emulinker.jar
 - Access control rules: `src/main/resources/access.cfg`
 - Logging: `src/main/resources/logback.xml`
 
-For packaged installations (Arch Linux), config files are in `/etc/emulinker/`.
+For packaged installations (Arch Linux), config files are in `/etc/kaillux/`.
 
 ## Admin, health, and metrics
 

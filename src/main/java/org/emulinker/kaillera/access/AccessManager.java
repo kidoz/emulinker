@@ -9,10 +9,10 @@ import java.net.InetAddress;
  * access permissions are stored, checked, and manipulated is left to the
  * implementation class.<br>
  * <br>
- * Most of the main EmuLinker components are passed a handle to the current
+ * Most of the main Kaillux components are passed a handle to the current
  * AccessManager and make calls to it upon user interactions.<br>
  * <br>
- * AccessManager is a top-level EmuLinker component; its implementation class is
+ * AccessManager is a top-level Kaillux component; its implementation class is
  * loaded via Spring upon startup.
  *
  */

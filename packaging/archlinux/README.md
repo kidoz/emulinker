@@ -1,6 +1,6 @@
 # Arch Linux Package
 
-This directory contains files for building an Arch Linux package for EmuLinker.
+This directory contains files for building an Arch Linux package for Kaillux.
 
 ## Building from local source
 
@@ -8,7 +8,7 @@ For development, modify the PKGBUILD to use the local source:
 
 ```bash
 # Edit PKGBUILD and change source to:
-source=("git+file:///path/to/emulinker")
+source=("git+file:///path/to/kaillux")
 sha256sums=('SKIP')
 
 # Build the package
@@ -29,31 +29,31 @@ After installation:
 
 | Path | Description |
 |------|-------------|
-| `/usr/bin/emulinker` | Wrapper script |
-| `/usr/share/java/emulinker/emulinker.jar` | Application JAR |
-| `/etc/emulinker/` | Configuration files |
-| `/usr/lib/systemd/system/emulinker.service` | Systemd service |
-| `/var/lib/emulinker/` | Working directory (logs) |
+| `/usr/bin/kaillux` | Wrapper script |
+| `/usr/share/java/kaillux/kaillux.jar` | Application JAR |
+| `/etc/kaillux/` | Configuration files |
+| `/usr/lib/systemd/system/kaillux.service` | Systemd service |
+| `/var/lib/kaillux/` | Working directory (logs) |
 
 ## Managing the service
 
 ```bash
 # Start
-sudo systemctl start emulinker
+sudo systemctl start kaillux
 
 # Enable at boot
-sudo systemctl enable emulinker
+sudo systemctl enable kaillux
 
 # View logs
-journalctl -u emulinker -f
+journalctl -u kaillux -f
 
 # Check status
-systemctl status emulinker
+systemctl status kaillux
 ```
 
 ## Configuration
 
-Edit `/etc/emulinker/application.properties` to configure:
+Edit `/etc/kaillux/application.properties` to configure:
 
 - Server name and location
 - Network ports
@@ -63,7 +63,7 @@ Edit `/etc/emulinker/application.properties` to configure:
 Changes require a service restart:
 
 ```bash
-sudo systemctl restart emulinker
+sudo systemctl restart kaillux
 ```
 
 ## Firewall
