@@ -107,7 +107,7 @@ public class PlayerActionQueue {
         throw new PlayerTimeoutException(thisPlayerNumber, thisPlayer);
     }
 
-    private int getSize(int playerNumber) {
+    private synchronized int getSize(int playerNumber) {
         return (tail + gameBufferSize - heads[playerNumber - 1]) % gameBufferSize;
     }
 }

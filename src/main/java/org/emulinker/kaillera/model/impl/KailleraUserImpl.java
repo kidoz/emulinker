@@ -90,7 +90,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         this.server = server;
         this.listener = listener;
 
-        toString = "User" + userID + "(" + connectSocketAddress.getAddress().getHostAddress() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        toString = "User" + userID + "(" + connectSocketAddress.getAddress().getHostAddress() + ")";
 
         lastChatTime = 0;
         lastCreateGameTime = 0;
@@ -138,9 +138,8 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
 
     public void setName(String name) {
         this.name = name;
-        toString = "User" + id + "(" + (name.length() > 15 ? (name.substring(0, 15) + "...") : name) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                + "/" //$NON-NLS-1$
-                + connectSocketAddress.getAddress().getHostAddress() + ")"; //$NON-NLS-1$
+        toString = "User" + id + "(" + (name.length() > 15 ? (name.substring(0, 15) + "...") : name)
+                + "/" + connectSocketAddress.getAddress().getHostAddress() + ")";
     }
 
     public String getClientType() {
@@ -239,7 +238,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         return AccessManager.ACCESS_NAMES[access];
     }
 
-    protected void setAccess(int access) {
+    public void setAccess(int access) {
         this.access = access;
     }
 
@@ -279,43 +278,43 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
 
     public String toDetailedString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("KailleraUserImpl[id="); //$NON-NLS-1$
+        sb.append("KailleraUserImpl[id=");
         sb.append(getID());
-        sb.append(" protocol="); //$NON-NLS-1$
+        sb.append(" protocol=");
         sb.append(getProtocol());
-        sb.append(" status="); //$NON-NLS-1$
+        sb.append(" status=");
         int statusIdx = getStatus();
         sb.append(statusIdx >= 0 && statusIdx < KailleraUser.STATUS_NAMES.length
                 ? KailleraUser.STATUS_NAMES[statusIdx]
                 : "Unknown(" + statusIdx + ")");
-        sb.append(" name="); //$NON-NLS-1$
+        sb.append(" name=");
         sb.append(getName());
-        sb.append(" clientType="); //$NON-NLS-1$
+        sb.append(" clientType=");
         sb.append(getClientType());
-        sb.append(" ping="); //$NON-NLS-1$
+        sb.append(" ping=");
         sb.append(getPing());
-        sb.append(" connectionType="); //$NON-NLS-1$
+        sb.append(" connectionType=");
         int connTypeIdx = getConnectionType();
         sb.append(connTypeIdx >= 0 && connTypeIdx < KailleraUser.CONNECTION_TYPE_NAMES.length
                 ? KailleraUser.CONNECTION_TYPE_NAMES[connTypeIdx]
                 : "Unknown(" + connTypeIdx + ")");
-        sb.append(" remoteAddress="); //$NON-NLS-1$
+        sb.append(" remoteAddress=");
         sb.append((getSocketAddress() == null
                 ? EmuUtil.formatSocketAddress(getConnectSocketAddress())
                 : EmuUtil.formatSocketAddress(getSocketAddress())));
-        sb.append("]"); //$NON-NLS-1$
+        sb.append("]");
         return sb.toString();
     }
 
     public void stop() {
         synchronized (this) {
             if (!isRunning) {
-                log.debug(this + "  thread stop request ignored: not running!"); //$NON-NLS-1$
+                log.debug(this + "  thread stop request ignored: not running!");
                 return;
             }
 
             if (stopFlag) {
-                log.debug(this + "  thread stop request ignored: already stopping!"); //$NON-NLS-1$
+                log.debug(this + "  thread stop request ignored: already stopping!");
                 return;
             }
 
@@ -364,8 +363,8 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         updateLastActivity();
 
         if (game == null) {
-            log.warn(this + " kick User " + userID + " failed: Not in a game"); //$NON-NLS-1$ //$NON-NLS-2$
-            throw new GameKickException(EmuLang.getString("KailleraUserImpl.KickErrorNotInGame")); //$NON-NLS-1$
+            log.warn(this + " kick User " + userID + " failed: Not in a game");
+            throw new GameKickException(EmuLang.getString("KailleraUserImpl.KickErrorNotInGame"));
         }
 
         game.kick(this, userID);
@@ -376,13 +375,13 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         updateLastActivity();
 
         if (getStatus() == KailleraUser.STATUS_PLAYING) {
-            log.warn(this + " create game failed: User status is Playing!"); //$NON-NLS-1$
+            log.warn(this + " create game failed: User status is Playing!");
             throw new CreateGameException(
-                    EmuLang.getString("KailleraUserImpl.CreateGameErrorAlreadyInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.CreateGameErrorAlreadyInGame"));
         } else if (getStatus() == KailleraUser.STATUS_CONNECTING) {
-            log.warn(this + " create game failed: User status is Connecting!"); //$NON-NLS-1$
+            log.warn(this + " create game failed: User status is Connecting!");
             throw new CreateGameException(
-                    EmuLang.getString("KailleraUserImpl.CreateGameErrorNotFullyConnected")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.CreateGameErrorNotFullyConnected"));
         }
 
         KailleraGame game = server.createGame(this, romName);
@@ -401,25 +400,25 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         updateLastActivity();
 
         if (game != null) {
-            log.warn(this + " join game failed: Already in: " + game); //$NON-NLS-1$
+            log.warn(this + " join game failed: Already in: " + game);
             throw new JoinGameException(
-                    EmuLang.getString("KailleraUserImpl.JoinGameErrorAlreadyInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.JoinGameErrorAlreadyInGame"));
         }
         if (getStatus() == KailleraUser.STATUS_PLAYING) {
-            log.warn(this + " join game failed: User status is Playing!"); //$NON-NLS-1$
+            log.warn(this + " join game failed: User status is Playing!");
             throw new JoinGameException(
-                    EmuLang.getString("KailleraUserImpl.JoinGameErrorAnotherGameRunning")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.JoinGameErrorAnotherGameRunning"));
         } else if (getStatus() == KailleraUser.STATUS_CONNECTING) {
-            log.warn(this + " join game failed: User status is Connecting!"); //$NON-NLS-1$
+            log.warn(this + " join game failed: User status is Connecting!");
             throw new JoinGameException(
-                    EmuLang.getString("KailleraUserImpl.JoinGameErrorNotFullConnected")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.JoinGameErrorNotFullConnected"));
         }
 
         KailleraGameImpl game = (KailleraGameImpl) server.getGame(gameID);
         if (game == null) {
-            log.warn(this + " join game failed: Game " + gameID + " does not exist!"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn(this + " join game failed: Game " + gameID + " does not exist!");
             throw new JoinGameException(
-                    EmuLang.getString("KailleraUserImpl.JoinGameErrorDoesNotExist")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.JoinGameErrorDoesNotExist"));
         }
 
         playerNumber = game.join(this);
@@ -438,9 +437,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         KailleraGameImpl currentGame = game;
 
         if (currentGame == null) {
-            log.warn(this + " game chat failed: Not in a game"); //$NON-NLS-1$
+            log.warn(this + " game chat failed: Not in a game");
             throw new GameChatException(
-                    EmuLang.getString("KailleraUserImpl.GameChatErrorNotInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.GameChatErrorNotInGame"));
         }
 
         currentGame.chat(this, message);
@@ -457,7 +456,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         if (currentGame != null)
             currentGame.drop(this, currentPlayerNumber);
         else
-            log.debug(this + " drop game failed: Not in a game"); //$NON-NLS-1$
+            log.debug(this + " drop game failed: Not in a game");
     }
 
     public synchronized void quitGame()
@@ -469,7 +468,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         int currentPlayerNumber = playerNumber;
 
         if (currentGame == null) {
-            log.debug(this + " quit game failed: Not in a game"); //$NON-NLS-1$
+            log.debug(this + " quit game failed: Not in a game");
             // throw new QuitGameException("You are not in a game!");
             return;
         }
@@ -495,9 +494,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         KailleraGameImpl currentGame = game;
 
         if (currentGame == null) {
-            log.warn(this + " start game failed: Not in a game"); //$NON-NLS-1$
+            log.warn(this + " start game failed: Not in a game");
             throw new StartGameException(
-                    EmuLang.getString("KailleraUserImpl.StartGameErrorNotInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.StartGameErrorNotInGame"));
         }
 
         currentGame.start(this);
@@ -511,9 +510,9 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         int currentPlayerNumber = playerNumber;
 
         if (currentGame == null) {
-            log.warn(this + " player ready failed: Not in a game"); //$NON-NLS-1$
+            log.warn(this + " player ready failed: Not in a game");
             throw new UserReadyException(
-                    EmuLang.getString("KailleraUserImpl.PlayerReadyErrorNotInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraUserImpl.PlayerReadyErrorNotInGame"));
         }
 
         currentGame.ready(this, currentPlayerNumber);
@@ -529,13 +528,13 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         try {
             if (currentGame == null)
                 throw new GameDataException(
-                        EmuLang.getString("KailleraUserImpl.GameDataErrorNotInGame"), data, //$NON-NLS-1$
+                        EmuLang.getString("KailleraUserImpl.GameDataErrorNotInGame"), data,
                         getConnectionType(), 1, 1);
             currentGame.addData(this, currentPlayerNumber, data);
             gameDataErrorTime = 0;
         } catch (GameDataException e) {
             // this should be warn level, but it creates tons of lines in the log
-            log.debug(this + " add game data failed: " + e.getMessage()); //$NON-NLS-1$
+            log.debug(this + " add game data failed: " + e.getMessage());
 
             // i'm going to reflect the game data packet back at the user to prevent game
             // lockups,
@@ -548,7 +547,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
                                                                               // to close the game
                 {
                     // this should be warn level, but it creates tons of lines in the log
-                    log.debug(this + ": error game data exceeds drop timeout!"); //$NON-NLS-1$
+                    log.debug(this + ": error game data exceeds drop timeout!");
                     // e.setReflectData(false);
                     throw new GameDataException(e.getMessage());
                 } else {
@@ -565,7 +564,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
 
     void addEvent(KailleraEvent event) {
         if (event == null) {
-            log.error(this + ": ignoring null event!"); //$NON-NLS-1$
+            log.error(this + ": ignoring null event!");
             return;
         }
 
@@ -576,13 +575,13 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
                     || event instanceof GameDataEvent;
 
             if (isCritical) {
-                log.error(this + ": CRITICAL event queue full, dropping: " //$NON-NLS-1$
+                log.error(this + ": CRITICAL event queue full, dropping: "
                         + event.getClass().getSimpleName());
             } else if (droppedEventsCount <= DROPPED_EVENTS_LOG_THRESHOLD) {
-                log.warn(this + ": event queue full, dropping: " + event.getClass().getSimpleName() //$NON-NLS-1$
-                        + " (dropped " + droppedEventsCount + " events)"); //$NON-NLS-1$ //$NON-NLS-2$
+                log.warn(this + ": event queue full, dropping: " + event.getClass().getSimpleName()
+                        + " (dropped " + droppedEventsCount + " events)");
             } else if (droppedEventsCount == DROPPED_EVENTS_LOG_THRESHOLD + 1) {
-                log.warn(this + ": suppressing further event drop warnings"); //$NON-NLS-1$
+                log.warn(this + ": suppressing further event drop warnings");
             }
         } else {
             // Reset counter on successful add
@@ -592,11 +591,11 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
 
     public void run() {
         isRunning = true;
-        log.debug(this + " thread running..."); //$NON-NLS-1$
+        log.debug(this + " thread running...");
 
         try {
             while (!stopFlag) {
-                KailleraEvent event = eventQueue.poll(200, TimeUnit.SECONDS);
+                KailleraEvent event = eventQueue.poll(200, TimeUnit.MILLISECONDS);
 
                 if (event == null)
                     continue;
@@ -613,18 +612,18 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
                 }
             }
         } catch (InterruptedException e) {
-            log.error(this + " thread interrupted!"); //$NON-NLS-1$
+            log.error(this + " thread interrupted!");
         } catch (Throwable e) {
-            log.error(this + " thread caught unexpected exception!", e); //$NON-NLS-1$
+            log.error(this + " thread caught unexpected exception!", e);
         } finally {
             isRunning = false;
-            log.debug(this + " thread exiting..."); //$NON-NLS-1$
+            log.debug(this + " thread exiting...");
         }
     }
 
     private static final class StopFlagEvent implements KailleraEvent {
         public String toString() {
-            return "StopFlagEvent"; //$NON-NLS-1$
+            return "StopFlagEvent";
         }
     }
 

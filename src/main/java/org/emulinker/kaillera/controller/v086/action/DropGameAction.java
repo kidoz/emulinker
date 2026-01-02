@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop_Notification;
 import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop_Request;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
@@ -36,7 +36,7 @@ public final class DropGameAction implements V086Action, V086GameEventHandler {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         if (!(message instanceof PlayerDrop_Request))
             throw new FatalActionException("Received incorrect instance of PlayerDrop: " + message);
@@ -50,7 +50,7 @@ public final class DropGameAction implements V086Action, V086GameEventHandler {
         }
     }
 
-    public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         UserDroppedGameEvent userDroppedEvent = (UserDroppedGameEvent) event;

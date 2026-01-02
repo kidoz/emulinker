@@ -69,8 +69,8 @@ public final class KailleraGameImpl implements KailleraGame {
         this.timeoutMillis = timeoutMillis;
         this.desynchTimeouts = desynchTimeouts;
 
-        toString = "Game" + id + "(" //$NON-NLS-1$ //$NON-NLS-2$
-                + (romName.length() > 15 ? (romName.substring(0, 15) + "...") : romName) + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+        toString = "Game" + id + "("
+                + (romName.length() > 15 ? (romName.substring(0, 15) + "...") : romName) + ")";
         startDate = new Date();
 
         statsCollector = server.getStatsCollector();
@@ -103,15 +103,15 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public KailleraUser getPlayer(int playerNumber) {
         if (playerNumber <= 0 || playerNumber > players.size()) {
-            log.error(this + ": getPlayer(" + playerNumber + ") failed! (size = " + players.size() //$NON-NLS-1$ //$NON-NLS-2$
-                    + ")"); //$NON-NLS-1$
+            log.error(this + ": getPlayer(" + playerNumber + ") failed! (size = " + players.size()
+                    + ")");
             return null;
         }
 
         try {
             return players.get(playerNumber - 1);
         } catch (IndexOutOfBoundsException e) {
-            log.error(this + ": getPlayer(" + playerNumber + ") index out of bounds", e); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error(this + ": getPlayer(" + playerNumber + ") index out of bounds", e);
             return null;
         }
     }
@@ -151,17 +151,17 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public String toDetailedString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("KailleraGame[id="); //$NON-NLS-1$
+        sb.append("KailleraGame[id=");
         sb.append(getID());
-        sb.append(" romName="); //$NON-NLS-1$
+        sb.append(" romName=");
         sb.append(getRomName());
-        sb.append(" owner="); //$NON-NLS-1$
+        sb.append(" owner=");
         sb.append(getOwner());
-        sb.append(" numPlayers="); //$NON-NLS-1$
+        sb.append(" numPlayers=");
         sb.append(getNumPlayers());
-        sb.append(" status="); //$NON-NLS-1$
+        sb.append(" status=");
         sb.append(KailleraGame.STATUS_NAMES[getStatus()]);
-        sb.append("]"); //$NON-NLS-1$
+        sb.append("]");
         return sb.toString();
     }
 
@@ -202,16 +202,16 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public synchronized void chat(KailleraUser user, String message) throws GameChatException {
         if (!players.contains(user)) {
-            log.warn(user + " game chat denied: not in " + this); //$NON-NLS-1$
+            log.warn(user + " game chat denied: not in " + this);
             throw new GameChatException(
-                    EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame"));
         }
 
         if (message == null || message.trim().isEmpty()) {
             throw new GameChatException("Empty message");
         }
 
-        log.info(user + ", " + this + " gamechat: " + message); //$NON-NLS-1$ //$NON-NLS-2$
+        log.info(user + ", " + this + " gamechat: " + message);
         addEvent(new GameChatEvent(this, user, message));
     }
 
@@ -221,75 +221,75 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public synchronized void kick(KailleraUser user, int userID) throws GameKickException {
         if (!user.equals(getOwner())) {
-            log.warn(user + " kick denied: not the owner of " + this); //$NON-NLS-1$
+            log.warn(user + " kick denied: not the owner of " + this);
             throw new GameKickException(
-                    EmuLang.getString("KailleraGameImpl.GameKickDeniedNotGameOwner")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.GameKickDeniedNotGameOwner"));
         }
 
         if (user.getID() == userID) {
-            log.warn(user + " kick denied: attempt to kick self"); //$NON-NLS-1$
+            log.warn(user + " kick denied: attempt to kick self");
             throw new GameKickException(
-                    EmuLang.getString("KailleraGameImpl.GameKickDeniedCannotKickSelf")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.GameKickDeniedCannotKickSelf"));
         }
 
         for (KailleraUserImpl player : players) {
             if (player.getID() == userID) {
                 try {
-                    log.info(user + " kicked: " + userID + " from " + this); //$NON-NLS-1$ //$NON-NLS-2$
+                    log.info(user + " kicked: " + userID + " from " + this);
                     kickedUsers.add(userID);
                     player.quitGame();
                     return;
                 } catch (Exception e) {
                     // this shouldn't happen
                     log.error(
-                            "Caught exception while making user quit game! This shouldn't happen!", //$NON-NLS-1$
+                            "Caught exception while making user quit game! This shouldn't happen!",
                             e);
                 }
             }
         }
 
-        log.warn(user + " kick failed: user " + userID + " not found in: " + this); //$NON-NLS-1$ //$NON-NLS-2$
+        log.warn(user + " kick failed: user " + userID + " not found in: " + this);
         throw new GameKickException(
-                EmuLang.getString("KailleraGameImpl.GameKickErrorUserNotFound")); //$NON-NLS-1$
+                EmuLang.getString("KailleraGameImpl.GameKickErrorUserNotFound"));
     }
 
     public synchronized int join(KailleraUser user) throws JoinGameException {
         if (players.contains(user)) {
-            log.warn(user + " join game denied: already in " + this); //$NON-NLS-1$
+            log.warn(user + " join game denied: already in " + this);
             throw new JoinGameException(
-                    EmuLang.getString("KailleraGameImpl.JoinGameErrorAlreadyInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.JoinGameErrorAlreadyInGame"));
         }
 
         int access = server.getAccessManager().getAccess(user.getSocketAddress().getAddress());
 
         if (access == AccessManager.ACCESS_NORMAL && kickedUsers.contains(user.getID())) {
-            log.warn(user + " join game denied: previously kicked: " + this); //$NON-NLS-1$
+            log.warn(user + " join game denied: previously kicked: " + this);
             throw new JoinGameException(
-                    EmuLang.getString("KailleraGameImpl.JoinGameDeniedPreviouslyKicked")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.JoinGameDeniedPreviouslyKicked"));
         }
 
         if (access == AccessManager.ACCESS_NORMAL && getStatus() != KailleraGame.STATUS_WAITING) {
-            log.warn(user + " join game denied: attempt to join game in progress: " + this); //$NON-NLS-1$
+            log.warn(user + " join game denied: attempt to join game in progress: " + this);
             throw new JoinGameException(
-                    EmuLang.getString("KailleraGameImpl.JoinGameDeniedGameIsInProgress")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.JoinGameDeniedGameIsInProgress"));
         }
 
         players.add((KailleraUserImpl) user);
         server.addEvent(new GameStatusChangedEvent(server, this));
 
-        log.info(user + " joined: " + this); //$NON-NLS-1$
+        log.info(user + " joined: " + this);
         addEvent(new UserJoinedGameEvent(this, user));
 
         if (user.equals(owner)) {
             if (autoFireDetector != null) {
                 if (autoFireDetector.getSensitivity() > 0) {
-                    announce(EmuLang.getString("KailleraGameImpl.AutofireDetectionOn")); //$NON-NLS-1$
-                    announce(EmuLang.getString("KailleraGameImpl.AutofireCurrentSensitivity", //$NON-NLS-1$
+                    announce(EmuLang.getString("KailleraGameImpl.AutofireDetectionOn"));
+                    announce(EmuLang.getString("KailleraGameImpl.AutofireCurrentSensitivity",
                             autoFireDetector.getSensitivity()));
                 } else {
-                    announce(EmuLang.getString("KailleraGameImpl.AutofireDetectionOff")); //$NON-NLS-1$
+                    announce(EmuLang.getString("KailleraGameImpl.AutofireDetectionOff"));
                 }
-                announce(EmuLang.getString("KailleraGameImpl.GameHelp")); //$NON-NLS-1$
+                announce(EmuLang.getString("KailleraGameImpl.GameHelp"));
             }
         }
 
@@ -298,55 +298,55 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public synchronized void start(KailleraUser user) throws StartGameException {
         if (!user.equals(getOwner())) {
-            log.warn(user + " start game denied: not the owner of " + this); //$NON-NLS-1$
+            log.warn(user + " start game denied: not the owner of " + this);
             throw new StartGameException(
-                    EmuLang.getString("KailleraGameImpl.StartGameDeniedOnlyOwnerMayStart")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.StartGameDeniedOnlyOwnerMayStart"));
         }
 
         if (status == KailleraGame.STATUS_SYNCHRONIZING) {
-            log.warn(user + " start game failed: " + this + " status is " //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn(user + " start game failed: " + this + " status is "
                     + KailleraGame.STATUS_NAMES[status]);
             throw new StartGameException(
-                    EmuLang.getString("KailleraGameImpl.StartGameErrorSynchronizing")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.StartGameErrorSynchronizing"));
         } else if (status == KailleraGame.STATUS_PLAYING) {
-            log.warn(user + " start game failed: " + this + " status is " //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn(user + " start game failed: " + this + " status is "
                     + KailleraGame.STATUS_NAMES[status]);
             throw new StartGameException(
-                    EmuLang.getString("KailleraGameImpl.StartGameErrorStatusIsPlaying")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.StartGameErrorStatusIsPlaying"));
         }
 
         int access = server.getAccessManager().getAccess(user.getSocketAddress().getAddress());
         if (access == AccessManager.ACCESS_NORMAL && getNumPlayers() < 2
                 && !server.getAllowSinglePlayer()) {
-            log.warn(user + " start game denied: " + this + " needs at least 2 players"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn(user + " start game denied: " + this + " needs at least 2 players");
             throw new StartGameException(
-                    EmuLang.getString("KailleraGameImpl.StartGameDeniedSinglePlayerNotAllowed")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.StartGameDeniedSinglePlayerNotAllowed"));
         }
 
         for (KailleraUser player : players) {
             if (player.getConnectionType() != owner.getConnectionType()) {
-                log.warn(user + " start game denied: " + this //$NON-NLS-1$
-                        + ": All players must use the same connection type"); //$NON-NLS-1$
+                log.warn(user + " start game denied: " + this
+                        + ": All players must use the same connection type");
                 addEvent(new GameInfoEvent(this,
-                        EmuLang.getString("KailleraGameImpl.StartGameConnectionTypeMismatchInfo", //$NON-NLS-1$
-                                KailleraUser.CONNECTION_TYPE_NAMES[owner.getConnectionType()]))); // $NON-NLS-2$
-                                                                                                  // //$NON-NLS-3$
+                        EmuLang.getString("KailleraGameImpl.StartGameConnectionTypeMismatchInfo",
+                                KailleraUser.CONNECTION_TYPE_NAMES[owner.getConnectionType()])));
+                //
                 throw new StartGameException(EmuLang
-                        .getString("KailleraGameImpl.StartGameDeniedConnectionTypeMismatch")); //$NON-NLS-1$
+                        .getString("KailleraGameImpl.StartGameDeniedConnectionTypeMismatch"));
             }
 
             if (!player.getClientType().equals(getClientType())) {
-                log.warn(user + " start game denied: " + this //$NON-NLS-1$
-                        + ": All players must use the same emulator!"); //$NON-NLS-1$
+                log.warn(user + " start game denied: " + this
+                        + ": All players must use the same emulator!");
                 addEvent(new GameInfoEvent(this, EmuLang.getString(
-                        "KailleraGameImpl.StartGameEmulatorMismatchInfo", getClientType()))); //$NON-NLS-1$ //$NON-NLS-2$
-                                                                                              // //$NON-NLS-3$
+                        "KailleraGameImpl.StartGameEmulatorMismatchInfo", getClientType())));
+                //
                 throw new StartGameException(
-                        EmuLang.getString("KailleraGameImpl.StartGameDeniedEmulatorMismatch")); //$NON-NLS-1$
+                        EmuLang.getString("KailleraGameImpl.StartGameDeniedEmulatorMismatch"));
             }
         }
 
-        log.info(user + " started: " + this); //$NON-NLS-1$
+        log.info(user + " started: " + this);
         setStatus(KailleraGame.STATUS_SYNCHRONIZING);
 
         if (autoFireDetector != null)
@@ -361,7 +361,7 @@ public final class KailleraGameImpl implements KailleraGame {
             // playerActionQueues[i] = new PlayerActionQueue(playerNumber, player,
             // getNumPlayers(), GAME_BUFFER_SIZE, (player.getPing()*3));
             player.setPlayerNumber(playerNumber);
-            log.info(this + ": " + player + " is player number " + playerNumber); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info(this + ": " + player + " is player number " + playerNumber);
 
             if (autoFireDetector != null)
                 autoFireDetector.addPlayer(player, playerNumber);
@@ -375,35 +375,35 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public synchronized void ready(KailleraUser user, int playerNumber) throws UserReadyException {
         if (!players.contains(user)) {
-            log.warn(user + " ready game failed: not in " + this); //$NON-NLS-1$
+            log.warn(user + " ready game failed: not in " + this);
             throw new UserReadyException(
-                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorNotInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorNotInGame"));
         }
 
         if (status != KailleraGame.STATUS_SYNCHRONIZING) {
-            log.warn(user + " ready failed: " + this + " status is " //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn(user + " ready failed: " + this + " status is "
                     + KailleraGame.STATUS_NAMES[status]);
             throw new UserReadyException(
-                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorIncorrectState")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorIncorrectState"));
         }
 
         if (playerActionQueues == null) {
-            log.error(user + " ready failed: " + this + " playerActionQueues == null!"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error(user + " ready failed: " + this + " playerActionQueues == null!");
             throw new UserReadyException(
-                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError"));
         }
 
         if (playerNumber < 1 || playerNumber > playerActionQueues.length) {
-            log.error(user + " ready failed: invalid playerNumber " + playerNumber); //$NON-NLS-1$
+            log.error(user + " ready failed: invalid playerNumber " + playerNumber);
             throw new UserReadyException(
-                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError"));
         }
 
-        log.info(user + " (player " + playerNumber + ") is ready to play: " + this); //$NON-NLS-1$ //$NON-NLS-2$
+        log.info(user + " (player " + playerNumber + ") is ready to play: " + this);
         playerActionQueues[(playerNumber - 1)].setSynched(true);
 
         if (getSynchedCount() == getNumPlayers()) {
-            log.info(this + " all players are ready: starting..."); //$NON-NLS-1$
+            log.info(this + " all players are ready: starting...");
 
             setStatus(KailleraGame.STATUS_PLAYING);
             synched = true;
@@ -413,24 +413,24 @@ public final class KailleraGameImpl implements KailleraGame {
 
     public synchronized void drop(KailleraUser user, int playerNumber) throws DropGameException {
         if (!players.contains(user)) {
-            log.warn(user + " drop game failed: not in " + this); //$NON-NLS-1$
+            log.warn(user + " drop game failed: not in " + this);
             throw new DropGameException(
-                    EmuLang.getString("KailleraGameImpl.DropGameErrorNotInGame")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.DropGameErrorNotInGame"));
         }
 
         if (playerActionQueues == null) {
-            log.error(user + " drop failed: " + this + " playerActionQueues == null!"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error(user + " drop failed: " + this + " playerActionQueues == null!");
             throw new DropGameException(
-                    EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError"));
         }
 
         if (playerNumber < 1 || playerNumber > playerActionQueues.length) {
-            log.error(user + " drop failed: invalid playerNumber " + playerNumber); //$NON-NLS-1$
+            log.error(user + " drop failed: invalid playerNumber " + playerNumber);
             throw new DropGameException(
-                    EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError"));
         }
 
-        log.info(user + " dropped: " + this); //$NON-NLS-1$
+        log.info(user + " dropped: " + this);
         playerActionQueues[(playerNumber - 1)].setSynched(false);
 
         if (getSynchedCount() < 2 && synched) {
@@ -440,7 +440,7 @@ public final class KailleraGameImpl implements KailleraGame {
                 for (PlayerActionQueue q : queues)
                     q.setSynched(false);
             }
-            log.info(this + ": game desynched: less than 2 players playing!"); //$NON-NLS-1$
+            log.info(this + ": game desynched: less than 2 players playing!");
         }
 
         if (autoFireDetector != null)
@@ -456,12 +456,12 @@ public final class KailleraGameImpl implements KailleraGame {
             throws DropGameException, QuitGameException, CloseGameException {
         synchronized (this) {
             if (!players.remove(user)) {
-                log.warn(user + " quit game failed: not in " + this); //$NON-NLS-1$
+                log.warn(user + " quit game failed: not in " + this);
                 throw new QuitGameException(
-                        EmuLang.getString("KailleraGameImpl.QuitGameErrorNotInGame")); //$NON-NLS-1$
+                        EmuLang.getString("KailleraGameImpl.QuitGameErrorNotInGame"));
             }
 
-            log.info(user + " quit: " + this); //$NON-NLS-1$
+            log.info(user + " quit: " + this);
 
             addEvent(new UserQuitGameEvent(this, user));
         }
@@ -474,9 +474,9 @@ public final class KailleraGameImpl implements KailleraGame {
 
     synchronized void close(KailleraUser user) throws CloseGameException {
         if (!user.equals(owner)) {
-            log.warn(user + " close game denied: not the owner of " + this); //$NON-NLS-1$
+            log.warn(user + " close game denied: not the owner of " + this);
             throw new CloseGameException(
-                    EmuLang.getString("KailleraGameImpl.CloseGameErrorNotGameOwner")); //$NON-NLS-1$
+                    EmuLang.getString("KailleraGameImpl.CloseGameErrorNotGameOwner"));
         }
 
         if (synched) {
@@ -486,7 +486,7 @@ public final class KailleraGameImpl implements KailleraGame {
                 for (PlayerActionQueue q : queues)
                     q.setSynched(false);
             }
-            log.info(this + ": game desynched: game closed!"); //$NON-NLS-1$
+            log.info(this + ": game desynched: game closed!");
         }
 
         for (KailleraUserImpl player : players)
@@ -507,9 +507,9 @@ public final class KailleraGameImpl implements KailleraGame {
                 && playerNumber <= playerActionQueues.length
                 && playerActionQueues[(playerNumber - 1)].isSynched()) {
             playerActionQueues[(playerNumber - 1)].setSynched(false);
-            log.info(this + ": " + user + ": player desynched: dropped a packet!"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info(this + ": " + user + ": player desynched: dropped a packet!");
             addEvent(new PlayerDesynchEvent(this, user, EmuLang
-                    .getString("KailleraGameImpl.DesynchDetectedDroppedPacket", user.getName()))); //$NON-NLS-1$
+                    .getString("KailleraGameImpl.DesynchDetectedDroppedPacket", user.getName())));
 
             if (getSynchedCount() < 2 && synched) {
                 synched = false;
@@ -518,7 +518,7 @@ public final class KailleraGameImpl implements KailleraGame {
                     for (PlayerActionQueue q : queues)
                         q.setSynched(false);
                 }
-                log.info(this + ": game desynched: less than 2 players synched!"); //$NON-NLS-1$
+                log.info(this + ": game desynched: less than 2 players synched!");
             }
         }
     }
@@ -560,7 +560,7 @@ public final class KailleraGameImpl implements KailleraGame {
         int arraySize = (numPlayers * actions * bytesPerAction);
 
         if (!synched) {
-            throw new GameDataException(EmuLang.getString("KailleraGameImpl.DesynchedWarning"), //$NON-NLS-1$
+            throw new GameDataException(EmuLang.getString("KailleraGameImpl.DesynchedWarning"),
                     data, actions, playerNumber, numPlayers);
         }
 
@@ -589,7 +589,7 @@ public final class KailleraGameImpl implements KailleraGame {
         }
 
         if (!synched)
-            throw new GameDataException(EmuLang.getString("KailleraGameImpl.DesynchedWarning"), //$NON-NLS-1$
+            throw new GameDataException(EmuLang.getString("KailleraGameImpl.DesynchedWarning"),
                     data, bytesPerAction, playerNumber, numPlayers);
 
         ((KailleraUserImpl) user).addEvent(new GameDataEvent(this, response));
@@ -618,14 +618,14 @@ public final class KailleraGameImpl implements KailleraGame {
 
         KailleraUser player = e.getPlayer();
         if (timeoutNumber < desynchTimeouts) {
-            log.info(this + ": " + player + ": Timeout #" + timeoutNumber); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info(this + ": " + player + ": Timeout #" + timeoutNumber);
             addEvent(new GameTimeoutEvent(this, player, timeoutNumber));
         } else {
-            log.info(this + ": " + player + ": Timeout #" + timeoutNumber); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info(this + ": " + player + ": Timeout #" + timeoutNumber);
             playerActionQueue.setSynched(false);
-            log.info(this + ": " + player + ": player desynched: Lagged!"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info(this + ": " + player + ": player desynched: Lagged!");
             addEvent(new PlayerDesynchEvent(this, player, EmuLang
-                    .getString("KailleraGameImpl.DesynchDetectedPlayerLagged", player.getName()))); //$NON-NLS-1$
+                    .getString("KailleraGameImpl.DesynchDetectedPlayerLagged", player.getName())));
 
             if (getSynchedCount() < 2) {
                 synched = false;
@@ -634,7 +634,7 @@ public final class KailleraGameImpl implements KailleraGame {
                     for (PlayerActionQueue q : queues)
                         q.setSynched(false);
                 }
-                log.info(this + ": game desynched: less than 2 players synched!"); //$NON-NLS-1$
+                log.info(this + ": game desynched: less than 2 players synched!");
             }
         }
     }

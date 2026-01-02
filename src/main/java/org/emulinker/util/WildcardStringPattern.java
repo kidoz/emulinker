@@ -3,7 +3,11 @@ package org.emulinker.util;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class WildcardStringPattern {
+    private static final Logger log = LoggerFactory.getLogger(WildcardStringPattern.class);
     protected boolean equals;
     protected boolean startsWith;
     protected boolean endsWith;
@@ -16,6 +20,7 @@ public class WildcardStringPattern {
     public WildcardStringPattern(String pattern) {
         if (pattern == null || pattern.equals("")) {
             // match() function will always return true.
+            log.warn("Empty wildcard pattern created - will match all strings");
             return;
         }
 

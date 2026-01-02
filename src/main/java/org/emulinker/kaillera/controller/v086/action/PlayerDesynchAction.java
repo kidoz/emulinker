@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
 import org.emulinker.kaillera.model.event.GameEvent;
 import org.emulinker.kaillera.model.event.PlayerDesynchEvent;
@@ -28,19 +28,19 @@ public final class PlayerDesynchAction implements V086GameEventHandler {
         return DESC;
     }
 
-    public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         PlayerDesynchEvent desynchEvent = (PlayerDesynchEvent) event;
 
         try {
             clientHandler.send(new GameChat_Notification(clientHandler.getNextMessageNumber(),
-                    EmuLang.getString("PlayerDesynchAction.DesynchDetected"), //$NON-NLS-1$
+                    EmuLang.getString("PlayerDesynchAction.DesynchDetected"),
                     desynchEvent.getMessage()));
             // if (clientHandler.getUser().getStatus() == KailleraUser.STATUS_PLAYING)
             // clientHandler.getUser().dropGame();
         } catch (MessageFormatException e) {
-            log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e); //$NON-NLS-1$
+            log.error("Failed to contruct GameChat_Notification message: " + e.getMessage(), e);
         }
         // catch (DropGameException e)
         // {

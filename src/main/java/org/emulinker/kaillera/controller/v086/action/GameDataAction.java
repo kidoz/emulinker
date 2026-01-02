@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.CachedGameData;
 import org.emulinker.kaillera.controller.v086.protocol.GameData;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
@@ -35,7 +35,7 @@ public final class GameDataAction implements V086Action, V086GameEventHandler {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         try {
             byte[] data = ((GameData) message).getGameData();
@@ -55,7 +55,7 @@ public final class GameDataAction implements V086Action, V086GameEventHandler {
         }
     }
 
-    public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         byte[] data = ((GameDataEvent) event).getData();
         int key = clientHandler.getServerGameDataCache().indexOf(data);
         if (key < 0) {

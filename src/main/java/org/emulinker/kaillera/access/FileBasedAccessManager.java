@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.WildcardStringPattern;
+import su.kidoz.kaillera.access.TimedAccessRule;
 
 public class FileBasedAccessManager implements AccessManager, Runnable {
     // Note: DNS cache TTLs should be configured at JVM level via:
@@ -578,129 +579,24 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         }
     }
 
-    protected class TempBan {
-        protected List<WildcardStringPattern> patterns;
-        protected long startTime;
-        protected int minutes;
-
-        protected TempBan(String accessStr, int minutes) {
-            patterns = new ArrayList<WildcardStringPattern>();
-            String s = accessStr.toLowerCase();
-            StringTokenizer pt = new StringTokenizer(s, "|");
-            while (pt.hasMoreTokens()) {
-                patterns.add(new WildcardStringPattern(pt.nextToken().toLowerCase()));
-            }
-
-            this.minutes = minutes;
-            startTime = System.currentTimeMillis();
-        }
-
-        protected List<WildcardStringPattern> getPatterns() {
-            return patterns;
-        }
-
-        protected long getStartTime() {
-            return startTime;
-        }
-
-        protected int getMinutes() {
-            return minutes;
-        }
-
-        protected boolean isExpired() {
-            return System.currentTimeMillis() > (startTime + (minutes * 60000));
-        }
-
-        protected boolean matches(String address) {
-            for (WildcardStringPattern pattern : patterns) {
-                if (pattern.match(address))
-                    return true;
-            }
-            return false;
+    /** Temporary ban rule that expires after a specified duration. */
+    protected static class TempBan extends TimedAccessRule {
+        protected TempBan(String addressPattern, int minutes) {
+            super(addressPattern, minutes);
         }
     }
 
-    protected class TempAdmin {
-        protected List<WildcardStringPattern> patterns;
-        protected long startTime;
-        protected int minutes;
-
-        protected TempAdmin(String accessStr, int minutes) {
-            patterns = new ArrayList<WildcardStringPattern>();
-            String s = accessStr.toLowerCase();
-            StringTokenizer pt = new StringTokenizer(s, "|");
-            while (pt.hasMoreTokens()) {
-                patterns.add(new WildcardStringPattern(pt.nextToken().toLowerCase()));
-            }
-
-            this.minutes = minutes;
-            startTime = System.currentTimeMillis();
-        }
-
-        protected List<WildcardStringPattern> getPatterns() {
-            return patterns;
-        }
-
-        protected long getStartTime() {
-            return startTime;
-        }
-
-        protected int getMinutes() {
-            return minutes;
-        }
-
-        protected boolean isExpired() {
-            return System.currentTimeMillis() > (startTime + (minutes * 60000));
-        }
-
-        protected boolean matches(String address) {
-            for (WildcardStringPattern pattern : patterns) {
-                if (pattern.match(address))
-                    return true;
-            }
-            return false;
+    /** Temporary admin grant that expires after a specified duration. */
+    protected static class TempAdmin extends TimedAccessRule {
+        protected TempAdmin(String addressPattern, int minutes) {
+            super(addressPattern, minutes);
         }
     }
 
-    protected class Silence {
-        protected List<WildcardStringPattern> patterns;
-        protected long startTime;
-        protected int minutes;
-
-        protected Silence(String accessStr, int minutes) {
-            patterns = new ArrayList<WildcardStringPattern>();
-            String s = accessStr.toLowerCase();
-            StringTokenizer pt = new StringTokenizer(s, "|");
-            while (pt.hasMoreTokens()) {
-                patterns.add(new WildcardStringPattern(pt.nextToken().toLowerCase()));
-            }
-
-            this.minutes = minutes;
-            startTime = System.currentTimeMillis();
-        }
-
-        protected List<WildcardStringPattern> getPatterns() {
-            return patterns;
-        }
-
-        protected long getStartTime() {
-            return startTime;
-        }
-
-        protected int getMinutes() {
-            return minutes;
-        }
-
-        protected boolean isExpired() {
-            return System.currentTimeMillis() > (startTime + (minutes * 60000));
-        }
-
-        protected boolean matches(String address) {
-            for (WildcardStringPattern pattern : patterns) {
-                if (pattern.match(address))
-                    return true;
-            }
-            return false;
+    /** Temporary silence rule that expires after a specified duration. */
+    protected static class Silence extends TimedAccessRule {
+        protected Silence(String addressPattern, int minutes) {
+            super(addressPattern, minutes);
         }
     }
 }

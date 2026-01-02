@@ -9,6 +9,7 @@ plugins {
     id 'com.diffplug.spotless' version '6.25.0'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.0.26'
+    id 'jacoco'
 }
 
 group = 'org.emulinker'
@@ -118,4 +119,40 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << "-Werror"
     options.compilerArgs << "-Xlint:deprecation"
     options.compilerArgs << "-Xlint:unchecked"
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: [
+                '**/protocol/**',  // Protocol message classes
+                '**/messaging/**', // Messaging infrastructure
+                '**/EmuLinkerApplication.class', // Main application
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.10 // Start with 10%, increase gradually as tests are added
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn jacocoTestReport
 }

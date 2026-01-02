@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.CachedGameData;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat_Notification;
 import org.emulinker.kaillera.controller.v086.protocol.GameData;
@@ -29,7 +29,7 @@ public final class CachedGameDataAction implements V086Action {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         try {
             int key = ((CachedGameData) message).getKey();

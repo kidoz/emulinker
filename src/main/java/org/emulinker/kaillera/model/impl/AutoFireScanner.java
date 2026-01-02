@@ -257,13 +257,13 @@ public class AutoFireScanner implements AutoFireDetector {
 
                         if (aSequenceCount >= minReps && bSequenceCount >= minReps && !stopFlag) {
                             KailleraGameImpl gameImpl = (KailleraGameImpl) game;
-                            gameImpl.announce(EmuLang.getString("AutoFireScanner2.AutoFireDetected", //$NON-NLS-1$
+                            gameImpl.announce(EmuLang.getString("AutoFireScanner2.AutoFireDetected",
                                     user.getName()));
-                            log.info("AUTOUSERDUMP\t" //$NON-NLS-1$
-                                    + EmuUtil.getDateFormat().format(gameImpl.getStartDate()) + "\t" //$NON-NLS-1$
-                                    + (aSequence < bSequence ? aSequence : bSequence) + "\t" //$NON-NLS-1$
-                                    + game.getID() + "\t" //$NON-NLS-1$
-                                    + game.getRomName() + "\t" + user.getName() + "\t" //$NON-NLS-1$ //$NON-NLS-2$
+                            log.info("AUTOUSERDUMP\t"
+                                    + EmuUtil.getDateFormat().format(gameImpl.getStartDate()) + "\t"
+                                    + (aSequence < bSequence ? aSequence : bSequence) + "\t"
+                                    + game.getID() + "\t" + game.getRomName() + "\t"
+                                    + user.getName() + "\t"
                                     + user.getSocketAddress().getAddress().getHostAddress());
                             // log.debug("thisAction=" + EmuUtil.bytesToHex(thisAction) + "
                             // actionA=" +
@@ -277,7 +277,7 @@ public class AutoFireScanner implements AutoFireDetector {
                     }
                 }
             } catch (Exception e) {
-                log.error("AutoFireScanner thread for " + user + " caught exception!", e); //$NON-NLS-1$ //$NON-NLS-2$
+                log.error("AutoFireScanner thread for " + user + " caught exception!", e);
             } finally {
                 synchronized (this) {
                     running = false;

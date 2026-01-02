@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.CreateGame;
 import org.emulinker.kaillera.controller.v086.protocol.CreateGame_Notification;
 import org.emulinker.kaillera.controller.v086.protocol.CreateGame_Request;
@@ -42,7 +42,7 @@ public final class CreateGameAction implements V086Action, V086ServerEventHandle
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         if (!(message instanceof CreateGame_Request))
             throw new FatalActionException("Received incorrect instance of CreateGame: " + message);
@@ -82,7 +82,7 @@ public final class CreateGameAction implements V086Action, V086ServerEventHandle
         }
     }
 
-    public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(ServerEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         GameCreatedEvent gameCreatedEvent = (GameCreatedEvent) event;

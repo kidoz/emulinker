@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.ConnectionRejected;
 import org.emulinker.kaillera.controller.v086.protocol.ServerACK;
 import org.emulinker.kaillera.controller.v086.protocol.ServerStatus;
@@ -42,7 +42,7 @@ public final class ACKAction implements V086Action, V086UserEventHandler {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         actionCount.incrementAndGet();
 
@@ -82,7 +82,7 @@ public final class ACKAction implements V086Action, V086UserEventHandler {
         }
     }
 
-    public void handleEvent(UserEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(UserEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         ConnectedEvent connectedEvent = (ConnectedEvent) event;
@@ -169,8 +169,8 @@ public final class ACKAction implements V086Action, V086UserEventHandler {
             sendServerStatus(clientHandler, usersSubList, gamesSubList, counter);
     }
 
-    private void sendServerStatus(V086Controller.V086ClientHandler clientHandler,
-            List<ServerStatus.User> users, List<ServerStatus.Game> games, int counter) {
+    private void sendServerStatus(V086ClientHandler clientHandler, List<ServerStatus.User> users,
+            List<ServerStatus.Game> games, int counter) {
         StringBuilder sb = new StringBuilder();
         for (ServerStatus.Game game : games) {
             sb.append(game.getGameID());

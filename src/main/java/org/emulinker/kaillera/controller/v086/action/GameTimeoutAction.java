@@ -2,7 +2,7 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.GameEvent;
 import org.emulinker.kaillera.model.event.GameTimeoutEvent;
@@ -26,7 +26,7 @@ public final class GameTimeoutAction implements V086GameEventHandler {
         return DESC;
     }
 
-    public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         GameTimeoutEvent timeoutEvent = (GameTimeoutEvent) event;

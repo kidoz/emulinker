@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
 import org.emulinker.kaillera.controller.v086.protocol.ServerACK;
 import org.emulinker.kaillera.controller.v086.protocol.UserInformation;
@@ -39,7 +39,7 @@ public final class LoginAction implements V086Action, V086ServerEventHandler {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         actionCount.incrementAndGet();
 
@@ -58,7 +58,7 @@ public final class LoginAction implements V086Action, V086ServerEventHandler {
         }
     }
 
-    public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(ServerEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         UserJoinedEvent userJoinedEvent = (UserJoinedEvent) event;

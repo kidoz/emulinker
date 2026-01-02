@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
 import org.emulinker.kaillera.controller.v086.protocol.JoinGame_Notification;
 import org.emulinker.kaillera.controller.v086.protocol.JoinGame_Request;
@@ -43,7 +43,7 @@ public final class JoinGameAction implements V086Action, V086GameEventHandler {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         if (!(message instanceof JoinGame_Request))
             throw new FatalActionException("Received incorrect instance of JoinGame: " + message);
@@ -67,7 +67,7 @@ public final class JoinGameAction implements V086Action, V086GameEventHandler {
         }
     }
 
-    public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         UserJoinedGameEvent userJoinedEvent = (UserJoinedGameEvent) event;

@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
 import org.emulinker.kaillera.model.event.InfoMessageEvent;
 import org.emulinker.kaillera.model.event.UserEvent;
@@ -27,7 +27,7 @@ public final class InfoMessageAction implements V086UserEventHandler {
         return DESC;
     }
 
-    public void handleEvent(UserEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(UserEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         InfoMessageEvent infoEvent = (InfoMessageEvent) event;

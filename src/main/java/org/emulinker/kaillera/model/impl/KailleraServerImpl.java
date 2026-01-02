@@ -3,11 +3,7 @@ package org.emulinker.kaillera.model.impl;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.config.GameConfig;
 import org.emulinker.config.MasterListConfig;
@@ -47,6 +43,10 @@ import org.emulinker.util.EmuUtil;
 import org.emulinker.util.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import su.kidoz.kaillera.model.impl.GameManager;
+import su.kidoz.kaillera.model.impl.ServerMaintenanceTask;
+import su.kidoz.kaillera.model.impl.UserManager;
+import su.kidoz.kaillera.model.validation.LoginValidator;
 
 public class KailleraServerImpl implements KailleraServer, Executable {
     protected static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
@@ -78,17 +78,15 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     protected volatile boolean stopFlag = false;
     protected volatile boolean isRunning = false;
 
-    protected final AtomicInteger connectionCounter = new AtomicInteger(1);
-    protected final AtomicInteger gameCounter = new AtomicInteger(1);
-
     protected final EmuLinkerExecutor threadPool;
     protected final AccessManager accessManager;
     protected StatsCollector statsCollector;
     protected final ReleaseInfo releaseInfo;
     protected final AutoFireDetectorFactory autoFireDetectorFactory;
-
-    protected final Map<Integer, KailleraUserImpl> users;
-    protected final Map<Integer, KailleraGameImpl> games;
+    protected final LoginValidator loginValidator;
+    protected final UserManager userManager;
+    protected final GameManager gameManager;
+    protected ServerMaintenanceTask maintenanceTask;
 
     public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
             ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
@@ -99,6 +97,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         this.releaseInfo = releaseInfo;
         this.autoFireDetectorFactory = autoFireDetectorFactory;
         this.serverConfig = serverConfig;
+        this.loginValidator = new LoginValidator(accessManager, serverConfig);
 
         // Server config
         this.maxPing = serverConfig.getMaxPing();
@@ -130,8 +129,9 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         this.gameDesynchTimeouts = gameConfig.getDesynchTimeouts();
         this.gameAutoFireSensitivity = gameConfig.getDefaultAutoFireSensitivity();
 
-        users = new ConcurrentHashMap<Integer, KailleraUserImpl>(maxUsers);
-        games = new ConcurrentHashMap<Integer, KailleraGameImpl>(maxUsers);
+        // Initialize managers
+        this.userManager = new UserManager(maxUsers);
+        this.gameManager = new GameManager(maxUsers);
 
         // Master list config
         if (masterListConfig.isTouchKaillera())
@@ -143,36 +143,31 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     public KailleraUser getUser(int userID) {
-        return users.get(userID);
+        return userManager.getUser(userID);
     }
 
     public KailleraGame getGame(int gameID) {
-        return games.get(gameID);
+        return gameManager.getGame(gameID);
     }
 
     public Collection<KailleraUserImpl> getUsers() {
-        return Collections.unmodifiableCollection(users.values());
+        return userManager.getUsers();
     }
 
     public Collection<KailleraGameImpl> getGames() {
-        return Collections.unmodifiableCollection(games.values());
+        return gameManager.getGames();
     }
 
     public int getNumUsers() {
-        return users.size();
+        return userManager.getNumUsers();
     }
 
     public int getNumGames() {
-        return games.size();
+        return gameManager.getNumGames();
     }
 
     public int getNumGamesPlaying() {
-        int count = 0;
-        for (KailleraGameImpl game : getGames()) {
-            if (game.getStatus() != KailleraGame.STATUS_WAITING)
-                count++;
-        }
-        return count;
+        return gameManager.getNumGamesPlaying();
     }
 
     public int getMaxPing() {
@@ -233,7 +228,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
     public String toString() {
         return "KailleraServerImpl[numUsers=" + getNumUsers() + " numGames=" + getNumGames()
-                + " isRunning=" + isRunning() + "]"; //$NON-NLS-2$
+                + " isRunning=" + isRunning() + "]";
     }
 
     public synchronized void start() {
@@ -253,20 +248,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         }
 
         stopFlag = true;
+        if (maintenanceTask != null) {
+            maintenanceTask.stop();
+        }
 
-        for (KailleraUserImpl user : users.values())
-            user.stop();
-
-        users.clear();
-        games.clear();
-    }
-
-    protected int getNextUserID() {
-        return connectionCounter.getAndUpdate(val -> val >= 0xFFFF ? 1 : val + 1);
-    }
-
-    protected int getNextGameID() {
-        return gameCounter.getAndUpdate(val -> val >= 0xFFFF ? 1 : val + 1);
+        userManager.stopAllUsers();
+        gameManager.clear();
     }
 
     protected StatsCollector getStatsCollector() {
@@ -295,7 +282,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         int access = accessManager.getAccess(clientSocketAddress.getAddress());
 
         // admins will be allowed in even if the server is full
-        if (getMaxUsers() > 0 && users.size() >= getMaxUsers()
+        if (getMaxUsers() > 0 && userManager.getNumUsers() >= getMaxUsers()
                 && !(access > AccessManager.ACCESS_NORMAL)) {
             log.warn("Connection from " + EmuUtil.formatSocketAddress(clientSocketAddress)
                     + " denied: Server is full!");
@@ -303,7 +290,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                     EmuLang.getString("KailleraServerImpl.LoginDeniedServerFull"));
         }
 
-        int userID = getNextUserID();
+        int userID = userManager.getNextUserID();
         KailleraUserImpl user = new KailleraUserImpl(userID, protocol, clientSocketAddress,
                 listener, this);
         user.setStatus(KailleraUser.STATUS_CONNECTING);
@@ -316,7 +303,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         threadPool.execute(user);
         log.debug(user + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
-        users.put(userID, user);
+        userManager.addUser(user);
 
         return user;
     }
@@ -328,155 +315,51 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         long loginDelay = (System.currentTimeMillis() - user.getConnectTime());
         log.info(user + ": login request: delay=" + loginDelay + "ms, clientAddress="
                 + EmuUtil.formatSocketAddress(user.getSocketAddress()) + ", name=" + user.getName()
-                + ", ping=" //$NON-NLS-1$
-                + user.getPing() + ", client=" + user.getClientType() + ", connection=" //$NON-NLS-1$
+                + ", ping=" + user.getPing() + ", client=" + user.getClientType() + ", connection="
                 + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
 
-        if (user.isLoggedIn()) {
-            log.warn(user + " login denied: Already logged in!");
-            throw new LoginException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedAlreadyLoggedIn"));
-        }
+        int userID = user.getID();
+        KailleraUser userFromList = userManager.getUser(userID);
 
-        Integer userListKey = Integer.valueOf(user.getID());
-        KailleraUser u = users.get(userListKey);
-        if (u == null) {
-            log.warn(user + " login denied: Connection timed out!");
-            throw new LoginException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedConnectionTimedOut"));
-        }
+        // Run all validations - exceptions are thrown on failure
+        try {
+            loginValidator.validateNotAlreadyLoggedIn(user);
+            loginValidator.validateUserExists(user, userFromList);
+            int access = loginValidator.validateAccessLevel(user);
+            loginValidator.validatePing(user, access);
+            loginValidator.validateConnectionType(user, access);
+            loginValidator.validateUserName(user, access);
+            loginValidator.validateClientName(user, access);
+            loginValidator.validateUserStatus(user, userFromList);
+            loginValidator.validateAddressMatch(user, userFromList);
+            loginValidator.validateEmulator(user, access);
 
-        int access = accessManager.getAccess(user.getSocketAddress().getAddress());
-        if (access < AccessManager.ACCESS_NORMAL) {
-            log.info(user + " login denied: Access denied");
-            users.remove(userListKey);
-            throw new LoginException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedAccessDenied"));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL && getMaxPing() > 0
-                && user.getPing() > getMaxPing()) {
-            log.info(user + " login denied: Ping " + user.getPing() + " > " + getMaxPing());
-            users.remove(userListKey);
-            throw new PingTimeException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedPingTooHigh",
-                            (user.getPing() + " > " + getMaxPing())));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL
-                && !serverConfig.isConnectionTypeAllowed(user.getConnectionType())) {
-            log.info(user + " login denied: Connection "
-                    + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]
-                    + " Not Allowed");
-            users.remove(userListKey);
-            throw new LoginException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedConnectionTypeDenied",
-                            KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]));
-        }
-
-        if (user.getPing() < 0) {
-            log.warn(user + " login denied: Invalid ping: " + user.getPing());
-            users.remove(userListKey);
-            throw new PingTimeException(
-                    EmuLang.getString("KailleraServerImpl.LoginErrorInvalidPing", user.getPing()));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL && user.getName().trim().length() == 0) {
-            log.info(user + " login denied: Empty UserName");
-            users.remove(userListKey);
-            throw new UserNameException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameEmpty"));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL && maxUserNameLength > 0
-                && user.getName().length() > getMaxUserNameLength()) {
-            log.info(user + " login denied: UserName Length > " + getMaxUserNameLength());
-            users.remove(userListKey);
-            throw new UserNameException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameTooLong"));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL && maxClientNameLength > 0
-                && user.getClientType().length() > getMaxClientNameLength()) {
-            log.info(user + " login denied: Client Name Length > " + getMaxClientNameLength());
-            users.remove(userListKey);
-            throw new UserNameException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL) {
-            if (containsIllegalCharacters(user.getName())) {
-                log.info(user + " login denied: Illegal characters in UserName");
-                users.remove(userListKey);
-                throw new UserNameException(EmuLang
-                        .getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
-            }
-        }
-
-        if (u.getStatus() != KailleraUser.STATUS_CONNECTING) {
-            users.remove(userListKey);
-            log.warn(user + " login denied: Invalid status="
-                    + KailleraUser.STATUS_NAMES[u.getStatus()]);
-            throw new LoginException(
-                    EmuLang.getString("KailleraServerImpl.LoginErrorInvalidStatus", u.getStatus()));
-        }
-
-        if (!u.getConnectSocketAddress().getAddress()
-                .equals(user.getSocketAddress().getAddress())) {
-            users.remove(userListKey);
-            log.warn(user + " login denied: Connect address does not match login address: "
-                    + u.getConnectSocketAddress().getAddress().getHostAddress() + " != "
-                    + user.getSocketAddress().getAddress().getHostAddress());
-            throw new ClientAddressException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedAddressMatchError"));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL
-                && !accessManager.isEmulatorAllowed(user.getClientType())) {
-            log.info(
-                    user + " login denied: AccessManager denied emulator: " + user.getClientType());
-            users.remove(userListKey);
-            throw new LoginException(EmuLang.getString(
-                    "KailleraServerImpl.LoginDeniedEmulatorRestricted", user.getClientType()));
-        }
-
-        for (KailleraUserImpl u2 : getUsers()) {
-            if (u2.isLoggedIn()) {
-                if (!u2.equals(u)
-                        && u.getConnectSocketAddress().getAddress()
-                                .equals(u2.getConnectSocketAddress().getAddress())
-                        && u.getName().equals(u2.getName())) {
-                    // user is attempting to login more than once with the same name and address
-                    // logoff the old user and login the new one
-
-                    try {
-                        quit(u2, EmuLang.getString("KailleraServerImpl.ForcedQuitReconnected"));
-                    } catch (Exception e) {
-                        log.error("Error forcing " + u2 + " quit for reconnect!", e);
-                    }
-                } else if (access == AccessManager.ACCESS_NORMAL && !u2.equals(u)
-                        && u.getConnectSocketAddress().getAddress()
-                                .equals(u2.getConnectSocketAddress().getAddress())
-                        && !u.getName().equals(u2.getName()) && !allowMultipleConnections) {
-                    users.remove(userListKey);
-                    log.warn(user + " login denied: Address already logged in as " + u2.getName());
-                    throw new ClientAddressException(EmuLang.getString(
-                            "KailleraServerImpl.LoginDeniedAlreadyLoggedInAs", u2.getName()));
+            // Check for duplicate login - may return a user to force quit
+            KailleraUserImpl reconnectUser = loginValidator.checkDuplicateLogin(user, userFromList,
+                    getUsers(), access);
+            if (reconnectUser != null) {
+                try {
+                    quit(reconnectUser,
+                            EmuLang.getString("KailleraServerImpl.ForcedQuitReconnected"));
+                } catch (Exception e) {
+                    log.error("Error forcing " + reconnectUser + " quit for reconnect!", e);
                 }
             }
+
+            // Passed all checks - complete login
+            userImpl.setAccess(access);
+            userImpl.setStatus(KailleraUser.STATUS_IDLE);
+            userImpl.setLoggedIn();
+            userManager.addUser(userImpl);
+            userImpl.addEvent(new ConnectedEvent(this, user));
+
+            // Release lock before sleeping to allow other logins to proceed
+            sendLoginNotificationsAsync(userImpl, access);
+        } catch (LoginException e) {
+            // Remove user from list on validation failure (LoginException is parent of all)
+            userManager.removeUser(userID);
+            throw e;
         }
-
-        // passed all checks
-
-        userImpl.setAccess(access);
-        userImpl.setStatus(KailleraUser.STATUS_IDLE);
-        userImpl.setLoggedIn();
-        users.put(userListKey, userImpl);
-        userImpl.addEvent(new ConnectedEvent(this, user));
-
-        // Release lock before sleeping to allow other logins to proceed
-        // The user is already fully logged in at this point
-        sendLoginNotificationsAsync(userImpl, access);
     }
 
     /**
@@ -574,12 +457,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     public synchronized void quit(KailleraUser user, String message)
             throws QuitException, DropGameException, QuitGameException, CloseGameException {
         if (!user.isLoggedIn()) {
-            users.remove(user.getID());
+            userManager.removeUser(user.getID());
             log.error(user + " quit failed: Not logged in");
             throw new QuitException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
         }
 
-        if (users.remove(user.getID()) == null)
+        if (userManager.removeUser(user.getID()) == null)
             log.error(user + " quit failed: not in user list");
 
         KailleraGameImpl userGame = ((KailleraUserImpl) user).getGame();
@@ -699,12 +582,10 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             }
         }
 
-        KailleraGameImpl game = null;
-
-        int gameID = getNextGameID();
-        game = new KailleraGameImpl(gameID, romName, (KailleraUserImpl) user, this, gameBufferSize,
-                gameTimeoutMillis, gameDesynchTimeouts);
-        games.put(gameID, game);
+        int gameID = gameManager.getNextGameID();
+        KailleraGameImpl game = new KailleraGameImpl(gameID, romName, (KailleraUserImpl) user, this,
+                gameBufferSize, gameTimeoutMillis, gameDesynchTimeouts);
+        gameManager.addGame(game);
 
         addEvent(new GameCreatedEvent(this, game));
 
@@ -729,13 +610,13 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             throw new CloseGameException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
         }
 
-        if (!games.containsKey(game.getID())) {
+        if (!gameManager.containsGame(game.getID())) {
             log.error(user + " close " + game + " failed: not in list: " + game);
             return;
         }
 
         ((KailleraGameImpl) game).close(user);
-        games.remove(game.getID());
+        gameManager.removeGame(game.getID());
 
         log.info(user + " closed: " + game);
         addEvent(new GameClosedEvent(this, game));
@@ -755,7 +636,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     protected void addEvent(ServerEvent event) {
-        for (KailleraUserImpl user : users.values()) {
+        for (KailleraUserImpl user : userManager.getUsers()) {
             if (user.isLoggedIn())
                 user.addEvent(event);
             else {
@@ -769,90 +650,27 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         log.debug("KailleraServer thread running...");
 
         try {
-            while (!stopFlag) {
-                try {
-                    Thread.sleep((long) (maxPing * 3));
-                } catch (InterruptedException e) {
-                    log.error("Sleep Interrupted!", e);
-                }
-
-                // log.debug(this + " running maintenance...");
-
-                if (stopFlag)
-                    break;
-
-                if (users.isEmpty())
-                    continue;
-
-                // Copy to avoid ConcurrentModificationException when removing during iteration
-                List<KailleraUserImpl> usersSnapshot = new ArrayList<>(getUsers());
-                List<Integer> usersToRemove = new ArrayList<>();
-
-                for (KailleraUserImpl user : usersSnapshot) {
-                    synchronized (user) {
-                        int access = accessManager
-                                .getAccess(user.getConnectSocketAddress().getAddress());
-                        ((KailleraUserImpl) user).setAccess(access);
-
-                        if (!user.isLoggedIn() && (System.currentTimeMillis()
-                                - user.getConnectTime()) > (maxPing * 15)) {
-                            log.info(user + " connection timeout!");
-                            user.stop();
-                            usersToRemove.add(user.getID());
-                        } else if (user.isLoggedIn() && (System.currentTimeMillis()
-                                - user.getLastKeepAlive()) > (keepAliveTimeout * 1000)) {
-                            log.info(user + " keepalive timeout!");
-                            try {
-                                quit(user, EmuLang
-                                        .getString("KailleraServerImpl.ForcedQuitPingTimeout"));
-                            } catch (Exception e) {
-                                log.error("Error forcing " + user + " quit for keepalive timeout!",
-                                        e);
-                            }
-                        } else if (idleTimeout > 0 && access == AccessManager.ACCESS_NORMAL
-                                && user.isLoggedIn() && (System.currentTimeMillis()
-                                        - user.getLastActivity()) > (idleTimeout * 1000)) {
-                            log.info(user + " inactivity timeout!");
-                            try {
-                                quit(user, EmuLang.getString(
-                                        "KailleraServerImpl.ForcedQuitInactivityTimeout"));
-                            } catch (Exception e) {
-                                log.error("Error forcing " + user + " quit for inactivity timeout!",
-                                        e);
-                            }
-                        } else if (user.isLoggedIn() && access < AccessManager.ACCESS_NORMAL) {
-                            log.info(user + " banned!");
-                            try {
-                                quit(user,
-                                        EmuLang.getString("KailleraServerImpl.ForcedQuitBanned"));
-                            } catch (Exception e) {
-                                log.error("Error forcing " + user + " quit because banned!", e);
-                            }
-                        } else if (user.isLoggedIn() && access == AccessManager.ACCESS_NORMAL
-                                && !accessManager.isEmulatorAllowed(user.getClientType())) {
-                            log.info(user + ": emulator restricted!");
-                            try {
-                                quit(user, EmuLang.getString(
-                                        "KailleraServerImpl.ForcedQuitEmulatorRestricted"));
-                            } catch (Exception e) {
-                                log.error("Error forcing " + user
-                                        + " quit because emulator restricted!", e);
-                            }
-                        }
-                    }
-                }
-
-                // Remove users after iteration to avoid ConcurrentModificationException
-                for (Integer userId : usersToRemove) {
-                    users.remove(userId);
-                }
-            }
+            // Create and run maintenance task - it will handle timeouts, bans, etc.
+            maintenanceTask = new ServerMaintenanceTask(userManager, accessManager, maxPing,
+                    keepAliveTimeout, idleTimeout, this::handleQuitRequest);
+            maintenanceTask.run();
         } catch (Throwable e) {
             if (!stopFlag)
                 log.error("KailleraServer thread caught unexpected exception: " + e, e);
         } finally {
             isRunning = false;
             log.debug("KailleraServer thread exiting...");
+        }
+    }
+
+    /**
+     * Handles quit requests from the maintenance task.
+     */
+    private void handleQuitRequest(ServerMaintenanceTask.UserQuitRequest request) {
+        try {
+            quit(request.user(), request.message());
+        } catch (Exception e) {
+            log.error("Error forcing " + request.user() + " quit: " + request.message(), e);
         }
     }
 

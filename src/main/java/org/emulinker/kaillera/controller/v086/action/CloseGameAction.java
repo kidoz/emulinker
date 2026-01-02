@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.CloseGame;
 import org.emulinker.kaillera.model.event.GameClosedEvent;
 import org.emulinker.kaillera.model.event.ServerEvent;
@@ -27,7 +27,7 @@ public final class CloseGameAction implements V086ServerEventHandler {
         return DESC;
     }
 
-    public void handleEvent(ServerEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(ServerEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         GameClosedEvent gameClosedEvent = (GameClosedEvent) event;

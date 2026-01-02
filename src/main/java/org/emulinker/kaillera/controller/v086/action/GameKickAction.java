@@ -2,7 +2,7 @@ package org.emulinker.kaillera.controller.v086.action;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.GameKick;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.exception.GameKickException;
@@ -26,7 +26,7 @@ public final class GameKickAction implements V086Action {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         actionCount.incrementAndGet();
 

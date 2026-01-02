@@ -3,7 +3,7 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.v086.V086Controller;
+import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.AllReady;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.event.GameEvent;
@@ -33,7 +33,7 @@ public final class UserReadyAction implements V086Action, V086GameEventHandler {
         return DESC;
     }
 
-    public void performAction(V086Message message, V086Controller.V086ClientHandler clientHandler)
+    public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         actionCount.incrementAndGet();
 
@@ -44,7 +44,7 @@ public final class UserReadyAction implements V086Action, V086GameEventHandler {
         }
     }
 
-    public void handleEvent(GameEvent event, V086Controller.V086ClientHandler clientHandler) {
+    public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
         clientHandler.resetGameDataCache();
