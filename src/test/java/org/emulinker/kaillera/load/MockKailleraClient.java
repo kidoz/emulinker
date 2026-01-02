@@ -126,11 +126,11 @@ public class MockKailleraClient implements KailleraEventListener {
      * Quits from the server.
      */
     public void quit() throws Exception {
-        if (connected.get()) {
+        if (loggedIn.get()) {
             user.quit("Load test complete");
-            connected.set(false);
-            loggedIn.set(false);
         }
+        connected.set(false);
+        loggedIn.set(false);
     }
 
     // KailleraEventListener implementation
