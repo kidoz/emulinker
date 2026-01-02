@@ -47,46 +47,50 @@ import su.kidoz.kaillera.model.impl.GameManager;
 import su.kidoz.kaillera.model.impl.ServerMaintenanceTask;
 import su.kidoz.kaillera.model.impl.UserManager;
 import su.kidoz.kaillera.model.validation.LoginValidator;
+import su.kidoz.kaillera.service.AnnouncementService;
+import su.kidoz.kaillera.service.ChatModerationService;
 
 public class KailleraServerImpl implements KailleraServer, Executable {
-    protected static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
 
-    protected final int maxPing;
-    protected final int maxUsers;
-    protected final int maxGames;
-    protected final int idleTimeout;
-    protected final int keepAliveTimeout;
-    protected final int chatFloodTime;
-    protected final int createGameFloodTime;
-    protected final int maxUserNameLength;
-    protected final int maxChatLength;
-    protected final int maxGameNameLength;
-    protected final int maxQuitMessageLength;
-    protected final int maxClientNameLength;
+    private final int maxPing;
+    private final int maxUsers;
+    private final int maxGames;
+    private final int idleTimeout;
+    private final int keepAliveTimeout;
+    private final int chatFloodTime;
+    private final int createGameFloodTime;
+    private final int maxUserNameLength;
+    private final int maxChatLength;
+    private final int maxGameNameLength;
+    private final int maxQuitMessageLength;
+    private final int maxClientNameLength;
 
-    protected final int gameBufferSize;
-    protected final int gameTimeoutMillis;
-    protected final int gameDesynchTimeouts;
-    protected final int gameAutoFireSensitivity;
+    private final int gameBufferSize;
+    private final int gameTimeoutMillis;
+    private final int gameDesynchTimeouts;
+    private final int gameAutoFireSensitivity;
 
-    protected final ServerConfig serverConfig;
+    private final ServerConfig serverConfig;
 
-    protected final List<String> loginMessages = new ArrayList<String>();
-    protected final boolean allowSinglePlayer;
-    protected final boolean allowMultipleConnections;
+    private final List<String> loginMessages = new ArrayList<String>();
+    private final boolean allowSinglePlayer;
+    private final boolean allowMultipleConnections;
 
-    protected volatile boolean stopFlag = false;
-    protected volatile boolean isRunning = false;
+    private volatile boolean stopFlag = false;
+    private volatile boolean isRunning = false;
 
-    protected final EmuLinkerExecutor threadPool;
-    protected final AccessManager accessManager;
-    protected StatsCollector statsCollector;
-    protected final ReleaseInfo releaseInfo;
-    protected final AutoFireDetectorFactory autoFireDetectorFactory;
-    protected final LoginValidator loginValidator;
-    protected final UserManager userManager;
-    protected final GameManager gameManager;
-    protected ServerMaintenanceTask maintenanceTask;
+    private final EmuLinkerExecutor threadPool;
+    private final AccessManager accessManager;
+    private StatsCollector statsCollector;
+    private final ReleaseInfo releaseInfo;
+    private final AutoFireDetectorFactory autoFireDetectorFactory;
+    private final LoginValidator loginValidator;
+    private final ChatModerationService chatModerationService;
+    private final AnnouncementService announcementService;
+    private final UserManager userManager;
+    private final GameManager gameManager;
+    private ServerMaintenanceTask maintenanceTask;
 
     public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
             ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
@@ -98,6 +102,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         this.autoFireDetectorFactory = autoFireDetectorFactory;
         this.serverConfig = serverConfig;
         this.loginValidator = new LoginValidator(accessManager, serverConfig);
+        this.announcementService = new AnnouncementService();
 
         // Server config
         this.maxPing = serverConfig.getMaxPing();
@@ -114,6 +119,10 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         this.maxGameNameLength = serverConfig.getMaxGameNameLength();
         this.maxQuitMessageLength = serverConfig.getMaxQuitMessageLength();
         this.maxClientNameLength = serverConfig.getMaxClientNameLength();
+
+        // Initialize services that depend on config values
+        this.chatModerationService = new ChatModerationService(accessManager, chatFloodTime,
+                maxChatLength);
 
         // Load login messages from language bundle
         for (int i = 1; i <= 999; i++) {
@@ -186,44 +195,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         return isRunning;
     }
 
-    protected int getChatFloodTime() {
-        return chatFloodTime;
-    }
-
-    protected int getCreateGameFloodTime() {
-        return createGameFloodTime;
-    }
-
-    protected boolean getAllowSinglePlayer() {
-        return allowSinglePlayer;
-    }
-
-    protected int getMaxUserNameLength() {
-        return maxUserNameLength;
-    }
-
-    protected int getMaxChatLength() {
-        return maxChatLength;
-    }
-
-    protected int getMaxGameNameLength() {
-        return maxGameNameLength;
-    }
-
-    protected int getQuitMessageLength() {
-        return maxQuitMessageLength;
-    }
-
-    protected int getMaxClientNameLength() {
-        return maxClientNameLength;
-    }
-
-    protected boolean getAllowMultipleConnections() {
-        return allowMultipleConnections;
-    }
-
     public EmuLinkerExecutor getThreadPool() {
         return threadPool;
+    }
+
+    boolean getAllowSinglePlayer() {
+        return allowSinglePlayer;
     }
 
     public String toString() {
@@ -256,11 +233,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         gameManager.clear();
     }
 
-    protected StatsCollector getStatsCollector() {
+    StatsCollector getStatsCollector() {
         return statsCollector;
     }
 
-    protected AutoFireDetector getAutoFireDetector(KailleraGame game) {
+    AutoFireDetector getAutoFireDetector(KailleraGame game) {
         if (gameAutoFireSensitivity == 0)
             return null;
         return autoFireDetectorFactory.getInstance(game, gameAutoFireSensitivity);
@@ -470,7 +447,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             user.quitGame();
 
         String quitMsg = message.trim();
-        if (quitMsg.length() == 0
+        if (quitMsg.isEmpty()
                 || (maxQuitMessageLength > 0 && quitMsg.length() > maxQuitMessageLength))
             quitMsg = EmuLang.getString("KailleraServerImpl.StandardQuitMessage");
 
@@ -484,46 +461,13 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
     public synchronized void chat(KailleraUser user, String message)
             throws ChatException, FloodException {
-        if (!user.isLoggedIn()) {
-            log.error(user + " chat failed: Not logged in");
-            throw new ChatException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
-        }
-
-        int access = accessManager.getAccess(user.getSocketAddress().getAddress());
-        if (access == AccessManager.ACCESS_NORMAL
-                && accessManager.isSilenced(user.getSocketAddress().getAddress())) {
-            log.warn(user + " chat denied: Silenced: " + message);
-            throw new ChatException(EmuLang.getString("KailleraServerImpl.ChatDeniedSilenced"));
-        }
-
-        if (access == AccessManager.ACCESS_NORMAL && chatFloodTime > 0
-                && (System.currentTimeMillis()
-                        - ((KailleraUserImpl) user).getLastChatTime()) < (chatFloodTime * 1000)) {
-            log.warn(user + " chat denied: Flood: " + message);
-            throw new FloodException(
-                    EmuLang.getString("KailleraServerImpl.ChatDeniedFloodControl"));
-        }
-
-        message = message.trim();
-        if (message.length() == 0)
+        String validatedMessage = chatModerationService.validateChat(user, message);
+        if (validatedMessage.isEmpty()) {
             return;
-
-        if (access == AccessManager.ACCESS_NORMAL) {
-            if (containsIllegalCharacters(message)) {
-                log.warn(user + " chat denied: Illegal characters in message");
-                throw new ChatException(
-                        EmuLang.getString("KailleraServerImpl.ChatDeniedIllegalCharacters"));
-            }
-
-            if (maxChatLength > 0 && message.length() > maxChatLength) {
-                log.warn(user + " chat denied: Message Length > " + maxChatLength);
-                throw new ChatException(
-                        EmuLang.getString("KailleraServerImpl.ChatDeniedMessageTooLong"));
-            }
         }
 
-        log.info(user + " chat: " + message);
-        addEvent(new ChatEvent(this, user, message));
+        log.info(user + " chat: " + validatedMessage);
+        addEvent(new ChatEvent(this, user, validatedMessage));
     }
 
     public synchronized KailleraGame createGame(KailleraUser user, String romName)
@@ -563,7 +507,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                         EmuLang.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
             }
 
-            if (romName.trim().length() == 0) {
+            if (romName.trim().isEmpty()) {
                 log.warn(user + " create game denied: Rom Name Empty");
                 throw new CreateGameException(
                         EmuLang.getString("KailleraServerImpl.CreateGameErrorEmptyName"));
@@ -623,19 +567,10 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     public void announce(String announcement, boolean gamesAlso) {
-        for (KailleraUserImpl kailleraUser : getUsers()) {
-            if (kailleraUser.isLoggedIn())
-                kailleraUser.addEvent(new InfoMessageEvent(kailleraUser, announcement));
-        }
-
-        if (gamesAlso) {
-            for (KailleraGameImpl kailleraGame : getGames()) {
-                kailleraGame.announce(announcement);
-            }
-        }
+        announcementService.announce(announcement, gamesAlso, getUsers(), getGames());
     }
 
-    protected void addEvent(ServerEvent event) {
+    void addEvent(ServerEvent event) {
         for (KailleraUserImpl user : userManager.getUsers()) {
             if (user.isLoggedIn())
                 user.addEvent(event);

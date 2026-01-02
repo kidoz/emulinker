@@ -1,7 +1,6 @@
 package org.emulinker.kaillera.controller.v086.action;
 
 import java.net.InetAddress;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Scanner;
@@ -19,7 +18,6 @@ import org.emulinker.kaillera.model.impl.KailleraServerImpl;
 import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLang;
-import org.emulinker.util.EmuUtil;
 import org.emulinker.util.WildcardStringPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -460,24 +458,7 @@ public final class AdminCommandAction implements V086Action {
             clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
                     "server", "TOTMEM: " + runtime.totalMemory()));
             sleep(20);
-
-            Map<String, String> env = System.getenv();
-
-            if (EmuUtil.systemIsWindows()) {
-                clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
-                        "server", "COMPNAME: " + env.get("COMPUTERNAME")));
-                sleep(20);
-                clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
-                        "server", "USER: " + env.get("USERNAME")));
-                sleep(20);
-            } else {
-                clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
-                        "server", "COMPNAME: " + env.get("HOSTNAME")));
-                sleep(20);
-                clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
-                        "server", "USER: " + env.get("USERNAME")));
-                sleep(20);
-            }
+            // Note: Hostname and username removed for security - could aid attackers
         } catch (NoSuchElementException e) {
             throw new ActionException(EmuLang.getString("AdminCommandAction.VersionError"));
         }

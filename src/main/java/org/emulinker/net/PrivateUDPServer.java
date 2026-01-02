@@ -3,6 +3,7 @@ package org.emulinker.net;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.emulinker.util.EmuUtil;
 
@@ -13,7 +14,7 @@ public abstract class PrivateUDPServer extends UDPServer {
     private static final Logger log = LoggerFactory.getLogger(PrivateUDPServer.class);
 
     private final InetAddress remoteAddress;
-    private volatile InetSocketAddress remoteSocketAddress;
+    private final AtomicReference<InetSocketAddress> remoteSocketAddress = new AtomicReference<>();
 
     public PrivateUDPServer(boolean shutdownOnExit, InetAddress remoteAddress) {
         super(shutdownOnExit);
@@ -25,16 +26,17 @@ public abstract class PrivateUDPServer extends UDPServer {
     }
 
     public InetSocketAddress getRemoteSocketAddress() {
-        return remoteSocketAddress;
+        return remoteSocketAddress.get();
     }
 
     protected void handleReceived(ByteBuffer buffer, InetSocketAddress inboundSocketAddress) {
-        if (remoteSocketAddress == null)
-            remoteSocketAddress = inboundSocketAddress;
-        else if (!inboundSocketAddress.equals(remoteSocketAddress)) {
+        // Atomically set remote address on first packet (thread-safe)
+        remoteSocketAddress.compareAndSet(null, inboundSocketAddress);
+        InetSocketAddress currentRemote = remoteSocketAddress.get();
+        if (!inboundSocketAddress.equals(currentRemote)) {
             log.warn("Rejecting packet received from wrong address: "
                     + EmuUtil.formatSocketAddress(inboundSocketAddress) + " != "
-                    + EmuUtil.formatSocketAddress(remoteSocketAddress));
+                    + EmuUtil.formatSocketAddress(currentRemote));
             return;
         }
 
@@ -44,6 +46,6 @@ public abstract class PrivateUDPServer extends UDPServer {
     protected abstract void handleReceived(ByteBuffer buffer);
 
     protected void send(ByteBuffer buffer) {
-        super.send(buffer, remoteSocketAddress);
+        super.send(buffer, remoteSocketAddress.get());
     }
 }

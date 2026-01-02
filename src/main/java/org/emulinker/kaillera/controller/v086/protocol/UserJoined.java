@@ -20,7 +20,7 @@ public class UserJoined extends V086Message {
             byte connectionType) throws MessageFormatException {
         super(messageNumber);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             throw new MessageFormatException("Invalid " + getDescription()
                     + " format: userName.length == 0, (userID = " + userID + ")");
 

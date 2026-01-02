@@ -8,6 +8,13 @@ import org.slf4j.LoggerFactory;
 
 public class WildcardStringPattern {
     private static final Logger log = LoggerFactory.getLogger(WildcardStringPattern.class);
+
+    /** Maximum allowed pattern length to prevent excessive memory/CPU usage */
+    private static final int MAX_PATTERN_LENGTH = 1000;
+
+    /** Maximum number of pattern segments to prevent pathological patterns */
+    private static final int MAX_PATTERN_SEGMENTS = 50;
+
     protected boolean equals;
     protected boolean startsWith;
     protected boolean endsWith;
@@ -18,16 +25,29 @@ public class WildcardStringPattern {
     private LinkedList<String> containsStrings = new LinkedList<String>();
 
     public WildcardStringPattern(String pattern) {
-        if (pattern == null || pattern.equals("")) {
+        if (pattern == null || pattern.isEmpty()) {
             // match() function will always return true.
             log.warn("Empty wildcard pattern created - will match all strings");
             return;
         }
 
+        // Guard against excessively long patterns
+        if (pattern.length() > MAX_PATTERN_LENGTH) {
+            log.warn("Pattern too long ({} chars), truncating to {} chars", pattern.length(),
+                    MAX_PATTERN_LENGTH);
+            pattern = pattern.substring(0, MAX_PATTERN_LENGTH);
+        }
+
         LinkedList<String> elements = new LinkedList<String>();
         StringTokenizer st = new StringTokenizer(pattern, "*", true);
-        while (st.hasMoreElements()) {
+        int segmentCount = 0;
+        while (st.hasMoreElements() && segmentCount < MAX_PATTERN_SEGMENTS) {
             elements.add(st.nextToken());
+            segmentCount++;
+        }
+
+        if (segmentCount >= MAX_PATTERN_SEGMENTS) {
+            log.warn("Pattern has too many segments, limited to {}", MAX_PATTERN_SEGMENTS);
         }
 
         if (elements.size() == 1) {
@@ -65,7 +85,7 @@ public class WildcardStringPattern {
     }
 
     public boolean match(String s) {
-        if (s == null || s.equals(""))
+        if (s == null || s.isEmpty())
             return false;
         if (equals && !s.equals(startString))
             return false;

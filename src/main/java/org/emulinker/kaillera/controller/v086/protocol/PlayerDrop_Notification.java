@@ -9,7 +9,7 @@ public class PlayerDrop_Notification extends PlayerDrop {
             throws MessageFormatException {
         super(messageNumber, userName, playerNumber);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: userName.length == 0");
     }

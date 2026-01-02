@@ -112,7 +112,7 @@ public abstract class JoinGame extends V086Message {
         int userID = UnsignedUtil.getUnsignedShort(buffer);
         byte connectionType = buffer.get();
 
-        if (userName.length() == 0 && ping == 0 && userID == 0xFFFF)
+        if (userName.isEmpty() && ping == 0 && userID == 0xFFFF)
             return new JoinGame_Request(messageNumber, gameID, connectionType);
         else
             return new JoinGame_Notification(messageNumber, gameID, val1, userName, ping, userID,

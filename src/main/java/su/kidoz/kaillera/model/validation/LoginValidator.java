@@ -40,7 +40,7 @@ public class LoginValidator {
      */
     public void validateNotAlreadyLoggedIn(KailleraUser user) throws LoginException {
         if (user.isLoggedIn()) {
-            log.warn(user + " login denied: Already logged in!");
+            log.warn("{} login denied: Already logged in!", user);
             throw new LoginException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedAlreadyLoggedIn"));
         }
@@ -52,7 +52,7 @@ public class LoginValidator {
     public void validateUserExists(KailleraUser user, KailleraUser userFromList)
             throws LoginException {
         if (userFromList == null) {
-            log.warn(user + " login denied: Connection timed out!");
+            log.warn("{} login denied: Connection timed out!", user);
             throw new LoginException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedConnectionTimedOut"));
         }
@@ -66,7 +66,7 @@ public class LoginValidator {
     public int validateAccessLevel(KailleraUser user) throws LoginException {
         int access = accessManager.getAccess(user.getSocketAddress().getAddress());
         if (access < AccessManager.ACCESS_NORMAL) {
-            log.info(user + " login denied: Access denied");
+            log.info("{} login denied: Access denied", user);
             throw new LoginException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedAccessDenied"));
         }
@@ -78,14 +78,14 @@ public class LoginValidator {
      */
     public void validatePing(KailleraUser user, int access) throws PingTimeException {
         if (access == AccessManager.ACCESS_NORMAL && maxPing > 0 && user.getPing() > maxPing) {
-            log.info(user + " login denied: Ping " + user.getPing() + " > " + maxPing);
+            log.info("{} login denied: Ping {} > {}", user, user.getPing(), maxPing);
             throw new PingTimeException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedPingTooHigh",
                             (user.getPing() + " > " + maxPing)));
         }
 
         if (user.getPing() < 0) {
-            log.warn(user + " login denied: Invalid ping: " + user.getPing());
+            log.warn("{} login denied: Invalid ping: {}", user, user.getPing());
             throw new PingTimeException(
                     EmuLang.getString("KailleraServerImpl.LoginErrorInvalidPing", user.getPing()));
         }
@@ -97,9 +97,8 @@ public class LoginValidator {
     public void validateConnectionType(KailleraUser user, int access) throws LoginException {
         if (access == AccessManager.ACCESS_NORMAL
                 && !serverConfig.isConnectionTypeAllowed(user.getConnectionType())) {
-            log.info(user + " login denied: Connection "
-                    + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]
-                    + " Not Allowed");
+            log.info("{} login denied: Connection {} Not Allowed", user,
+                    KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
             throw new LoginException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedConnectionTypeDenied",
                             KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]));
@@ -110,21 +109,21 @@ public class LoginValidator {
      * Validates username (not empty, within length limits, no illegal characters).
      */
     public void validateUserName(KailleraUser user, int access) throws UserNameException {
-        if (access == AccessManager.ACCESS_NORMAL && user.getName().trim().length() == 0) {
-            log.info(user + " login denied: Empty UserName");
+        if (access == AccessManager.ACCESS_NORMAL && user.getName().trim().isEmpty()) {
+            log.info("{} login denied: Empty UserName", user);
             throw new UserNameException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameEmpty"));
         }
 
         if (access == AccessManager.ACCESS_NORMAL && maxUserNameLength > 0
                 && user.getName().length() > maxUserNameLength) {
-            log.info(user + " login denied: UserName Length > " + maxUserNameLength);
+            log.info("{} login denied: UserName Length > {}", user, maxUserNameLength);
             throw new UserNameException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedUserNameTooLong"));
         }
 
         if (access == AccessManager.ACCESS_NORMAL && containsIllegalCharacters(user.getName())) {
-            log.info(user + " login denied: Illegal characters in UserName");
+            log.info("{} login denied: Illegal characters in UserName", user);
             throw new UserNameException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
         }
@@ -136,7 +135,7 @@ public class LoginValidator {
     public void validateClientName(KailleraUser user, int access) throws UserNameException {
         if (access == AccessManager.ACCESS_NORMAL && maxClientNameLength > 0
                 && user.getClientType().length() > maxClientNameLength) {
-            log.info(user + " login denied: Client Name Length > " + maxClientNameLength);
+            log.info("{} login denied: Client Name Length > {}", user, maxClientNameLength);
             throw new UserNameException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"));
         }
@@ -148,8 +147,8 @@ public class LoginValidator {
     public void validateUserStatus(KailleraUser user, KailleraUser userFromList)
             throws LoginException {
         if (userFromList.getStatus() != KailleraUser.STATUS_CONNECTING) {
-            log.warn(user + " login denied: Invalid status="
-                    + KailleraUser.STATUS_NAMES[userFromList.getStatus()]);
+            log.warn("{} login denied: Invalid status={}", user,
+                    KailleraUser.STATUS_NAMES[userFromList.getStatus()]);
             throw new LoginException(EmuLang.getString("KailleraServerImpl.LoginErrorInvalidStatus",
                     userFromList.getStatus()));
         }
@@ -162,9 +161,9 @@ public class LoginValidator {
             throws ClientAddressException {
         if (!userFromList.getConnectSocketAddress().getAddress()
                 .equals(user.getSocketAddress().getAddress())) {
-            log.warn(user + " login denied: Connect address does not match login address: "
-                    + userFromList.getConnectSocketAddress().getAddress().getHostAddress() + " != "
-                    + user.getSocketAddress().getAddress().getHostAddress());
+            log.warn("{} login denied: Connect address does not match login address: {} != {}",
+                    user, userFromList.getConnectSocketAddress().getAddress().getHostAddress(),
+                    user.getSocketAddress().getAddress().getHostAddress());
             throw new ClientAddressException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedAddressMatchError"));
         }
@@ -176,8 +175,8 @@ public class LoginValidator {
     public void validateEmulator(KailleraUser user, int access) throws LoginException {
         if (access == AccessManager.ACCESS_NORMAL
                 && !accessManager.isEmulatorAllowed(user.getClientType())) {
-            log.info(
-                    user + " login denied: AccessManager denied emulator: " + user.getClientType());
+            log.info("{} login denied: AccessManager denied emulator: {}", user,
+                    user.getClientType());
             throw new LoginException(EmuLang.getString(
                     "KailleraServerImpl.LoginDeniedEmulatorRestricted", user.getClientType()));
         }
@@ -208,8 +207,8 @@ public class LoginValidator {
                 reconnectUser = existingUser;
             } else if (access == AccessManager.ACCESS_NORMAL && differentUser && sameAddress
                     && !sameName && !allowMultipleConnections) {
-                log.warn(user + " login denied: Address already logged in as "
-                        + existingUser.getName());
+                log.warn("{} login denied: Address already logged in as {}", user,
+                        existingUser.getName());
                 throw new ClientAddressException(EmuLang.getString(
                         "KailleraServerImpl.LoginDeniedAlreadyLoggedInAs", existingUser.getName()));
             }

@@ -20,7 +20,7 @@ public abstract class CreateGame extends V086Message {
             int gameID, int val1) throws MessageFormatException {
         super(messageNumber);
 
-        if (romName.length() == 0)
+        if (romName.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: romName.length == 0");
 
@@ -105,7 +105,7 @@ public abstract class CreateGame extends V086Message {
         int gameID = UnsignedUtil.getUnsignedShort(buffer);
         int val1 = UnsignedUtil.getUnsignedShort(buffer);
 
-        if (userName.length() == 0 && gameID == 0xFFFF && val1 == 0xFFFF)
+        if (userName.isEmpty() && gameID == 0xFFFF && val1 == 0xFFFF)
             return new CreateGame_Request(messageNumber, romName);
         else
             return new CreateGame_Notification(messageNumber, userName, romName, clientType, gameID,

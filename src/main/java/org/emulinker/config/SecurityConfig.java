@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -37,6 +38,15 @@ public class SecurityConfig {
     @Value("${admin.password:admin}")
     private String adminPassword;
 
+    @Value("${admin.security.failOnInsecureCredentials:false}")
+    private boolean failOnInsecureCredentials;
+
+    private final Environment environment;
+
+    public SecurityConfig(Environment environment) {
+        this.environment = environment;
+    }
+
     @PostConstruct
     public void validateCredentials() {
         boolean insecureUsername = DEFAULT_USERNAME.equals(adminUsername);
@@ -44,22 +54,48 @@ public class SecurityConfig {
                 .anyMatch(p -> p.equalsIgnoreCase(adminPassword));
 
         if (insecureUsername || insecurePassword) {
-            log.error("*".repeat(70));
-            log.error("* SECURITY WARNING: Insecure admin credentials detected!");
-            log.error("* Change admin.username and admin.password in application.properties");
-            if (insecureUsername) {
-                log.error("* Current username '{}' is a default value", adminUsername);
+            String message = buildSecurityWarningMessage(insecureUsername, insecurePassword);
+
+            // Check if running in production profile or if failOnInsecureCredentials is set
+            boolean isProduction = List.of(environment.getActiveProfiles()).contains("prod")
+                    || List.of(environment.getActiveProfiles()).contains("production");
+
+            if (failOnInsecureCredentials || isProduction) {
+                log.error(message);
+                throw new SecurityException(
+                        "Application startup blocked: insecure admin credentials detected. "
+                                + "Set admin.username and admin.password in application.properties "
+                                + "or set admin.security.failOnInsecureCredentials=false to override.");
+            } else {
+                log.warn(message);
             }
-            if (insecurePassword) {
-                log.error("* Current password is a commonly used insecure password");
-            }
-            log.error("* This is a security risk in production environments!");
-            log.error("*".repeat(70));
         }
+    }
+
+    private String buildSecurityWarningMessage(boolean insecureUsername, boolean insecurePassword) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n").append("*".repeat(70));
+        sb.append("\n* SECURITY WARNING: Insecure admin credentials detected!");
+        sb.append("\n* Change admin.username and admin.password in application.properties");
+        if (insecureUsername) {
+            sb.append("\n* Current username '").append(adminUsername)
+                    .append("' is a default value");
+        }
+        if (insecurePassword) {
+            sb.append("\n* Current password is a commonly used insecure password");
+        }
+        sb.append("\n* This is a security risk in production environments!");
+        sb.append(
+                "\n* Set admin.security.failOnInsecureCredentials=true to enforce secure credentials");
+        sb.append("\n").append("*".repeat(70));
+        return sb.toString();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // CSRF is disabled because this is a stateless REST API using HTTP Basic auth.
+        // Each request requires credentials, so CSRF attacks via cookies don't apply.
+        // If a browser-based admin UI with session cookies is added, re-enable CSRF.
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

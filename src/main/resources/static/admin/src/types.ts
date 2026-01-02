@@ -1,56 +1,96 @@
-export interface ServerStats {
-  requestCount: number;
-  connectCount: number;
-  protocolErrors: number;
-  deniedFull: number;
-  deniedOther: number;
-}
+import { z } from 'zod';
 
-export interface ThreadPool {
-  active: number;
-  poolSize: number;
-  maxPoolSize: number;
-  taskCount: number;
-}
+// Zod schemas for runtime validation
+export const ServerStatsSchema = z.object({
+  requestCount: z.number(),
+  connectCount: z.number(),
+  protocolErrors: z.number(),
+  deniedFull: z.number(),
+  deniedOther: z.number(),
+});
 
-export interface ServerInfo {
-  serverName: string;
-  version: string;
-  build: number;
-  running: boolean;
-  connectPort: number;
-  uptimeMinutes: number;
-  userCount: number;
-  maxUsers: number;
-  gameCount: number;
-  maxGames: number;
-  stats: ServerStats;
-  threadPool: ThreadPool;
-}
+export const ThreadPoolSchema = z.object({
+  active: z.number(),
+  poolSize: z.number(),
+  maxPoolSize: z.number(),
+  taskCount: z.number(),
+});
 
-export interface User {
-  id: number;
-  name: string;
-  status: string;
-  connectionType: string;
-  ping: number;
-  address: string;
-  connectTime: number;
-}
+export const ServerInfoSchema = z.object({
+  serverName: z.string(),
+  version: z.string(),
+  build: z.number(),
+  running: z.boolean(),
+  connectPort: z.number(),
+  uptimeMinutes: z.number(),
+  userCount: z.number(),
+  maxUsers: z.number(),
+  gameCount: z.number(),
+  maxGames: z.number(),
+  stats: ServerStatsSchema,
+  threadPool: ThreadPoolSchema,
+});
 
-export interface Game {
-  id: number;
-  rom: string;
-  owner: string;
-  status: string;
-  players: number;
-}
+export const UserStatusSchema = z.enum(['CONNECTING', 'IDLE', 'PLAYING']);
+export const ConnectionTypeSchema = z.enum(['LAN', 'EXCELLENT', 'GOOD', 'AVERAGE', 'LOW', 'BAD']);
+export const GameStatusSchema = z.enum(['WAITING', 'PLAYING', 'SYNCHRONIZING']);
 
-export interface Controller {
-  version: string;
-  bufferSize: number;
-  numClients: number;
-  clientTypes: string[];
-}
+export const UserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  status: z.string(),
+  connectionType: z.string(),
+  ping: z.number(),
+  address: z.string(),
+  connectTime: z.number(),
+});
+
+export const GameSchema = z.object({
+  id: z.number(),
+  rom: z.string(),
+  owner: z.string(),
+  status: z.string(),
+  players: z.number(),
+});
+
+export const ControllerSchema = z.object({
+  version: z.string(),
+  bufferSize: z.number(),
+  numClients: z.number(),
+  clientTypes: z.array(z.string()),
+});
+
+export const UsersArraySchema = z.array(UserSchema);
+export const GamesArraySchema = z.array(GameSchema);
+export const ControllersArraySchema = z.array(ControllerSchema);
+
+// Inferred TypeScript types from schemas
+export type ServerStats = z.infer<typeof ServerStatsSchema>;
+export type ThreadPool = z.infer<typeof ThreadPoolSchema>;
+export type ServerInfo = z.infer<typeof ServerInfoSchema>;
+export type User = z.infer<typeof UserSchema>;
+export type Game = z.infer<typeof GameSchema>;
+export type Controller = z.infer<typeof ControllerSchema>;
 
 export type ViewName = 'overview' | 'users' | 'games' | 'controllers';
+
+// Validation helpers
+export function validateServerInfo(data: unknown): ServerInfo | null {
+  const result = ServerInfoSchema.safeParse(data);
+  return result.success ? result.data : null;
+}
+
+export function validateUsers(data: unknown): User[] | null {
+  const result = UsersArraySchema.safeParse(data);
+  return result.success ? result.data : null;
+}
+
+export function validateGames(data: unknown): Game[] | null {
+  const result = GamesArraySchema.safeParse(data);
+  return result.success ? result.data : null;
+}
+
+export function validateControllers(data: unknown): Controller[] | null {
+  const result = ControllersArraySchema.safeParse(data);
+  return result.success ? result.data : null;
+}

@@ -111,15 +111,15 @@ public class V086Bundle extends ByteBufferMessage {
         V086Message[] messages = new V086Message[messageCount];
         int parsedCount;
         for (parsedCount = 0; parsedCount < messageCount; parsedCount++) {
-            // removed to increase speed
-            // if (buffer.remaining() < 6)
-            // throw new V086BundleFormatException("Bundle appears truncated, length = " +
-            // buffer.limit());
+            // Validate buffer has enough bytes for message header (2 bytes number + 2 bytes
+            // length)
+            if (buffer.remaining() < 4)
+                throw new V086BundleFormatException(
+                        "Bundle appears truncated, remaining = " + buffer.remaining());
 
             int messageNumber = UnsignedUtil.getUnsignedShort(buffer);
-            // removed to increase speed
-            // if (messageNumber < 0 || messageNumber > 0xFFFF)
-            // throw new MessageFormatException("Invalid message number: " + messageNumber);
+            // Note: messageNumber range check removed - getUnsignedShort always returns
+            // 0-65535
 
             if (messageNumber <= lastMessageID) {
                 // buffer.position((buffer.position() + messageLength));

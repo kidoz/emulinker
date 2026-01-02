@@ -9,7 +9,7 @@ public class Quit_Notification extends Quit {
             throws MessageFormatException {
         super(messageNumber, userName, userID, message);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             throw new MessageFormatException("Invalid " + getDescription()
                     + " format: userName.length == 0, (userID = " + userID + ")");
     }

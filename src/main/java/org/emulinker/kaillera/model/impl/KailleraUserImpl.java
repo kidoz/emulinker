@@ -214,7 +214,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         this.status = status;
     }
 
-    protected long getLastChatTime() {
+    public long getLastChatTime() {
         return lastChatTime;
     }
 
@@ -562,21 +562,37 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         }
     }
 
-    void addEvent(KailleraEvent event) {
+    private static final int CRITICAL_EVENT_TIMEOUT_MS = 100;
+
+    public void addEvent(KailleraEvent event) {
         if (event == null) {
             log.error(this + ": ignoring null event!");
             return;
         }
 
-        if (!eventQueue.offer(event)) {
-            droppedEventsCount++;
-            // Log critical events at error level, others at warn
-            boolean isCritical = event instanceof GameStartedEvent || event instanceof AllReadyEvent
-                    || event instanceof GameDataEvent;
+        // Critical events get timeout-based blocking to reduce drop probability
+        boolean isCritical = event instanceof GameStartedEvent || event instanceof AllReadyEvent
+                || event instanceof GameDataEvent;
 
-            if (isCritical) {
-                log.error(this + ": CRITICAL event queue full, dropping: "
+        boolean added = false;
+        if (isCritical) {
+            try {
+                added = eventQueue.offer(event, CRITICAL_EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn(this + ": interrupted while adding critical event: "
                         + event.getClass().getSimpleName());
+                return;
+            }
+        } else {
+            added = eventQueue.offer(event);
+        }
+
+        if (!added) {
+            droppedEventsCount++;
+            if (isCritical) {
+                log.error(this + ": CRITICAL event queue full after " + CRITICAL_EVENT_TIMEOUT_MS
+                        + "ms timeout, dropping: " + event.getClass().getSimpleName());
             } else if (droppedEventsCount <= DROPPED_EVENTS_LOG_THRESHOLD) {
                 log.warn(this + ": event queue full, dropping: " + event.getClass().getSimpleName()
                         + " (dropped " + droppedEventsCount + " events)");

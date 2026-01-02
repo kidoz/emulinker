@@ -79,6 +79,10 @@ public class PlayerInformation extends V086Message {
 
         int numPlayers = buffer.getInt();
 
+        // Validate count to prevent integer overflow
+        if (numPlayers < 0 || numPlayers > 1000)
+            throw new ParseException("Invalid player count: " + numPlayers);
+
         int minLen = (numPlayers * 9);
         if (buffer.remaining() < minLen)
             throw new ParseException("Failed byte count validation!");
@@ -110,7 +114,7 @@ public class PlayerInformation extends V086Message {
 
         public Player(String userName, long ping, int userID, byte connectionType)
                 throws MessageFormatException {
-            if (userName.length() == 0)
+            if (userName.isEmpty())
                 throw new MessageFormatException("Invalid " + DESC
                         + " format: userName.length == 0, (userID = " + userID + ")");
 

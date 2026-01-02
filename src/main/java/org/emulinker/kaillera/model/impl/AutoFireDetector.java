@@ -9,6 +9,6 @@ public interface AutoFireDetector {
     void stop(int playerNumber);
     void stop();
 
-    void setSensitivity(int sensivitiy);
+    void setSensitivity(int sensitivity);
     int getSensitivity();
 }

@@ -17,11 +17,11 @@ public class InformationMessage extends V086Message {
             throws MessageFormatException {
         super(messageNumber);
 
-        if (source.length() == 0)
+        if (source.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: source.length == 0");
 
-        if (message.length() == 0)
+        if (message.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: message.length == 0");
 

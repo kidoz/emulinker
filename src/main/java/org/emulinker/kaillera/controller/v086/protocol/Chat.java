@@ -59,7 +59,7 @@ public abstract class Chat extends V086Message {
 
         String message = EmuUtil.readString(buffer, 0x00, charset);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             return new Chat_Request(messageNumber, message);
         else
             return new Chat_Notification(messageNumber, userName, message);

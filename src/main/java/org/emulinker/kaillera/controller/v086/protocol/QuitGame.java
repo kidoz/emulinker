@@ -60,7 +60,7 @@ public abstract class QuitGame extends V086Message {
 
         int userID = UnsignedUtil.getUnsignedShort(buffer);
 
-        if (userName.length() == 0 && userID == 0xFFFF)
+        if (userName.isEmpty() && userID == 0xFFFF)
             return new QuitGame_Request(messageNumber);
         else
             return new QuitGame_Notification(messageNumber, userName, userID);

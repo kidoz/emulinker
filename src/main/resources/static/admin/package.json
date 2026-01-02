@@ -12,6 +12,9 @@
     "check": "biome check src/",
     "check:fix": "biome check --write src/"
   },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "typescript": "^5.3.3",

@@ -19,7 +19,7 @@ public class ConnectionRejected extends V086Message {
             throws MessageFormatException {
         super(messageNumber);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: userName.length == 0");
 
@@ -27,7 +27,7 @@ public class ConnectionRejected extends V086Message {
             throw new MessageFormatException("Invalid " + getDescription()
                     + " format: userID out of acceptable range: " + userID);
 
-        if (message.length() == 0)
+        if (message.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: message.length == 0");
 

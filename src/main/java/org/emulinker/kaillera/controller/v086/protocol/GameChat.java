@@ -59,7 +59,7 @@ public abstract class GameChat extends V086Message {
 
         String message = EmuUtil.readString(buffer, 0x00, charset);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             return new GameChat_Request(messageNumber, message);
         else
             return new GameChat_Notification(messageNumber, userName, message);

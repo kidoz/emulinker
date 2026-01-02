@@ -1,5 +1,6 @@
 package org.emulinker.kaillera.admin;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -106,8 +108,13 @@ class AdminSecurityTest {
         @Test
         @DisplayName("SecurityConfig should be instantiable with valid credentials")
         void securityConfigShouldBeInstantiable() {
+            // Create a mock Environment (no stubbing needed - validateCredentials
+            // is a @PostConstruct method that only runs in Spring context)
+            Environment environment = mock(Environment.class);
+
             // Verify the security config can be created
-            SecurityConfig config = new SecurityConfig();
+            SecurityConfig config = new SecurityConfig(environment);
+            assertNotNull(config);
 
             // The config exists and doesn't throw - that's the key test
             // Full integration tests would require a running Spring context

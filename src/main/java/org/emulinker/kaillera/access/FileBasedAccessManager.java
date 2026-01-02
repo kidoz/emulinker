@@ -111,7 +111,7 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         log.debug("FileBasedAccessManager thread received stop request!");
 
         if (!isRunning()) {
-            log.debug("KailleraServer thread stop request ignored: not running!");
+            log.debug("FileBasedAccessManager thread stop request ignored: not running!");
             return;
         }
 

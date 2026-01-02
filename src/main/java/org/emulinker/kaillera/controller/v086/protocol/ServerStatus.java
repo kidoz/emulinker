@@ -97,6 +97,12 @@ public class ServerStatus extends V086Message {
         int numUsers = buffer.getInt();
         int numGames = buffer.getInt();
 
+        // Validate counts are reasonable to prevent integer overflow
+        if (numUsers < 0 || numUsers > 10000)
+            throw new ParseException("Invalid user count: " + numUsers);
+        if (numGames < 0 || numGames > 10000)
+            throw new ParseException("Invalid game count: " + numGames);
+
         int minLen = ((numUsers * 10) + (numGames * 13));
         if (buffer.remaining() < minLen)
             throw new ParseException("Failed byte count validation!");
@@ -162,7 +168,7 @@ public class ServerStatus extends V086Message {
 
         public User(String userName, long ping, byte status, int userID, byte connectionType)
                 throws MessageFormatException {
-            if (userName.length() == 0)
+            if (userName.isEmpty())
                 throw new MessageFormatException("Invalid " + DESC
                         + " format: userName.length == 0, (userID = " + userID + ")");
 
@@ -241,7 +247,7 @@ public class ServerStatus extends V086Message {
 
         public Game(String romName, int gameID, String clientType, String userName, String players,
                 byte status) throws MessageFormatException {
-            if (romName.length() == 0)
+            if (romName.isEmpty())
                 throw new MessageFormatException(
                         "Invalid " + DESC + " format: romName.length == 0");
 
@@ -249,11 +255,11 @@ public class ServerStatus extends V086Message {
                 throw new MessageFormatException(
                         "Invalid " + DESC + " format: gameID out of acceptable range: " + gameID);
 
-            if (clientType.length() == 0)
+            if (clientType.isEmpty())
                 throw new MessageFormatException(
                         "Invalid " + DESC + " format: clientType.length == 0");
 
-            if (userName.length() == 0)
+            if (userName.isEmpty())
                 throw new MessageFormatException(
                         "Invalid " + DESC + " format: userName.length == 0");
 

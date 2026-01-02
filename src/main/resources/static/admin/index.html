@@ -5,85 +5,110 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kaillux Admin Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 
 <body>
-  <aside class="sidebar">
-    <div class="logo">
-      <i class="fas fa-server"></i>
+  <aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="logo" aria-label="Kaillux Server">
+      <i class="fas fa-server" aria-hidden="true"></i>
       <span>Kaillux</span>
     </div>
     <nav>
-      <ul class="nav-links">
-        <li><a href="#" class="nav-link active" data-view="overview"><i class="fas fa-chart-line"></i> Overview</a></li>
-        <li><a href="#" class="nav-link" data-view="users"><i class="fas fa-users"></i> Users</a></li>
-        <li><a href="#" class="nav-link" data-view="games"><i class="fas fa-gamepad"></i> Games</a></li>
-        <li><a href="#" class="nav-link" data-view="controllers"><i class="fas fa-sliders-h"></i> Controllers</a></li>
+      <ul class="nav-links" role="menubar">
+        <li role="none">
+          <a href="#" class="nav-link active" data-view="overview" role="menuitem" aria-current="page">
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+            <span>Overview</span>
+          </a>
+        </li>
+        <li role="none">
+          <a href="#" class="nav-link" data-view="users" role="menuitem">
+            <i class="fas fa-users" aria-hidden="true"></i>
+            <span>Users</span>
+          </a>
+        </li>
+        <li role="none">
+          <a href="#" class="nav-link" data-view="games" role="menuitem">
+            <i class="fas fa-gamepad" aria-hidden="true"></i>
+            <span>Games</span>
+          </a>
+        </li>
+        <li role="none">
+          <a href="#" class="nav-link" data-view="controllers" role="menuitem">
+            <i class="fas fa-sliders-h" aria-hidden="true"></i>
+            <span>Controllers</span>
+          </a>
+        </li>
       </ul>
     </nav>
   </aside>
 
-  <main class="main-content">
+  <main class="main-content" role="main" aria-label="Dashboard content">
     <header>
       <h1 id="view-title">Dashboard Overview</h1>
-      <button class="btn btn--primary" id="refresh-btn">
-        <i class="fas fa-sync-alt"></i> Refresh
+      <button class="btn btn--primary" id="refresh-btn" aria-label="Refresh dashboard data">
+        <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        <span>Refresh</span>
       </button>
     </header>
 
-    <section id="overview-view">
-      <div class="stats-grid">
+    <section id="overview-view" aria-labelledby="view-title">
+      <div class="stats-grid" role="region" aria-label="Server statistics">
         <div class="card">
-          <div class="stat-label">Server Status</div>
-          <div class="stat-value" id="server-status" style="color: var(--success-color);">Online</div>
+          <div class="stat-label" id="server-status-label">Server Status</div>
+          <div class="stat-value" id="server-status" style="color: var(--success-color);"
+            aria-labelledby="server-status-label">Online</div>
         </div>
         <div class="card">
-          <div class="stat-label">Active Users</div>
-          <div class="stat-value" id="user-count">0 / 0</div>
+          <div class="stat-label" id="user-count-label">Active Users</div>
+          <div class="stat-value" id="user-count" aria-labelledby="user-count-label">0 / 0</div>
         </div>
         <div class="card">
-          <div class="stat-label">Active Games</div>
-          <div class="stat-value" id="game-count">0 / 0</div>
+          <div class="stat-label" id="game-count-label">Active Games</div>
+          <div class="stat-value" id="game-count" aria-labelledby="game-count-label">0 / 0</div>
         </div>
         <div class="card">
-          <div class="stat-label">Uptime</div>
-          <div class="stat-value" id="uptime">0m</div>
+          <div class="stat-label" id="uptime-label">Uptime</div>
+          <div class="stat-value" id="uptime" aria-labelledby="uptime-label">0m</div>
         </div>
       </div>
 
-      <div class="stats-grid">
+      <div class="stats-grid" role="region" aria-label="Connection statistics">
         <div class="card">
-          <div class="stat-label">Connect Attempts</div>
-          <div class="stat-value" id="stat-requests">0</div>
+          <div class="stat-label" id="stat-requests-label">Connect Attempts</div>
+          <div class="stat-value" id="stat-requests" aria-labelledby="stat-requests-label">0</div>
         </div>
         <div class="card">
-          <div class="stat-label">Successful Connects</div>
-          <div class="stat-value" id="stat-connects">0</div>
+          <div class="stat-label" id="stat-connects-label">Successful Connects</div>
+          <div class="stat-value" id="stat-connects" aria-labelledby="stat-connects-label">0</div>
         </div>
         <div class="card">
-          <div class="stat-label">Protocol Errors</div>
-          <div class="stat-value" id="stat-errors" style="color: var(--danger-color);">0</div>
+          <div class="stat-label" id="stat-errors-label">Protocol Errors</div>
+          <div class="stat-value" id="stat-errors" style="color: var(--danger-color);"
+            aria-labelledby="stat-errors-label">0</div>
         </div>
         <div class="card">
-          <div class="stat-label">Thread Pool (Act/Size)</div>
-          <div class="stat-value" id="stat-pool">0 / 0</div>
+          <div class="stat-label" id="stat-pool-label">Thread Pool (Act/Size)</div>
+          <div class="stat-value" id="stat-pool" aria-labelledby="stat-pool-label">0 / 0</div>
         </div>
       </div>
     </section>
 
-    <section id="users-view" style="display: none;">
+    <section id="users-view" style="display: none;" aria-label="Active Users">
       <div class="card">
-        <table class="data-table">
+        <table class="data-table" aria-label="Users table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Connect Type</th>
-              <th>Ping</th>
-              <th>Address</th>
-              <th>Actions</th>
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Status</th>
+              <th scope="col">Connect Type</th>
+              <th scope="col">Ping</th>
+              <th scope="col">Address</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody id="users-table-body">
@@ -92,17 +117,17 @@
       </div>
     </section>
 
-    <section id="games-view" style="display: none;">
+    <section id="games-view" style="display: none;" aria-label="Game Rooms">
       <div class="card">
-        <table class="data-table">
+        <table class="data-table" aria-label="Games table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>ROM Name</th>
-              <th>Owner</th>
-              <th>Status</th>
-              <th>Players</th>
-              <th>Actions</th>
+              <th scope="col">ID</th>
+              <th scope="col">ROM Name</th>
+              <th scope="col">Owner</th>
+              <th scope="col">Status</th>
+              <th scope="col">Players</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody id="games-table-body">
@@ -111,15 +136,15 @@
       </div>
     </section>
 
-    <section id="controllers-view" style="display: none;">
+    <section id="controllers-view" style="display: none;" aria-label="Kaillera Controllers">
       <div class="card">
-        <table class="data-table">
+        <table class="data-table" aria-label="Controllers table">
           <thead>
             <tr>
-              <th>Version</th>
-              <th>Buffer Size</th>
-              <th>Active Clients</th>
-              <th>Protocols</th>
+              <th scope="col">Version</th>
+              <th scope="col">Buffer Size</th>
+              <th scope="col">Active Clients</th>
+              <th scope="col">Protocols</th>
             </tr>
           </thead>
           <tbody id="controllers-table-body">

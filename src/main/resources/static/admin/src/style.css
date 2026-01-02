@@ -285,6 +285,37 @@ header {
   font-weight: 600;
 }
 
+/* Error Banner */
+.error-banner {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  padding: var(--space-md);
+  margin: 0 var(--space-xl) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  animation: slideIn 0.3s ease;
+}
+
+.error-banner::before {
+  content: "\f071";
+  font-family: "Font Awesome 6 Free", sans-serif;
+  font-weight: 900;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive sidebar */
 @media (max-width: 768px) {
   body {

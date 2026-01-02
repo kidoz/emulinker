@@ -9,7 +9,7 @@ public class JoinGame_Notification extends JoinGame {
             long ping, int userID, byte connectionType) throws MessageFormatException {
         super(messageNumber, gameID, val1, userName, ping, userID, connectionType);
 
-        if (userName.length() == 0)
+        if (userName.isEmpty())
             throw new MessageFormatException(
                     "Invalid " + getDescription() + " format: userName.length() == 0");
     }

@@ -77,7 +77,7 @@ public abstract class Quit extends V086Message {
 
         String message = EmuUtil.readString(buffer, 0x00, charset);
 
-        if (userName.length() == 0 && userID == 0xFFFF)
+        if (userName.isEmpty() && userID == 0xFFFF)
             return new Quit_Request(messageNumber, message);
         else
             return new Quit_Notification(messageNumber, userName, userID, message);

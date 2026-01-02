@@ -60,7 +60,7 @@ public abstract class PlayerDrop extends V086Message {
         String userName = EmuUtil.readString(buffer, 0x00, charset);
         byte playerNumber = buffer.get();
 
-        if (userName.length() == 0 && playerNumber == 0)
+        if (userName.isEmpty() && playerNumber == 0)
             return new PlayerDrop_Request(messageNumber);
         else
             return new PlayerDrop_Notification(messageNumber, userName, playerNumber);
