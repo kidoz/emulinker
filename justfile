@@ -22,6 +22,10 @@ format:
 lint:
     ./gradlew checkstyleMain
 
+# Run load tests
+load-test:
+    ./gradlew test --tests "org.emulinker.kaillera.load.ServerLoadTest" -Dload.tests=true
+
 # Admin UI commands
 admin-install:
     cd src/main/resources/static/admin && npm install

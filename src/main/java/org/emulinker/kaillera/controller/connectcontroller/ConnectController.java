@@ -1,9 +1,11 @@
 package org.emulinker.kaillera.controller.connectcontroller;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -22,13 +24,13 @@ import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.model.exception.NewConnectionException;
 import org.emulinker.kaillera.model.exception.ServerFullException;
 import org.emulinker.net.BindException;
-import org.emulinker.net.UDPServer;
+import org.emulinker.net.MultiAddressUDPServer;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.emulinker.util.EmuUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectController extends UDPServer {
+public class ConnectController extends MultiAddressUDPServer {
     private static final Logger log = LoggerFactory.getLogger(ConnectController.class);
 
     private final EmuLinkerExecutor threadPool;
@@ -54,9 +56,11 @@ public class ConnectController extends UDPServer {
 
         this.threadPool = threadPool;
         this.accessManager = accessManager;
+        setExecutor(threadPool);
 
         int port = config.getConnect().getPort();
         this.bufferSize = config.getConnect().getBufferSize();
+        List<InetAddress> bindAddresses = config.getParsedBindAddresses();
 
         controllersMap = new HashMap<String, KailleraServerController>();
         for (KailleraServerController controller : controllersArray) {
@@ -67,9 +71,10 @@ public class ConnectController extends UDPServer {
             }
         }
 
-        super.bind(port);
+        super.bind(port, bindAddresses);
 
-        log.info("Ready to accept connections on port " + port);
+        log.info("Ready to accept connections on port {} (addresses: {})", port,
+                bindAddresses.stream().map(InetAddress::getHostAddress).toList());
     }
 
     public KailleraServerController getController(String clientType) {
@@ -143,10 +148,11 @@ public class ConnectController extends UDPServer {
 
         super.start();
         startTime.set(System.currentTimeMillis());
-        log.debug(this + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
+        log.debug(this + " Starting handlers (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
-        threadPool.execute(this);
-        log.debug(this + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
+        // run() starts all channel handlers using the executor
+        this.run();
+        log.debug(this + " Handlers started (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
     }
 

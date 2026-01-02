@@ -1,5 +1,6 @@
 package su.kidoz.kaillera.controller.v086;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -199,8 +200,8 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
         return (int) ((lastMeasurement - testStart) / measurementCount);
     }
 
-    public void bind(int port) throws BindException {
-        super.bind(port);
+    public void bind(int port, InetAddress address) throws BindException {
+        super.bind(port, address);
     }
 
     public void start(KailleraUser user) {

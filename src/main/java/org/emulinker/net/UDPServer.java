@@ -1,8 +1,11 @@
 package org.emulinker.net;
 
 import java.io.IOException;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.StandardProtocolFamily;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
@@ -19,6 +22,7 @@ public abstract class UDPServer implements Executable {
     private static final int SOCKET_TIMEOUT_MS = 1000;
 
     private int bindPort;
+    private InetAddress bindAddress;
     private DatagramChannel channel;
     private volatile boolean isRunning = false;
     private volatile boolean stopFlag = false;
@@ -34,6 +38,10 @@ public abstract class UDPServer implements Executable {
 
     public int getBindPort() {
         return bindPort;
+    }
+
+    public InetAddress getBindAddress() {
+        return bindAddress;
     }
 
     public boolean isRunning() {
@@ -79,19 +87,40 @@ public abstract class UDPServer implements Executable {
     }
 
     protected synchronized void bind() throws BindException {
-        bind(-1);
+        bind(-1, null);
     }
 
     protected synchronized void bind(int port) throws BindException {
+        bind(port, null);
+    }
+
+    protected synchronized void bind(int port, InetAddress address) throws BindException {
         try {
-            channel = DatagramChannel.open();
+            // Determine protocol family based on address type
+            if (address instanceof Inet6Address) {
+                channel = DatagramChannel.open(StandardProtocolFamily.INET6);
+            } else {
+                channel = DatagramChannel.open(StandardProtocolFamily.INET);
+            }
 
-            if (port > 0)
-                channel.socket().bind(new InetSocketAddress(port));
-            else
-                channel.socket().bind(null);
+            InetSocketAddress socketAddress;
+            if (port > 0) {
+                if (address != null) {
+                    socketAddress = new InetSocketAddress(address, port);
+                } else {
+                    socketAddress = new InetSocketAddress(port);
+                }
+            } else {
+                if (address != null) {
+                    socketAddress = new InetSocketAddress(address, 0);
+                } else {
+                    socketAddress = null;
+                }
+            }
 
+            channel.socket().bind(socketAddress);
             bindPort = channel.socket().getLocalPort();
+            bindAddress = address;
 
             ByteBuffer tempBuffer = getBuffer();
             int bufferSize = (tempBuffer.capacity() * 2);
@@ -102,7 +131,8 @@ public abstract class UDPServer implements Executable {
             // Set socket timeout to allow graceful shutdown
             channel.socket().setSoTimeout(SOCKET_TIMEOUT_MS);
         } catch (IOException e) {
-            throw new BindException("Failed to bind to port " + port, port, e);
+            String addressStr = address != null ? address.getHostAddress() + ":" : "";
+            throw new BindException("Failed to bind to " + addressStr + port, port, e);
         }
 
         this.start();

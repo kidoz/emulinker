@@ -1,5 +1,8 @@
 package org.emulinker.config;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -18,11 +21,41 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class ControllersConfig {
 
+    @NotEmpty
+    private List<String> bindAddresses = List.of("0.0.0.0", "::");
+
     @Valid
     private Connect connect = new Connect();
 
     @Valid
     private V086 v086 = new V086();
+
+    public List<String> getBindAddresses() {
+        return bindAddresses;
+    }
+
+    public void setBindAddresses(List<String> bindAddresses) {
+        this.bindAddresses = bindAddresses;
+    }
+
+    /**
+     * Parses bind addresses into InetAddress objects.
+     *
+     * @return list of parsed InetAddress objects
+     * @throws IllegalStateException
+     *             if any address cannot be parsed
+     */
+    public List<InetAddress> getParsedBindAddresses() {
+        List<InetAddress> addresses = new ArrayList<>();
+        for (String addr : bindAddresses) {
+            try {
+                addresses.add(InetAddress.getByName(addr));
+            } catch (UnknownHostException e) {
+                throw new IllegalStateException("Invalid bind address: " + addr, e);
+            }
+        }
+        return addresses;
+    }
 
     public Connect getConnect() {
         return connect;
