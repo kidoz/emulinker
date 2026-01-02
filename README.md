@@ -85,5 +85,6 @@ GPL-2.0. See `LICENSE`.
 
 ## Credits
 
+- **Current Maintainer:** Aleksandr Pavlov
 - **Original Author:** Paul Cowan
 - **Contributors:** See [GitHub contributors](../../graphs/contributors)
