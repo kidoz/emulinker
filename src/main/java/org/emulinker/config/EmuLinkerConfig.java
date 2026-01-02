@@ -49,7 +49,7 @@ import org.emulinker.kaillera.service.impl.UserServiceImpl;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
+import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -66,7 +66,7 @@ public class EmuLinkerConfig {
 
     @Bean
     public RestClient restClient(RestClient.Builder builder) {
-        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
+        HttpClientSettings settings = HttpClientSettings.defaults()
                 .withConnectTimeout(Duration.ofSeconds(5)).withReadTimeout(Duration.ofSeconds(5));
         return builder.requestFactory(ClientHttpRequestFactoryBuilder.simple().build(settings))
                 .build();

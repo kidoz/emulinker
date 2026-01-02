@@ -4,9 +4,9 @@ import com.github.spotbugs.snom.SpotBugsTask
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.9'
-    id 'io.spring.dependency-management' version '1.1.6'
-    id 'com.diffplug.spotless' version '6.25.0'
+    id 'org.springframework.boot' version '4.0.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '8.1.0'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.4.8'
     id 'jacoco'
@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-restclient'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
     // Validation support for @ConfigurationProperties
@@ -41,7 +42,7 @@ dependencies {
 
     // Logging: SLF4J + Logback (Spring Boot includes Logback by default)
     // Bridge for libraries that still use commons-logging API
-    implementation 'org.slf4j:jcl-over-slf4j:2.0.16'
+    implementation 'org.slf4j:jcl-over-slf4j:2.0.17'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -68,7 +69,7 @@ tasks.named('test') {
 spotless {
     java {
         target 'src/*/java/**/*.java'
-        eclipse('4.33').configFile(rootProject.file('config/eclipse-formatter.xml'))
+        eclipse('4.35').configFile(rootProject.file('config/eclipse-formatter.xml'))
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
