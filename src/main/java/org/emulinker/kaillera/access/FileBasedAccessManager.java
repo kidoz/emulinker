@@ -234,30 +234,14 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
 
     public synchronized boolean clearTemp(InetAddress address) {
         String userAddress = address.getHostAddress();
-        boolean found = false;
 
-        for (Silence silence : silenceList) {
-            if (silence.matches(userAddress)) {
-                silenceList.remove(silence);
-                found = true;
-            }
-        }
+        // Use removeIf() for safe concurrent modification
+        boolean foundSilence = silenceList.removeIf(silence -> silence.matches(userAddress));
+        boolean foundBan = tempBanList
+                .removeIf(tempBan -> tempBan.matches(userAddress) && !tempBan.isExpired());
+        boolean foundAdmin = tempAdminList.removeIf(tempAdmin -> tempAdmin.matches(userAddress));
 
-        for (TempBan tempBan : tempBanList) {
-            if (tempBan.matches(userAddress) && !tempBan.isExpired()) {
-                tempBanList.remove(tempBan);
-                found = true;
-            }
-        }
-
-        for (TempAdmin tempAdmin : tempAdminList) {
-            if (tempAdmin.matches(userAddress)) {
-                tempAdminList.remove(tempAdmin);
-                found = true;
-            }
-        }
-
-        return found;
+        return foundSilence || foundBan || foundAdmin;
     }
 
     public synchronized boolean isSilenced(InetAddress address) {

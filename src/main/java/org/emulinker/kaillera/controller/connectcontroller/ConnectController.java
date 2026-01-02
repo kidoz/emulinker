@@ -69,7 +69,6 @@ public class ConnectController extends UDPServer {
 
         super.bind(port);
 
-        System.out.println("Ready to accept connections on port " + port);
         log.info("Ready to accept connections on port " + port);
     }
 

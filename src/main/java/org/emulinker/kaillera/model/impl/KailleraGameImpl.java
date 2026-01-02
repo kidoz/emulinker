@@ -203,6 +203,10 @@ public final class KailleraGameImpl implements KailleraGame {
                     EmuLang.getString("KailleraGameImpl.GameChatErrorNotInGame")); //$NON-NLS-1$
         }
 
+        if (message == null || message.trim().isEmpty()) {
+            throw new GameChatException("Empty message");
+        }
+
         log.info(user + ", " + this + " gamechat: " + message); //$NON-NLS-1$ //$NON-NLS-2$
         addEvent(new GameChatEvent(this, user, message));
     }
@@ -385,6 +389,12 @@ public final class KailleraGameImpl implements KailleraGame {
                     EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError")); //$NON-NLS-1$
         }
 
+        if (playerNumber < 1 || playerNumber > playerActionQueues.length) {
+            log.error(user + " ready failed: invalid playerNumber " + playerNumber); //$NON-NLS-1$
+            throw new UserReadyException(
+                    EmuLang.getString("KailleraGameImpl.ReadyGameErrorInternalError")); //$NON-NLS-1$
+        }
+
         log.info(user + " (player " + playerNumber + ") is ready to play: " + this); //$NON-NLS-1$ //$NON-NLS-2$
         playerActionQueues[(playerNumber - 1)].setSynched(true);
 
@@ -406,6 +416,12 @@ public final class KailleraGameImpl implements KailleraGame {
 
         if (playerActionQueues == null) {
             log.error(user + " drop failed: " + this + " playerActionQueues == null!"); //$NON-NLS-1$ //$NON-NLS-2$
+            throw new DropGameException(
+                    EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError")); //$NON-NLS-1$
+        }
+
+        if (playerNumber < 1 || playerNumber > playerActionQueues.length) {
+            log.error(user + " drop failed: invalid playerNumber " + playerNumber); //$NON-NLS-1$
             throw new DropGameException(
                     EmuLang.getString("KailleraGameImpl.DropGameErrorInternalError")); //$NON-NLS-1$
         }
@@ -477,7 +493,9 @@ public final class KailleraGameImpl implements KailleraGame {
             return;
 
         int playerNumber = user.getPlayerNumber();
-        if (playerActionQueues != null && playerActionQueues[(playerNumber - 1)].isSynched()) {
+        if (playerActionQueues != null && playerNumber >= 1
+                && playerNumber <= playerActionQueues.length
+                && playerActionQueues[(playerNumber - 1)].isSynched()) {
             playerActionQueues[(playerNumber - 1)].setSynched(false);
             log.info(this + ": " + user + ": player desynched: dropped a packet!"); //$NON-NLS-1$ //$NON-NLS-2$
             addEvent(new PlayerDesynchEvent(this, user, EmuLang
@@ -504,11 +522,28 @@ public final class KailleraGameImpl implements KailleraGame {
             return;
         }
 
+        int numPlayers = queues.length;
+
+        // Validate playerNumber bounds
+        if (playerNumber < 1 || playerNumber > numPlayers) {
+            log.error(this + ": addData failed: invalid playerNumber " + playerNumber + " (max: "
+                    + numPlayers + ")");
+            throw new GameDataException("Invalid player number: " + playerNumber, data, actions,
+                    playerNumber, numPlayers);
+        }
+
         int bytesPerAction = (data.length / actions);
         int timeoutCounter = 0;
         int actionCounter;
         int playerCounter;
-        int numPlayers = queues.length;
+
+        // Check for integer overflow before array allocation
+        if (bytesPerAction <= 0 || numPlayers > Integer.MAX_VALUE / actions
+                || (numPlayers * actions) > Integer.MAX_VALUE / bytesPerAction) {
+            log.error(this + ": addData failed: array size overflow");
+            throw new GameDataException("Invalid data size", data, actions, playerNumber,
+                    numPlayers);
+        }
         int arraySize = (numPlayers * actions * bytesPerAction);
 
         if (!synched) {
@@ -554,6 +589,13 @@ public final class KailleraGameImpl implements KailleraGame {
 
         int playerNumber = e.getPlayerNumber();
         int timeoutNumber = e.getTimeoutNumber();
+
+        if (playerActionQueues == null || playerNumber < 1
+                || playerNumber > playerActionQueues.length) {
+            log.error(this + ": handleTimeout: invalid playerNumber " + playerNumber);
+            return;
+        }
+
         PlayerActionQueue playerActionQueue = playerActionQueues[(playerNumber - 1)];
 
         if (!playerActionQueue.isSynched() || e.equals(playerActionQueue.getLastTimeout()))

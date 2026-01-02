@@ -406,6 +406,9 @@ public final class V086Controller implements KailleraServerController {
         }
 
         public int getAverageNetworkSpeed() {
+            if (measurementCount <= 0) {
+                return 0;
+            }
             return (int) ((lastMeasurement - testStart) / measurementCount);
         }
 

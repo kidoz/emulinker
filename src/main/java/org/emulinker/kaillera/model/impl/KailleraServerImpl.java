@@ -3,6 +3,7 @@ package org.emulinker.kaillera.model.impl;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -150,11 +151,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     public Collection<KailleraUserImpl> getUsers() {
-        return users.values();
+        return Collections.unmodifiableCollection(users.values());
     }
 
     public Collection<KailleraGameImpl> getGames() {
-        return games.values();
+        return Collections.unmodifiableCollection(games.values());
     }
 
     public int getNumUsers() {
@@ -406,14 +407,11 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         }
 
         if (access == AccessManager.ACCESS_NORMAL) {
-            char[] chars = user.getName().toCharArray();
-            for (int i = 0; i < chars.length; i++) {
-                if (chars[i] < 32) {
-                    log.info(user + " login denied: Illegal characters in UserName");
-                    users.remove(userListKey);
-                    throw new UserNameException(EmuLang.getString(
-                            "KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
-                }
+            if (containsIllegalCharacters(user.getName())) {
+                log.info(user + " login denied: Illegal characters in UserName");
+                users.remove(userListKey);
+                throw new UserNameException(EmuLang
+                        .getString("KailleraServerImpl.LoginDeniedIllegalCharactersInUserName"));
             }
         }
 
@@ -480,14 +478,18 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
         try {
             Thread.sleep(500);
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.debug("Interrupted during login initialization", e);
         }
 
         addEvent(new UserJoinedEvent(this, user));
 
         try {
             Thread.sleep(100);
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.debug("Interrupted during login initialization", e);
         }
 
         for (String loginMessage : loginMessages)
@@ -596,13 +598,10 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             return;
 
         if (access == AccessManager.ACCESS_NORMAL) {
-            char[] chars = message.toCharArray();
-            for (int i = 0; i < chars.length; i++) {
-                if (chars[i] < 32) {
-                    log.warn(user + " chat denied: Illegal characters in message");
-                    throw new ChatException(
-                            EmuLang.getString("KailleraServerImpl.ChatDeniedIllegalCharacters"));
-                }
+            if (containsIllegalCharacters(message)) {
+                log.warn(user + " chat denied: Illegal characters in message");
+                throw new ChatException(
+                        EmuLang.getString("KailleraServerImpl.ChatDeniedIllegalCharacters"));
             }
 
             if (maxChatLength > 0 && message.length() > maxChatLength) {
@@ -647,13 +646,10 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                         EmuLang.getString("KailleraServerImpl.CreateGameDeniedMaxGames", maxGames));
             }
 
-            char[] chars = romName.toCharArray();
-            for (int i = 0; i < chars.length; i++) {
-                if (chars[i] < 32) {
-                    log.warn(user + " create game denied: Illegal characters in ROM name");
-                    throw new CreateGameException(EmuLang
-                            .getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
-                }
+            if (containsIllegalCharacters(romName)) {
+                log.warn(user + " create game denied: Illegal characters in ROM name");
+                throw new CreateGameException(
+                        EmuLang.getString("KailleraServerImpl.CreateGameDeniedIllegalCharacters"));
             }
 
             if (romName.trim().length() == 0) {
@@ -830,5 +826,36 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             isRunning = false;
             log.debug("KailleraServer thread exiting...");
         }
+    }
+
+    /**
+     * Checks if a string contains illegal characters (control chars, dangerous
+     * Unicode).
+     *
+     * @param str
+     *            the string to check
+     * @return true if illegal characters are found
+     */
+    private boolean containsIllegalCharacters(String str) {
+        if (str == null) {
+            return false;
+        }
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            // Check for control characters (< 32), DEL (127), and other ISO control chars
+            if (c < 32 || c == 127 || Character.isISOControl(c)) {
+                return true;
+            }
+            // Check for Unicode direction override characters (potential spoofing)
+            if (c == '\u202A' || c == '\u202B' || c == '\u202C' || c == '\u202D' || c == '\u202E'
+                    || c == '\u2066' || c == '\u2067' || c == '\u2068' || c == '\u2069') {
+                return true;
+            }
+            // Check for zero-width characters (potential spoofing)
+            if (c == '\u200B' || c == '\u200C' || c == '\u200D' || c == '\uFEFF') {
+                return true;
+            }
+        }
+        return false;
     }
 }
