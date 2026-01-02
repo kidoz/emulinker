@@ -1,5 +1,11 @@
-import type { Controller, Game, User, ViewName } from './types';
-import { validateControllers, validateGames, validateServerInfo, validateUsers } from './types';
+import type { ActionResult, Controller, Game, User, ViewName } from './types';
+import {
+  validateActionResult,
+  validateControllers,
+  validateGames,
+  validateServerInfo,
+  validateUsers,
+} from './types';
 import './style.css';
 
 const VIEWS: readonly ViewName[] = ['overview', 'users', 'games', 'controllers'] as const;
@@ -345,11 +351,50 @@ async function refreshData(): Promise<void> {
   }
 }
 
-function handleKickUser(userId: number, userName: string): void {
-  if (confirm(`Are you sure you want to kick user "${userName}" (ID: ${userId})?`)) {
-    // TODO: Implement kick API call
-    // For now, show a message that it's not yet implemented
-    showError('Kick functionality is not yet implemented on the server.');
+async function handleKickUser(userId: number, userName: string): Promise<void> {
+  const reason = prompt(`Enter reason for kicking "${userName}":`, 'Kicked by administrator');
+  if (reason === null) {
+    return; // User cancelled
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`/api/admin/users/${userId}/kick`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason }),
+      signal: controller.signal,
+    });
+
+    if (response.status === 404) {
+      showError(`User "${userName}" not found (may have already disconnected)`);
+      void refreshData();
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data: unknown = await response.json();
+    const result: ActionResult | null = validateActionResult(data);
+
+    if (result?.success) {
+      clearError();
+      void refreshData();
+    } else {
+      showError(result?.message ?? 'Failed to kick user');
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      showError('Request timed out while kicking user');
+    } else {
+      showError(`Failed to kick user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -387,7 +432,7 @@ function initializeEventListeners(): void {
       const userName = nameCell?.textContent ?? `User ${userId}`;
 
       if (!Number.isNaN(userId)) {
-        handleKickUser(userId, userName);
+        void handleKickUser(userId, userName);
       }
     }
   });

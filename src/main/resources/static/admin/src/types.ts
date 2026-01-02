@@ -64,6 +64,12 @@ export const UsersArraySchema = z.array(UserSchema);
 export const GamesArraySchema = z.array(GameSchema);
 export const ControllersArraySchema = z.array(ControllerSchema);
 
+// Action result schema for admin operations
+export const ActionResultSchema = z.object({
+  success: z.boolean(),
+  message: z.string().nullable().optional(),
+});
+
 // Inferred TypeScript types from schemas
 export type ServerStats = z.infer<typeof ServerStatsSchema>;
 export type ThreadPool = z.infer<typeof ThreadPoolSchema>;
@@ -71,6 +77,7 @@ export type ServerInfo = z.infer<typeof ServerInfoSchema>;
 export type User = z.infer<typeof UserSchema>;
 export type Game = z.infer<typeof GameSchema>;
 export type Controller = z.infer<typeof ControllerSchema>;
+export type ActionResult = z.infer<typeof ActionResultSchema>;
 
 export type ViewName = 'overview' | 'users' | 'games' | 'controllers';
 
@@ -92,5 +99,10 @@ export function validateGames(data: unknown): Game[] | null {
 
 export function validateControllers(data: unknown): Controller[] | null {
   const result = ControllersArraySchema.safeParse(data);
+  return result.success ? result.data : null;
+}
+
+export function validateActionResult(data: unknown): ActionResult | null {
+  const result = ActionResultSchema.safeParse(data);
   return result.success ? result.data : null;
 }

@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.emulinker.kaillera.admin.dto.ActionResultDTO;
 import org.emulinker.kaillera.admin.dto.ControllerDTO;
 import org.emulinker.kaillera.admin.dto.GameDTO;
+import org.emulinker.kaillera.admin.dto.KickUserRequest;
 import org.emulinker.kaillera.admin.dto.ServerInfoDTO;
 import org.emulinker.kaillera.admin.dto.UserDTO;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
@@ -13,14 +15,22 @@ import org.emulinker.kaillera.model.KailleraGame;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.util.EmuLinkerExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/admin", "/api/v1/admin"})
 public class AdminRestController {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminRestController.class);
 
     private final KailleraServer kailleraServer;
     private final ConnectController connectController;
@@ -86,5 +96,40 @@ public class AdminRestController {
                         controller.getBufferSize(), controller.getNumClients(),
                         Arrays.asList(controller.getClientTypes())))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Kicks a user from the server.
+     *
+     * @param userId
+     *            the ID of the user to kick
+     * @param request
+     *            the kick request containing the reason
+     * @return result indicating success or failure
+     */
+    @PostMapping("/users/{userId}/kick")
+    public ResponseEntity<ActionResultDTO> kickUser(@PathVariable int userId,
+            @RequestBody KickUserRequest request) {
+        KailleraUser user = kailleraServer.getUser(userId);
+
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String reason = request.reason();
+        if (reason == null || reason.isBlank()) {
+            reason = "Kicked by administrator";
+        }
+
+        try {
+            user.quit("Kicked: " + reason);
+            log.info("Admin kicked user {} (ID: {}): {}", user.getName(), userId, reason);
+            return ResponseEntity
+                    .ok(ActionResultDTO.ok("User " + user.getName() + " has been kicked"));
+        } catch (Exception e) {
+            log.error("Failed to kick user {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body(ActionResultDTO.error("Failed to kick user: " + e.getMessage()));
+        }
     }
 }

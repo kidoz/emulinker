@@ -26,6 +26,7 @@ import org.emulinker.kaillera.controller.v086.action.InfoMessageAction;
 import org.emulinker.kaillera.controller.v086.action.JoinGameAction;
 import org.emulinker.kaillera.controller.v086.action.KeepAliveAction;
 import org.emulinker.kaillera.controller.v086.action.LoginAction;
+import org.emulinker.kaillera.controller.v086.action.LoginProgressAction;
 import org.emulinker.kaillera.controller.v086.action.PlayerDesynchAction;
 import org.emulinker.kaillera.controller.v086.action.QuitAction;
 import org.emulinker.kaillera.controller.v086.action.QuitGameAction;
@@ -254,6 +255,11 @@ public class EmuLinkerConfig {
     }
 
     @Bean
+    public LoginProgressAction loginProgressAction() {
+        return new LoginProgressAction();
+    }
+
+    @Bean
     public PlayerDesynchAction playerDesynchAction() {
         return new PlayerDesynchAction();
     }
@@ -288,15 +294,15 @@ public class EmuLinkerConfig {
             GameOwnerCommandAction gameOwnerCommandAction, GameStatusAction gameStatusAction,
             GameTimeoutAction gameTimeoutAction, InfoMessageAction infoMessageAction,
             JoinGameAction joinGameAction, KeepAliveAction keepAliveAction, LoginAction loginAction,
-            PlayerDesynchAction playerDesynchAction, QuitAction quitAction,
-            QuitGameAction quitGameAction, StartGameAction startGameAction,
+            LoginProgressAction loginProgressAction, PlayerDesynchAction playerDesynchAction,
+            QuitAction quitAction, QuitGameAction quitGameAction, StartGameAction startGameAction,
             UserReadyAction userReadyAction) {
         return new ActionBundle(ackAction, adminCommandAction, cachedGameDataAction, chatAction,
                 closeGameAction, createGameAction, dropGameAction, gameChatAction, gameDataAction,
                 gameDesynchAction, gameInfoAction, gameKickAction, gameOwnerCommandAction,
                 gameStatusAction, gameTimeoutAction, infoMessageAction, joinGameAction,
-                keepAliveAction, loginAction, playerDesynchAction, quitAction, quitGameAction,
-                startGameAction, userReadyAction);
+                keepAliveAction, loginAction, loginProgressAction, playerDesynchAction, quitAction,
+                quitGameAction, startGameAction, userReadyAction);
     }
 
     @Bean

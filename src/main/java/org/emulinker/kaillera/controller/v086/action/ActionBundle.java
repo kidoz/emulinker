@@ -13,7 +13,7 @@ public record ActionBundle(ACKAction ackAction, AdminCommandAction adminCommandA
         GameStatusAction gameStatusAction, GameTimeoutAction gameTimeoutAction,
         InfoMessageAction infoMessageAction, JoinGameAction joinGameAction,
         KeepAliveAction keepAliveAction, LoginAction loginAction,
-        PlayerDesynchAction playerDesynchAction, QuitAction quitAction,
-        QuitGameAction quitGameAction, StartGameAction startGameAction,
+        LoginProgressAction loginProgressAction, PlayerDesynchAction playerDesynchAction,
+        QuitAction quitAction, QuitGameAction quitGameAction, StartGameAction startGameAction,
         UserReadyAction userReadyAction) {
 }

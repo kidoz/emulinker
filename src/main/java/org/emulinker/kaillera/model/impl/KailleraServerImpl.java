@@ -19,10 +19,8 @@ import org.emulinker.kaillera.model.event.ChatEvent;
 import org.emulinker.kaillera.model.event.ConnectedEvent;
 import org.emulinker.kaillera.model.event.GameClosedEvent;
 import org.emulinker.kaillera.model.event.GameCreatedEvent;
-import org.emulinker.kaillera.model.event.InfoMessageEvent;
 import org.emulinker.kaillera.model.event.KailleraEventListener;
 import org.emulinker.kaillera.model.event.ServerEvent;
-import org.emulinker.kaillera.model.event.UserJoinedEvent;
 import org.emulinker.kaillera.model.event.UserQuitEvent;
 import org.emulinker.kaillera.model.exception.ChatException;
 import org.emulinker.kaillera.model.exception.ClientAddressException;
@@ -45,6 +43,9 @@ import org.emulinker.util.EmuUtil;
 import org.emulinker.util.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.emulinker.kaillera.model.event.LoginProgressEvent;
+
+import su.kidoz.kaillera.model.LoginNotificationState;
 import su.kidoz.kaillera.model.impl.GameManager;
 import su.kidoz.kaillera.model.impl.ServerMaintenanceTask;
 import su.kidoz.kaillera.model.impl.UserManager;
@@ -365,95 +366,27 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     /**
-     * Sends login notifications asynchronously to avoid blocking the synchronized
-     * login method. This allows other users to login concurrently while
-     * notifications are being sent.
+     * Starts the login notification sequence using event-driven state machine.
+     * Replaces the previous Thread.sleep() approach with proper event chaining via
+     * LoginProgressEvent.
+     *
+     * <p>
+     * The notification sequence is:
+     *
+     * <pre>
+     * CONNECTED → USER_JOINED → MESSAGES_SENT → ADMIN_INFO → COMPLETE
+     * </pre>
+     *
+     * @param userImpl
+     *            the user who just logged in
+     * @param access
+     *            the user's access level
      */
     private void sendLoginNotificationsAsync(KailleraUserImpl userImpl, int access) {
-        threadPool.execute(() -> {
-            try {
-                // Small delay to allow client to process ConnectedEvent
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-
-            addEvent(new UserJoinedEvent(this, userImpl));
-
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-
-            for (String loginMessage : loginMessages) {
-                userImpl.addEvent(new InfoMessageEvent(userImpl, loginMessage));
-            }
-
-            if (access > AccessManager.ACCESS_NORMAL) {
-                log.info(userImpl + " logged in successfully with "
-                        + AccessManager.ACCESS_NAMES[access] + " access!");
-            } else {
-                log.info(userImpl + " logged in successfully");
-            }
-
-            String announcement = accessManager
-                    .getAnnouncement(userImpl.getSocketAddress().getAddress());
-            if (announcement != null) {
-                announce(announcement, false);
-            }
-
-            if (access == AccessManager.ACCESS_ADMIN) {
-                userImpl.addEvent(new InfoMessageEvent(userImpl,
-                        EmuLang.getString("KailleraServerImpl.AdminWelcomeMessage")));
-            }
-
-            // Send Kaillux client-specific info
-            if (userImpl.isEmuLinkerClient()) {
-                userImpl.addEvent(
-                        new InfoMessageEvent(userImpl, ":ACCESS=" + userImpl.getAccessStr()));
-
-                if (access == AccessManager.ACCESS_ADMIN) {
-                    sendAdminUserInfo(userImpl);
-                }
-            }
-        });
-    }
-
-    /**
-     * Sends user info to admin Kaillux clients.
-     */
-    private void sendAdminUserInfo(KailleraUserImpl admin) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(":USERINFO=");
-        int sbCount = 0;
-
-        for (KailleraUserImpl u3 : getUsers()) {
-            if (!u3.isLoggedIn()) {
-                continue;
-            }
-
-            sb.append(u3.getID());
-            sb.append(",");
-            sb.append(u3.getConnectSocketAddress().getAddress().getHostAddress());
-            sb.append(",");
-            sb.append(u3.getAccessStr());
-            sb.append(";");
-            sbCount++;
-
-            if (sb.length() > 300) {
-                admin.addEvent(new InfoMessageEvent(admin, sb.toString()));
-                sb = new StringBuilder();
-                sb.append(":USERINFO=");
-                sbCount = 0;
-            }
-        }
-
-        if (sbCount > 0) {
-            admin.addEvent(new InfoMessageEvent(admin, sb.toString()));
-        }
+        // Queue the first login progress event - the state machine will handle the rest
+        LoginProgressEvent progressEvent = new LoginProgressEvent(this, userImpl,
+                LoginNotificationState.CONNECTED, List.copyOf(loginMessages), access);
+        userImpl.addEvent(progressEvent);
     }
 
     public void quit(KailleraUser user, String message)
@@ -627,7 +560,13 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         announcementService.announce(announcement, gamesAlso, getUsers(), getGames());
     }
 
-    void addEvent(ServerEvent event) {
+    /**
+     * Broadcasts a server event to all logged-in users.
+     *
+     * @param event
+     *            the event to broadcast
+     */
+    public void addEvent(ServerEvent event) {
         for (KailleraUserImpl user : userManager.getUsers()) {
             if (user.isLoggedIn())
                 user.addEvent(event);

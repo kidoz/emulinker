@@ -1,8 +1,11 @@
 package org.emulinker.kaillera.controller.v086.action;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import org.emulinker.kaillera.controller.v086.protocol.AllReady;
 import org.emulinker.kaillera.controller.v086.protocol.CachedGameData;
 import org.emulinker.kaillera.controller.v086.protocol.Chat;
@@ -37,6 +40,9 @@ import org.emulinker.kaillera.model.event.UserJoinedEvent;
 import org.emulinker.kaillera.model.event.UserJoinedGameEvent;
 import org.emulinker.kaillera.model.event.UserQuitEvent;
 import org.emulinker.kaillera.model.event.UserQuitGameEvent;
+import org.emulinker.kaillera.model.event.LoginProgressEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central routing hub for the V086 protocol controller. Maps incoming protocol
@@ -78,8 +84,18 @@ import org.emulinker.kaillera.model.event.UserQuitGameEvent;
  */
 public final class ActionRouter {
 
+    private static final Logger log = LoggerFactory.getLogger(ActionRouter.class);
+
     /** Maximum protocol message ID supported (exclusive). */
     private static final int MAX_MESSAGE_ID = 25;
+
+    /**
+     * Required message IDs that must have action handlers registered. These
+     * represent the core protocol messages that clients can send.
+     */
+    private static final int[] REQUIRED_MESSAGE_IDS = {UserInformation.ID, ClientACK.ID, Chat.ID,
+            CreateGame.ID, JoinGame.ID, KeepAlive.ID, QuitGame.ID, Quit.ID, StartGame.ID,
+            GameChat.ID, GameKick.ID, AllReady.ID, CachedGameData.ID, GameData.ID, PlayerDrop.ID};
 
     private final V086Action[] actions;
     private final Map<Class<?>, V086ServerEventHandler> serverEventHandlers;
@@ -88,6 +104,7 @@ public final class ActionRouter {
 
     public ActionRouter(ActionBundle actionBundle) {
         this.actions = createActionMappings(actionBundle);
+        validateActionMappings();
         this.serverEventHandlers = Collections
                 .unmodifiableMap(createServerEventHandlers(actionBundle));
         this.gameEventHandlers = Collections.unmodifiableMap(createGameEventHandlers(actionBundle));
@@ -238,7 +255,38 @@ public final class ActionRouter {
 
         handlers.put(ConnectedEvent.class, bundle.ackAction());
         handlers.put(InfoMessageEvent.class, bundle.infoMessageAction());
+        handlers.put(LoginProgressEvent.class, bundle.loginProgressAction());
 
         return handlers;
+    }
+
+    /**
+     * Validates that all required protocol message IDs have action handlers
+     * registered. This ensures the router is properly configured at startup.
+     *
+     * @throws IllegalStateException
+     *             if any required message ID is missing a handler
+     */
+    private void validateActionMappings() {
+        StringBuilder missingHandlers = new StringBuilder();
+
+        for (int messageId : REQUIRED_MESSAGE_IDS) {
+            if (messageId < 0 || messageId >= actions.length || actions[messageId] == null) {
+                if (!missingHandlers.isEmpty()) {
+                    missingHandlers.append(", ");
+                }
+                missingHandlers.append("0x").append(Integer.toHexString(messageId));
+            }
+        }
+
+        if (!missingHandlers.isEmpty()) {
+            throw new IllegalStateException(
+                    "ActionRouter validation failed: missing handlers for message IDs: "
+                            + missingHandlers);
+        }
+
+        long registeredCount = Arrays.stream(actions).filter(Objects::nonNull).count();
+        log.info("Protocol validation passed: {} action handlers registered for {} required IDs",
+                registeredCount, REQUIRED_MESSAGE_IDS.length);
     }
 }
