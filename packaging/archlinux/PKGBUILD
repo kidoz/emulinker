@@ -1,13 +1,13 @@
 # Maintainer: Your Name <your.email@example.com>
 pkgname=kaillux
-pkgver=1.1.0
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="Kaillera network server for emulator-based online multiplayer gaming"
 arch=('any')
 url="https://github.com/kidoz/kaillux"
 license=('GPL-2.0-only')
 depends=('java-runtime>=25')
-makedepends=('java-environment>=25' 'git')
+makedepends=('java-environment>=25')
 backup=('etc/kaillux/application.properties'
         'etc/kaillux/access.cfg'
         'etc/kaillux/logback.xml')
