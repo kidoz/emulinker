@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.emulinker.config.GameConfig;
 import org.emulinker.config.MasterListConfig;
@@ -50,32 +52,30 @@ import su.kidoz.kaillera.model.validation.LoginValidator;
 import su.kidoz.kaillera.service.AnnouncementService;
 import su.kidoz.kaillera.service.ChatModerationService;
 
+/**
+ * Main implementation of the Kaillera server. Manages users, games, and
+ * coordinates all server operations for multiplayer emulator gaming over UDP.
+ *
+ * <p>
+ * This class uses fine-grained locking for concurrent operations:
+ * <ul>
+ * <li>{@code serverLifecycleLock} - for start/stop operations</li>
+ * <li>{@code connectionLock} - for user connection/login/quit operations</li>
+ * <li>{@code gameLock} - for game creation/closure operations</li>
+ * </ul>
+ *
+ * @see KailleraServer
+ * @see KailleraUser
+ * @see KailleraGame
+ */
 public class KailleraServerImpl implements KailleraServer, Executable {
     private static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
 
-    private final int maxPing;
-    private final int maxUsers;
-    private final int maxGames;
-    private final int idleTimeout;
-    private final int keepAliveTimeout;
-    private final int chatFloodTime;
-    private final int createGameFloodTime;
-    private final int maxUserNameLength;
-    private final int maxChatLength;
-    private final int maxGameNameLength;
-    private final int maxQuitMessageLength;
-    private final int maxClientNameLength;
-
-    private final int gameBufferSize;
-    private final int gameTimeoutMillis;
-    private final int gameDesynchTimeouts;
-    private final int gameAutoFireSensitivity;
-
+    // Configuration objects - access values via getters instead of copying
     private final ServerConfig serverConfig;
+    private final GameConfig gameConfig;
 
-    private final List<String> loginMessages = new ArrayList<String>();
-    private final boolean allowSinglePlayer;
-    private final boolean allowMultipleConnections;
+    private final List<String> loginMessages = new ArrayList<>();
 
     private volatile boolean stopFlag = false;
     private volatile boolean isRunning = false;
@@ -92,6 +92,31 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     private final GameManager gameManager;
     private ServerMaintenanceTask maintenanceTask;
 
+    // Fine-grained locks replacing coarse synchronized(this)
+    private final Lock serverLifecycleLock = new ReentrantLock();
+    private final Lock connectionLock = new ReentrantLock();
+    private final Lock gameLock = new ReentrantLock();
+
+    /**
+     * Creates a new Kaillera server instance.
+     *
+     * @param threadPool
+     *            executor for virtual threads
+     * @param accessManager
+     *            handles user access control and banning
+     * @param serverConfig
+     *            server configuration (max users, timeouts, etc.)
+     * @param gameConfig
+     *            game configuration (buffer size, timeouts)
+     * @param masterListConfig
+     *            master server list configuration
+     * @param statsCollector
+     *            collects statistics for master list reporting
+     * @param releaseInfo
+     *            version and release information
+     * @param autoFireDetectorFactory
+     *            factory for creating auto-fire detectors
+     */
     public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
             ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
             StatsCollector statsCollector, ReleaseInfo releaseInfo,
@@ -101,28 +126,13 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         this.releaseInfo = releaseInfo;
         this.autoFireDetectorFactory = autoFireDetectorFactory;
         this.serverConfig = serverConfig;
+        this.gameConfig = gameConfig;
         this.loginValidator = new LoginValidator(accessManager, serverConfig);
         this.announcementService = new AnnouncementService();
 
-        // Server config
-        this.maxPing = serverConfig.getMaxPing();
-        this.maxUsers = serverConfig.getMaxUsers();
-        this.maxGames = serverConfig.getMaxGames();
-        this.keepAliveTimeout = serverConfig.getKeepAliveTimeout();
-        this.idleTimeout = serverConfig.getIdleTimeout();
-        this.chatFloodTime = serverConfig.getChatFloodTime();
-        this.createGameFloodTime = serverConfig.getCreateGameFloodTime();
-        this.allowSinglePlayer = serverConfig.isAllowSinglePlayer();
-        this.allowMultipleConnections = serverConfig.isAllowMultipleConnections();
-        this.maxUserNameLength = serverConfig.getMaxUserNameLength();
-        this.maxChatLength = serverConfig.getMaxChatLength();
-        this.maxGameNameLength = serverConfig.getMaxGameNameLength();
-        this.maxQuitMessageLength = serverConfig.getMaxQuitMessageLength();
-        this.maxClientNameLength = serverConfig.getMaxClientNameLength();
-
         // Initialize services that depend on config values
-        this.chatModerationService = new ChatModerationService(accessManager, chatFloodTime,
-                maxChatLength);
+        this.chatModerationService = new ChatModerationService(accessManager,
+                serverConfig.getChatFloodTime(), serverConfig.getMaxChatLength());
 
         // Load login messages from language bundle
         for (int i = 1; i <= 999; i++) {
@@ -132,15 +142,9 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 break;
         }
 
-        // Game config
-        this.gameBufferSize = gameConfig.getBufferSize();
-        this.gameTimeoutMillis = gameConfig.getTimeoutMillis();
-        this.gameDesynchTimeouts = gameConfig.getDesynchTimeouts();
-        this.gameAutoFireSensitivity = gameConfig.getDefaultAutoFireSensitivity();
-
         // Initialize managers
-        this.userManager = new UserManager(maxUsers);
-        this.gameManager = new GameManager(maxUsers);
+        this.userManager = new UserManager(serverConfig.getMaxUsers());
+        this.gameManager = new GameManager(serverConfig.getMaxUsers());
 
         // Master list config
         if (masterListConfig.isTouchKaillera())
@@ -180,15 +184,15 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     public int getMaxPing() {
-        return maxPing;
+        return serverConfig.getMaxPing();
     }
 
     public int getMaxUsers() {
-        return maxUsers;
+        return serverConfig.getMaxUsers();
     }
 
     public int getMaxGames() {
-        return maxGames;
+        return serverConfig.getMaxGames();
     }
 
     public boolean isRunning() {
@@ -200,7 +204,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     boolean getAllowSinglePlayer() {
-        return allowSinglePlayer;
+        return serverConfig.isAllowSinglePlayer();
     }
 
     public String toString() {
@@ -208,29 +212,39 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 + " isRunning=" + isRunning() + "]";
     }
 
-    public synchronized void start() {
-        log.debug("KailleraServer thread received start request!");
-        log.debug("KailleraServer thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
-                + threadPool.getPoolSize() + ")");
-        stopFlag = false;
-        threadPool.execute(this);
+    public void start() {
+        serverLifecycleLock.lock();
+        try {
+            log.debug("KailleraServer thread received start request!");
+            log.debug("KailleraServer thread starting (ThreadPool:" + threadPool.getActiveCount()
+                    + "/" + threadPool.getPoolSize() + ")");
+            stopFlag = false;
+            threadPool.execute(this);
+        } finally {
+            serverLifecycleLock.unlock();
+        }
     }
 
-    public synchronized void stop() {
-        log.debug("KailleraServer thread received stop request!");
+    public void stop() {
+        serverLifecycleLock.lock();
+        try {
+            log.debug("KailleraServer thread received stop request!");
 
-        if (!isRunning()) {
-            log.debug("KailleraServer thread stop request ignored: not running!");
-            return;
+            if (!isRunning()) {
+                log.debug("KailleraServer thread stop request ignored: not running!");
+                return;
+            }
+
+            stopFlag = true;
+            if (maintenanceTask != null) {
+                maintenanceTask.stop();
+            }
+
+            userManager.stopAllUsers();
+            gameManager.clear();
+        } finally {
+            serverLifecycleLock.unlock();
         }
-
-        stopFlag = true;
-        if (maintenanceTask != null) {
-            maintenanceTask.stop();
-        }
-
-        userManager.stopAllUsers();
-        gameManager.clear();
     }
 
     StatsCollector getStatsCollector() {
@@ -238,18 +252,18 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     AutoFireDetector getAutoFireDetector(KailleraGame game) {
-        if (gameAutoFireSensitivity == 0)
+        int sensitivity = gameConfig.getDefaultAutoFireSensitivity();
+        if (sensitivity == 0)
             return null;
-        return autoFireDetectorFactory.getInstance(game, gameAutoFireSensitivity);
+        return autoFireDetectorFactory.getInstance(game, sensitivity);
     }
 
     public ReleaseInfo getReleaseInfo() {
         return releaseInfo;
     }
 
-    public synchronized KailleraUser newConnection(InetSocketAddress clientSocketAddress,
-            String protocol, KailleraEventListener listener)
-            throws ServerFullException, NewConnectionException {
+    public KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol,
+            KailleraEventListener listener) throws ServerFullException, NewConnectionException {
         // we'll assume at this point that ConnectController has already asked
         // AccessManager if this IP is banned, so no need to do it again here
 
@@ -258,35 +272,40 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
         int access = accessManager.getAccess(clientSocketAddress.getAddress());
 
-        // admins will be allowed in even if the server is full
-        if (getMaxUsers() > 0 && userManager.getNumUsers() >= getMaxUsers()
-                && !(access > AccessManager.ACCESS_NORMAL)) {
-            log.warn("Connection from " + EmuUtil.formatSocketAddress(clientSocketAddress)
-                    + " denied: Server is full!");
-            throw new ServerFullException(
-                    EmuLang.getString("KailleraServerImpl.LoginDeniedServerFull"));
+        connectionLock.lock();
+        try {
+            // admins will be allowed in even if the server is full
+            if (getMaxUsers() > 0 && userManager.getNumUsers() >= getMaxUsers()
+                    && !(access > AccessManager.ACCESS_NORMAL)) {
+                log.warn("Connection from " + EmuUtil.formatSocketAddress(clientSocketAddress)
+                        + " denied: Server is full!");
+                throw new ServerFullException(
+                        EmuLang.getString("KailleraServerImpl.LoginDeniedServerFull"));
+            }
+
+            int userID = userManager.getNextUserID();
+            KailleraUserImpl user = new KailleraUserImpl(userID, protocol, clientSocketAddress,
+                    listener, this);
+            user.setStatus(KailleraUser.STATUS_CONNECTING);
+
+            log.info(user + " attempting new connection using protocol " + protocol + " from "
+                    + EmuUtil.formatSocketAddress(clientSocketAddress));
+
+            log.debug(user + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
+                    + threadPool.getPoolSize() + ")");
+            threadPool.execute(user);
+            log.debug(user + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
+                    + threadPool.getPoolSize() + ")");
+            userManager.addUser(user);
+
+            return user;
+        } finally {
+            connectionLock.unlock();
         }
-
-        int userID = userManager.getNextUserID();
-        KailleraUserImpl user = new KailleraUserImpl(userID, protocol, clientSocketAddress,
-                listener, this);
-        user.setStatus(KailleraUser.STATUS_CONNECTING);
-
-        log.info(user + " attempting new connection using protocol " + protocol + " from "
-                + EmuUtil.formatSocketAddress(clientSocketAddress));
-
-        log.debug(user + " Thread starting (ThreadPool:" + threadPool.getActiveCount() + "/"
-                + threadPool.getPoolSize() + ")");
-        threadPool.execute(user);
-        log.debug(user + " Thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
-                + threadPool.getPoolSize() + ")");
-        userManager.addUser(user);
-
-        return user;
     }
 
-    public synchronized void login(KailleraUser user) throws PingTimeException,
-            ClientAddressException, ConnectionTypeException, UserNameException, LoginException {
+    public void login(KailleraUser user) throws PingTimeException, ClientAddressException,
+            ConnectionTypeException, UserNameException, LoginException {
         KailleraUserImpl userImpl = (KailleraUserImpl) user;
 
         long loginDelay = (System.currentTimeMillis() - user.getConnectTime());
@@ -296,46 +315,52 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
 
         int userID = user.getID();
-        KailleraUser userFromList = userManager.getUser(userID);
 
-        // Run all validations - exceptions are thrown on failure
+        connectionLock.lock();
         try {
-            loginValidator.validateNotAlreadyLoggedIn(user);
-            loginValidator.validateUserExists(user, userFromList);
-            int access = loginValidator.validateAccessLevel(user);
-            loginValidator.validatePing(user, access);
-            loginValidator.validateConnectionType(user, access);
-            loginValidator.validateUserName(user, access);
-            loginValidator.validateClientName(user, access);
-            loginValidator.validateUserStatus(user, userFromList);
-            loginValidator.validateAddressMatch(user, userFromList);
-            loginValidator.validateEmulator(user, access);
+            KailleraUser userFromList = userManager.getUser(userID);
 
-            // Check for duplicate login - may return a user to force quit
-            KailleraUserImpl reconnectUser = loginValidator.checkDuplicateLogin(user, userFromList,
-                    getUsers(), access);
-            if (reconnectUser != null) {
-                try {
-                    quit(reconnectUser,
-                            EmuLang.getString("KailleraServerImpl.ForcedQuitReconnected"));
-                } catch (Exception e) {
-                    log.error("Error forcing " + reconnectUser + " quit for reconnect!", e);
+            // Run all validations - exceptions are thrown on failure
+            try {
+                loginValidator.validateNotAlreadyLoggedIn(user);
+                loginValidator.validateUserExists(user, userFromList);
+                int access = loginValidator.validateAccessLevel(user);
+                loginValidator.validatePing(user, access);
+                loginValidator.validateConnectionType(user, access);
+                loginValidator.validateUserName(user, access);
+                loginValidator.validateClientName(user, access);
+                loginValidator.validateUserStatus(user, userFromList);
+                loginValidator.validateAddressMatch(user, userFromList);
+                loginValidator.validateEmulator(user, access);
+
+                // Check for duplicate login - may return a user to force quit
+                KailleraUserImpl reconnectUser = loginValidator.checkDuplicateLogin(user,
+                        userFromList, getUsers(), access);
+                if (reconnectUser != null) {
+                    try {
+                        quitInternal(reconnectUser,
+                                EmuLang.getString("KailleraServerImpl.ForcedQuitReconnected"));
+                    } catch (Exception e) {
+                        log.error("Error forcing " + reconnectUser + " quit for reconnect!", e);
+                    }
                 }
+
+                // Passed all checks - complete login
+                userImpl.setAccess(access);
+                userImpl.setStatus(KailleraUser.STATUS_IDLE);
+                userImpl.setLoggedIn();
+                userManager.addUser(userImpl);
+                userImpl.addEvent(new ConnectedEvent(this, user));
+
+                // Release lock before sleeping to allow other logins to proceed
+                sendLoginNotificationsAsync(userImpl, access);
+            } catch (LoginException e) {
+                // Remove user from list on validation failure (LoginException is parent of all)
+                userManager.removeUser(userID);
+                throw e;
             }
-
-            // Passed all checks - complete login
-            userImpl.setAccess(access);
-            userImpl.setStatus(KailleraUser.STATUS_IDLE);
-            userImpl.setLoggedIn();
-            userManager.addUser(userImpl);
-            userImpl.addEvent(new ConnectedEvent(this, user));
-
-            // Release lock before sleeping to allow other logins to proceed
-            sendLoginNotificationsAsync(userImpl, access);
-        } catch (LoginException e) {
-            // Remove user from list on validation failure (LoginException is parent of all)
-            userManager.removeUser(userID);
-            throw e;
+        } finally {
+            connectionLock.unlock();
         }
     }
 
@@ -431,7 +456,21 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         }
     }
 
-    public synchronized void quit(KailleraUser user, String message)
+    public void quit(KailleraUser user, String message)
+            throws QuitException, DropGameException, QuitGameException, CloseGameException {
+        connectionLock.lock();
+        try {
+            quitInternal(user, message);
+        } finally {
+            connectionLock.unlock();
+        }
+    }
+
+    /**
+     * Internal quit implementation - assumes connectionLock is already held. Used
+     * to avoid deadlock when called from login() which already holds the lock.
+     */
+    private void quitInternal(KailleraUser user, String message)
             throws QuitException, DropGameException, QuitGameException, CloseGameException {
         if (!user.isLoggedIn()) {
             userManager.removeUser(user.getID());
@@ -447,8 +486,8 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             user.quitGame();
 
         String quitMsg = message.trim();
-        if (quitMsg.isEmpty()
-                || (maxQuitMessageLength > 0 && quitMsg.length() > maxQuitMessageLength))
+        int maxLen = serverConfig.getMaxQuitMessageLength();
+        if (quitMsg.isEmpty() || (maxLen > 0 && quitMsg.length() > maxLen))
             quitMsg = EmuLang.getString("KailleraServerImpl.StandardQuitMessage");
 
         log.info(user + " quit: " + quitMsg);
@@ -459,8 +498,9 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         ((KailleraUserImpl) user).addEvent(quitEvent);
     }
 
-    public synchronized void chat(KailleraUser user, String message)
-            throws ChatException, FloodException {
+    public void chat(KailleraUser user, String message) throws ChatException, FloodException {
+        // No lock needed - chatModerationService handles flood control thread-safely,
+        // and addEvent iterates over a thread-safe collection
         String validatedMessage = chatModerationService.validateChat(user, message);
         if (validatedMessage.isEmpty()) {
             return;
@@ -470,7 +510,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         addEvent(new ChatEvent(this, user, validatedMessage));
     }
 
-    public synchronized KailleraGame createGame(KailleraUser user, String romName)
+    public KailleraGame createGame(KailleraUser user, String romName)
             throws CreateGameException, FloodException {
         if (!user.isLoggedIn()) {
             log.error(user + " create game failed: Not logged in");
@@ -485,20 +525,15 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         }
 
         int access = accessManager.getAccess(user.getSocketAddress().getAddress());
+        int floodTime = serverConfig.getCreateGameFloodTime();
+        int maxNameLen = serverConfig.getMaxGameNameLength();
+
         if (access == AccessManager.ACCESS_NORMAL) {
-            if (createGameFloodTime > 0 && (System.currentTimeMillis()
-                    - ((KailleraUserImpl) user).getLastCreateGameTime()) < (createGameFloodTime
-                            * 1000)) {
+            if (floodTime > 0 && (System.currentTimeMillis()
+                    - ((KailleraUserImpl) user).getLastCreateGameTime()) < (floodTime * 1000)) {
                 log.warn(user + " create game denied: Flood: " + romName);
                 throw new FloodException(
                         EmuLang.getString("KailleraServerImpl.CreateGameDeniedFloodControl"));
-            }
-
-            if (maxGames > 0 && getNumGames() >= maxGames) {
-                log.warn(user + " create game denied: Over maximum of " + maxGames
-                        + " current games!");
-                throw new CreateGameException(
-                        EmuLang.getString("KailleraServerImpl.CreateGameDeniedMaxGames", maxGames));
             }
 
             if (containsIllegalCharacters(romName)) {
@@ -513,8 +548,8 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                         EmuLang.getString("KailleraServerImpl.CreateGameErrorEmptyName"));
             }
 
-            if (maxGameNameLength > 0 && romName.trim().length() > maxGameNameLength) {
-                log.warn(user + " create game denied: Rom Name Length > " + maxGameNameLength);
+            if (maxNameLen > 0 && romName.trim().length() > maxNameLen) {
+                log.warn(user + " create game denied: Rom Name Length > " + maxNameLen);
                 throw new CreateGameException(
                         EmuLang.getString("KailleraServerImpl.CreateGameDeniedNameTooLong"));
             }
@@ -526,44 +561,66 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             }
         }
 
-        int gameID = gameManager.getNextGameID();
-        KailleraGameImpl game = new KailleraGameImpl(gameID, romName, (KailleraUserImpl) user, this,
-                gameBufferSize, gameTimeoutMillis, gameDesynchTimeouts);
-        gameManager.addGame(game);
-
-        addEvent(new GameCreatedEvent(this, game));
-
-        log.info(user + " created: " + game + ": " + game.getRomName());
-
+        gameLock.lock();
         try {
-            user.joinGame(game.getID());
-        } catch (Exception e) {
-            // this shouldn't happen
-            log.error("Caught exception while making owner join game! This shouldn't happen!", e);
+            // Re-check max games inside lock to ensure atomicity
+            int maxGames = serverConfig.getMaxGames();
+            if (access == AccessManager.ACCESS_NORMAL && maxGames > 0
+                    && getNumGames() >= maxGames) {
+                log.warn(user + " create game denied: Over maximum of " + maxGames
+                        + " current games!");
+                throw new CreateGameException(
+                        EmuLang.getString("KailleraServerImpl.CreateGameDeniedMaxGames", maxGames));
+            }
+
+            int gameID = gameManager.getNextGameID();
+            KailleraGameImpl game = new KailleraGameImpl(gameID, romName, (KailleraUserImpl) user,
+                    this, gameConfig.getBufferSize(), gameConfig.getTimeoutMillis(),
+                    gameConfig.getDesynchTimeouts());
+            gameManager.addGame(game);
+
+            addEvent(new GameCreatedEvent(this, game));
+
+            log.info(user + " created: " + game + ": " + game.getRomName());
+
+            try {
+                user.joinGame(game.getID());
+            } catch (Exception e) {
+                // this shouldn't happen
+                log.error("Caught exception while making owner join game! This shouldn't happen!",
+                        e);
+            }
+
+            announce(EmuLang.getString("KailleraServerImpl.UserCreatedGameAnnouncement",
+                    user.getName(), game.getRomName()), false);
+
+            return game;
+        } finally {
+            gameLock.unlock();
         }
-
-        announce(EmuLang.getString("KailleraServerImpl.UserCreatedGameAnnouncement", user.getName(),
-                game.getRomName()), false);
-
-        return game;
     }
 
-    synchronized void closeGame(KailleraGame game, KailleraUser user) throws CloseGameException {
+    void closeGame(KailleraGame game, KailleraUser user) throws CloseGameException {
         if (!user.isLoggedIn()) {
             log.error(user + " close " + game + " failed: Not logged in");
             throw new CloseGameException(EmuLang.getString("KailleraServerImpl.NotLoggedIn"));
         }
 
-        if (!gameManager.containsGame(game.getID())) {
-            log.error(user + " close " + game + " failed: not in list: " + game);
-            return;
+        gameLock.lock();
+        try {
+            if (!gameManager.containsGame(game.getID())) {
+                log.error(user + " close " + game + " failed: not in list: " + game);
+                return;
+            }
+
+            ((KailleraGameImpl) game).close(user);
+            gameManager.removeGame(game.getID());
+
+            log.info(user + " closed: " + game);
+            addEvent(new GameClosedEvent(this, game));
+        } finally {
+            gameLock.unlock();
         }
-
-        ((KailleraGameImpl) game).close(user);
-        gameManager.removeGame(game.getID());
-
-        log.info(user + " closed: " + game);
-        addEvent(new GameClosedEvent(this, game));
     }
 
     public void announce(String announcement, boolean gamesAlso) {
@@ -586,8 +643,9 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
         try {
             // Create and run maintenance task - it will handle timeouts, bans, etc.
-            maintenanceTask = new ServerMaintenanceTask(userManager, accessManager, maxPing,
-                    keepAliveTimeout, idleTimeout, this::handleQuitRequest);
+            maintenanceTask = new ServerMaintenanceTask(userManager, accessManager,
+                    serverConfig.getMaxPing(), serverConfig.getKeepAliveTimeout(),
+                    serverConfig.getIdleTimeout(), this::handleQuitRequest);
             maintenanceTask.run();
         } catch (Throwable e) {
             if (!stopFlag)

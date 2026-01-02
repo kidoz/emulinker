@@ -80,7 +80,7 @@ checkstyle {
     toolVersion = '12.3.1'
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
     ignoreFailures = false
-    maxWarnings = 105      // Gradually reduce as code is improved
+    maxWarnings = 90       // Reduced from 105 - continue improving code quality
 }
 
 tasks.withType(Checkstyle).configureEach {
@@ -148,7 +148,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.10 // Start with 10%, increase gradually as tests are added
+                minimum = 0.25 // Increased from 10% - aim for higher coverage
             }
         }
     }

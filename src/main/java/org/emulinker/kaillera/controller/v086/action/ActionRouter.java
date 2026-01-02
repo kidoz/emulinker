@@ -39,12 +39,46 @@ import org.emulinker.kaillera.model.event.UserQuitEvent;
 import org.emulinker.kaillera.model.event.UserQuitGameEvent;
 
 /**
- * Routes incoming V086 protocol messages to appropriate action handlers and
- * maps events to their handlers. This class centralizes all action routing
- * configuration for the V086 controller.
+ * Central routing hub for the V086 protocol controller. Maps incoming protocol
+ * messages to their action handlers and domain events to their protocol
+ * response handlers.
+ *
+ * <p>
+ * The router provides O(1) lookup for actions via array indexing by message ID,
+ * and event handlers via class-keyed maps.
+ *
+ * <h2>Message Flow</h2>
+ *
+ * <pre>
+ * Client UDP Message
+ *     ↓ parse
+ * V086Message (with ID)
+ *     ↓ getAction(messageId)
+ * V086Action.performAction()
+ *     ↓ modifies domain model
+ * KailleraEvent fired
+ *     ↓ getXxxEventHandler(eventClass)
+ * V086XxxEventHandler.handleEvent()
+ *     ↓ creates response
+ * V086Message sent to client
+ * </pre>
+ *
+ * <h2>Handler Types</h2>
+ * <ul>
+ * <li>{@link V086ServerEventHandler} - Server-wide events (chat, user
+ * join/quit)</li>
+ * <li>{@link V086GameEventHandler} - Game-specific events (game data,
+ * sync)</li>
+ * <li>{@link V086UserEventHandler} - User-specific events (connection, info
+ * messages)</li>
+ * </ul>
+ *
+ * @see V086Action
+ * @see ActionBundle
  */
 public final class ActionRouter {
 
+    /** Maximum protocol message ID supported (exclusive). */
     private static final int MAX_MESSAGE_ID = 25;
 
     private final V086Action[] actions;
