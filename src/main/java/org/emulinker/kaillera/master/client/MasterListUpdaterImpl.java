@@ -1,7 +1,5 @@
 package org.emulinker.kaillera.master.client;
 
-import java.util.List;
-
 import org.emulinker.config.MasterListConfig;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.master.PublicServerInformation;
@@ -111,7 +109,8 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
                     break;
 
                 log.info("MasterListUpdater touching masters...");
-                List<String> createdGamesList = statsCollector.getStartedGamesList();
+                statsCollector.getStartedGamesList(); // Fetch list (currently unused, for future
+                                                      // use)
 
                 if (emulinkerMasterTask != null)
                     emulinkerMasterTask.touchMaster();

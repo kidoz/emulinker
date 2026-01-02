@@ -177,13 +177,11 @@ public class AutoFireScanner implements AutoFireDetector {
                     byte[] thisAction = new byte[bytesPerAction];
                     byte[] lastAction = new byte[bytesPerAction];
                     byte[] actionA = new byte[bytesPerAction];
-                    int aPos = 0;
                     int aCount = 0;
                     int aSequence = 0;
                     int lastASequence = 0;
                     int aSequenceCount = 0;
                     byte[] actionB = new byte[bytesPerAction];
-                    int bPos = 0;
                     int bCount = 0;
                     int bSequence = 0;
                     int lastBSequence = 0;
@@ -200,7 +198,6 @@ public class AutoFireScanner implements AutoFireDetector {
 
                         if (aCount == 0) {
                             System.arraycopy(thisAction, 0, actionA, 0, bytesPerAction);
-                            aPos = i;
                             aCount = 1;
                             aSequence = 1;
                         } else if (Arrays.equals(thisAction, actionA)) {
@@ -217,7 +214,6 @@ public class AutoFireScanner implements AutoFireDetector {
                             }
                         } else if (bCount == 0) {
                             System.arraycopy(thisAction, 0, actionB, 0, bytesPerAction);
-                            bPos = i;
                             bCount = 1;
                             bSequence = 1;
                         } else if (Arrays.equals(thisAction, actionB)) {

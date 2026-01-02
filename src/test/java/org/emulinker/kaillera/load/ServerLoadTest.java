@@ -330,7 +330,7 @@ class ServerLoadTest {
         return config;
     }
 
-    private static class TestAccessManager implements AccessManager {
+    private static final class TestAccessManager implements AccessManager {
         @Override
         public boolean isAddressAllowed(InetAddress address) {
             return true;
@@ -379,7 +379,7 @@ class ServerLoadTest {
         }
     }
 
-    private static class TestStatsCollector implements StatsCollector {
+    private static final class TestStatsCollector implements StatsCollector {
         @Override
         public void gameStarted(KailleraServer server, KailleraGame game) {
         }

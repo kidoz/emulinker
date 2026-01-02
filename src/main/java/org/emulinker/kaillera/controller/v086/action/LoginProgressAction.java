@@ -67,6 +67,7 @@ public final class LoginProgressAction implements V086UserEventHandler {
                     // Nothing to do, login complete
                     log.debug("{} login notification sequence complete", user);
                 }
+                default -> throw new IllegalStateException("Unexpected state: " + state);
             }
         } catch (Exception e) {
             log.error("Error processing login state {} for {}: {}", state, user, e.getMessage(), e);

@@ -12,7 +12,7 @@ import su.kidoz.kaillera.access.pattern.DnsResolvingPattern;
  * This class unifies the previous UserAccess and AddressAccess inner classes,
  * eliminating ~70% code duplication.
  */
-public class AddressRule {
+public final class AddressRule {
 
     /**
      * Type of address rule.

@@ -26,7 +26,7 @@ class ConnectControllerThreadSafetyTest {
      * Simple test class to verify atomic counter pattern works correctly. This
      * simulates what ConnectController does with its counters.
      */
-    private static class AtomicCounterSimulator {
+    private static final class AtomicCounterSimulator {
         private final AtomicInteger requestCount = new AtomicInteger(0);
         private final AtomicInteger connectCount = new AtomicInteger(0);
         private final AtomicInteger errorCount = new AtomicInteger(0);

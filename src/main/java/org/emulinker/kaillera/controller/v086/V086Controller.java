@@ -105,7 +105,7 @@ public final class V086Controller implements KailleraServerController {
         return actionRouter;
     }
 
-    public final Map<Integer, V086ClientHandler> getClientHandlers() {
+    public Map<Integer, V086ClientHandler> getClientHandlers() {
         return clientHandlers;
     }
 

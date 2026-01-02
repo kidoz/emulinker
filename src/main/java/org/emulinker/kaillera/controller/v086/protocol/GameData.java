@@ -59,8 +59,7 @@ public class GameData extends V086Message {
         if (buffer.remaining() < 4)
             throw new ParseException("Failed byte count validation!");
 
-        byte b = buffer.get();
-        // removed to increase speed
+        buffer.get(); // Skip validation byte (removed to increase speed)
         // if (b != 0x00)
         // throw new MessageFormatException("Invalid " + DESC + " format: byte 0 = " +
         // EmuUtil.byteToHex(b));

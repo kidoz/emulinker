@@ -146,11 +146,6 @@ class V086ClientHandlerTest {
                 thread.join();
             }
 
-            // After all increments, counter should have advanced by total
-            // increments (with wrapping)
-            int expectedTotal = numThreads * incrementsPerThread;
-            int expectedValue = expectedTotal & 0xFFFF;
-
             // Due to concurrent access, the final value might not be exactly
             // predictable, but the counter should be valid
             int finalValue = counter.getNext();
@@ -176,7 +171,7 @@ class V086ClientHandlerTest {
      * Simple counter that simulates the message number counter in
      * V086ClientHandler.
      */
-    private static class MessageNumberCounter {
+    private static final class MessageNumberCounter {
         private int counter = 0;
 
         synchronized int getNext() {

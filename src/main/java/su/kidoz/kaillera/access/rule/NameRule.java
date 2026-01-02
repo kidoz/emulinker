@@ -10,7 +10,7 @@ import su.kidoz.kaillera.access.pattern.SimpleNamePattern;
  * This class unifies the previous GameAccess and EmulatorAccess inner classes,
  * which were nearly identical.
  */
-public class NameRule {
+public final class NameRule {
 
     /**
      * Type of name rule.

@@ -33,8 +33,8 @@ class ActionThreadSafetyTest {
     void ackActionCounterThreadSafe() throws Exception {
         ACKAction action = new ACKAction();
 
-        // Get initial count
-        int initialCount = action.getActionPerformedCount();
+        // Verify initial count is accessible
+        action.getActionPerformedCount();
 
         ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
         List<Future<Integer>> futures = new ArrayList<>();
@@ -44,7 +44,7 @@ class ActionThreadSafetyTest {
                 int count = 0;
                 for (int j = 0; j < INCREMENTS_PER_THREAD; j++) {
                     // Read the count (should never throw, should always return valid int)
-                    int c = action.getActionPerformedCount();
+                    action.getActionPerformedCount();
                     count++;
                 }
                 return count;
