@@ -49,7 +49,8 @@ package() {
 
 KAILLUX_JAR="/usr/share/java/kaillux/kaillux.jar"
 KAILLUX_CONF="/etc/kaillux"
-KAILLUX_OPTS="${KAILLUX_OPTS:--Xms64m -Xmx256m}"
+# Java 25: Enable Compact Object Headers for reduced memory footprint
+KAILLUX_OPTS="${KAILLUX_OPTS:--Xms64m -Xmx256m -XX:+UseCompactObjectHeaders}"
 
 exec /usr/bin/java \
     ${KAILLUX_OPTS} \

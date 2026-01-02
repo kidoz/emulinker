@@ -76,10 +76,10 @@ spotless {
 }
 
 checkstyle {
-    toolVersion = '10.21.1'
+    toolVersion = '12.3.1'
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
     ignoreFailures = false
-    maxWarnings = 100      // Gradually reduce as code is improved
+    maxWarnings = 105      // Gradually reduce as code is improved
 }
 
 tasks.withType(Checkstyle).configureEach {

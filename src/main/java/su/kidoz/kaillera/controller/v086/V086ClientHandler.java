@@ -102,6 +102,13 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
             KailleraServer server, ActionRouter actionRouter) {
         super(false, remoteSocketAddress.getAddress());
 
+        if (controller == null) {
+            throw new IllegalArgumentException("controller cannot be null");
+        }
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException("bufferSize must be positive");
+        }
+
         this.controller = controller;
         this.bufferSize = bufferSize;
         this.threadPool = threadPool;

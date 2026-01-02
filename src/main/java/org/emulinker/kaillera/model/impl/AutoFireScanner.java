@@ -259,9 +259,8 @@ public class AutoFireScanner implements AutoFireDetector {
                             KailleraGameImpl gameImpl = (KailleraGameImpl) game;
                             gameImpl.announce(EmuLang.getString("AutoFireScanner2.AutoFireDetected",
                                     user.getName()));
-                            log.info("AUTOUSERDUMP\t"
-                                    + EmuUtil.getDateFormat().format(gameImpl.getStartDate()) + "\t"
-                                    + (aSequence < bSequence ? aSequence : bSequence) + "\t"
+                            log.info("AUTOUSERDUMP\t" + EmuUtil.formatDate(gameImpl.getStartDate())
+                                    + "\t" + (aSequence < bSequence ? aSequence : bSequence) + "\t"
                                     + game.getID() + "\t" + game.getRomName() + "\t"
                                     + user.getName() + "\t"
                                     + user.getSocketAddress().getAddress().getHostAddress());

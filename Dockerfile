@@ -36,4 +36,5 @@ EXPOSE 27888/udp
 # Kaillera Data Ports (default range)
 EXPOSE 27889-27924/udp
 
-ENTRYPOINT ["java", "-jar", "kaillux.jar"]
+# Java 25: Enable Compact Object Headers for reduced memory footprint
+ENTRYPOINT ["java", "-XX:+UseCompactObjectHeaders", "-jar", "kaillux.jar"]

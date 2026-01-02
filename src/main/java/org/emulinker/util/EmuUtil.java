@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Properties;
@@ -23,12 +24,20 @@ public class EmuUtil {
 
     public static final String LB = System.getProperty("line.separator");
 
-    // Thread-safe DateFormat using ThreadLocal
-    private static final ThreadLocal<DateFormat> DATE_FORMAT_TL = ThreadLocal
-            .withInitial(() -> new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"));
+    // Thread-safe DateTimeFormatter (Java 25: no ThreadLocal needed, immutable and
+    // thread-safe)
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter
+            .ofPattern("MM/dd/yyyy HH:mm:ss");
 
-    public static DateFormat getDateFormat() {
-        return DATE_FORMAT_TL.get();
+    /**
+     * Formats a Date using the standard date/time pattern.
+     *
+     * @param date
+     *            the date to format
+     * @return formatted date string
+     */
+    public static String formatDate(Date date) {
+        return DATE_FORMATTER.format(date.toInstant().atZone(ZoneId.systemDefault()));
     }
 
     public static boolean systemIsWindows() {
