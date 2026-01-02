@@ -13,16 +13,10 @@ import org.slf4j.LoggerFactory;
 public final class CloseGameAction implements V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(CloseGameAction.class);
     private static final String DESC = "CloseGameAction";
-    private static CloseGameAction singleton = new CloseGameAction();
-
-    public static CloseGameAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private CloseGameAction() {
-
+    public CloseGameAction() {
     }
 
     public int getHandledEventCount() {

@@ -19,17 +19,11 @@ import org.slf4j.LoggerFactory;
 public final class QuitGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitGameAction.class);
     private static final String DESC = "QuitGameAction";
-    private static QuitGameAction singleton = new QuitGameAction();
-
-    public static QuitGameAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private QuitGameAction() {
-
+    public QuitGameAction() {
     }
 
     public int getActionPerformedCount() {

@@ -14,17 +14,11 @@ import org.slf4j.LoggerFactory;
 public final class UserReadyAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(UserReadyAction.class);
     private static final String DESC = "UserReadyAction";
-    private static UserReadyAction singleton = new UserReadyAction();
-
-    public static UserReadyAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private UserReadyAction() {
-
+    public UserReadyAction() {
     }
 
     public int getActionPerformedCount() {

@@ -21,16 +21,10 @@ public final class GameOwnerCommandAction implements V086Action {
 
     private static final Logger log = LoggerFactory.getLogger(GameOwnerCommandAction.class);
     private static final String DESC = "GameOwnerCommandAction"; //$NON-NLS-1$
-    private static GameOwnerCommandAction singleton = new GameOwnerCommandAction();
-
-    public static GameOwnerCommandAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
 
-    private GameOwnerCommandAction() {
-
+    public GameOwnerCommandAction() {
     }
 
     public int getActionPerformedCount() {

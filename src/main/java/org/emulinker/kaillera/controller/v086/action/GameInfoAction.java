@@ -13,16 +13,10 @@ import org.emulinker.kaillera.model.event.GameInfoEvent;
 public final class GameInfoAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameInfoAction.class);
     private static final String DESC = "GameInfoAction";
-    private static GameInfoAction singleton = new GameInfoAction();
-
-    public static GameInfoAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private GameInfoAction() {
-
+    public GameInfoAction() {
     }
 
     public int getHandledEventCount() {

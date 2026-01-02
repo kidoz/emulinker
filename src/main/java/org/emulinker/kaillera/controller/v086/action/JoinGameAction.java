@@ -24,17 +24,11 @@ import org.slf4j.LoggerFactory;
 public final class JoinGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(JoinGameAction.class);
     private static final String DESC = "JoinGameAction";
-    private static JoinGameAction singleton = new JoinGameAction();
-
-    public static JoinGameAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private JoinGameAction() {
-
+    public JoinGameAction() {
     }
 
     public int getActionPerformedCount() {

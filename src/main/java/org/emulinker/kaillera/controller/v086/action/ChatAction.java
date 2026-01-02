@@ -21,17 +21,13 @@ public final class ChatAction implements V086Action, V086ServerEventHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ChatAction.class);
     private static final String DESC = "ChatAction";
-    private static ChatAction singleton = new ChatAction();
-
-    public static ChatAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
+    private final AdminCommandAction adminCommandAction;
 
-    private ChatAction() {
-
+    public ChatAction(AdminCommandAction adminCommandAction) {
+        this.adminCommandAction = adminCommandAction;
     }
 
     public int getActionPerformedCount() {
@@ -53,7 +49,7 @@ public final class ChatAction implements V086Action, V086ServerEventHandler {
 
         if (((Chat) message).getMessage().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
             try {
-                AdminCommandAction.getInstance().performAction(message, clientHandler);
+                adminCommandAction.performAction(message, clientHandler);
                 return;
             } catch (FatalActionException e) {
                 log.warn("Admin command failed, processing as chat: " + e.getMessage());

@@ -3,7 +3,6 @@ package org.emulinker.kaillera.controller.v086;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,81 +10,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.emulinker.config.ControllersConfig;
 import org.emulinker.config.ServerConfig;
-import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.messaging.ParseException;
-import org.emulinker.kaillera.controller.v086.action.ACKAction;
-import org.emulinker.kaillera.controller.v086.action.CachedGameDataAction;
-import org.emulinker.kaillera.controller.v086.action.ChatAction;
-import org.emulinker.kaillera.controller.v086.action.CloseGameAction;
-import org.emulinker.kaillera.controller.v086.action.CreateGameAction;
-import org.emulinker.kaillera.controller.v086.action.DropGameAction;
+import org.emulinker.kaillera.controller.v086.action.ActionRouter;
 import org.emulinker.kaillera.controller.v086.action.FatalActionException;
-import org.emulinker.kaillera.controller.v086.action.GameChatAction;
-import org.emulinker.kaillera.controller.v086.action.GameDataAction;
-import org.emulinker.kaillera.controller.v086.action.GameDesynchAction;
-import org.emulinker.kaillera.controller.v086.action.GameInfoAction;
-import org.emulinker.kaillera.controller.v086.action.GameKickAction;
-import org.emulinker.kaillera.controller.v086.action.GameStatusAction;
-import org.emulinker.kaillera.controller.v086.action.GameTimeoutAction;
-import org.emulinker.kaillera.controller.v086.action.InfoMessageAction;
-import org.emulinker.kaillera.controller.v086.action.JoinGameAction;
-import org.emulinker.kaillera.controller.v086.action.KeepAliveAction;
-import org.emulinker.kaillera.controller.v086.action.LoginAction;
-import org.emulinker.kaillera.controller.v086.action.PlayerDesynchAction;
-import org.emulinker.kaillera.controller.v086.action.QuitAction;
-import org.emulinker.kaillera.controller.v086.action.QuitGameAction;
-import org.emulinker.kaillera.controller.v086.action.StartGameAction;
-import org.emulinker.kaillera.controller.v086.action.UserReadyAction;
 import org.emulinker.kaillera.controller.v086.action.V086Action;
 import org.emulinker.kaillera.controller.v086.action.V086GameEventHandler;
 import org.emulinker.kaillera.controller.v086.action.V086ServerEventHandler;
 import org.emulinker.kaillera.controller.v086.action.V086UserEventHandler;
-import org.emulinker.kaillera.controller.v086.protocol.AllReady;
-import org.emulinker.kaillera.controller.v086.protocol.CachedGameData;
-import org.emulinker.kaillera.controller.v086.protocol.Chat;
-import org.emulinker.kaillera.controller.v086.protocol.ClientACK;
-import org.emulinker.kaillera.controller.v086.protocol.CreateGame;
-import org.emulinker.kaillera.controller.v086.protocol.GameChat;
-import org.emulinker.kaillera.controller.v086.protocol.GameData;
-import org.emulinker.kaillera.controller.v086.protocol.GameKick;
-import org.emulinker.kaillera.controller.v086.protocol.JoinGame;
-import org.emulinker.kaillera.controller.v086.protocol.KeepAlive;
-import org.emulinker.kaillera.controller.v086.protocol.PlayerDrop;
-import org.emulinker.kaillera.controller.v086.protocol.Quit;
-import org.emulinker.kaillera.controller.v086.protocol.QuitGame;
-import org.emulinker.kaillera.controller.v086.protocol.StartGame;
-import org.emulinker.kaillera.controller.v086.protocol.UserInformation;
 import org.emulinker.kaillera.controller.v086.protocol.V086Bundle;
 import org.emulinker.kaillera.controller.v086.protocol.V086BundleFormatException;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.model.event.AllReadyEvent;
 import org.emulinker.kaillera.model.event.GameEvent;
 import org.emulinker.kaillera.model.event.KailleraEvent;
 import org.emulinker.kaillera.model.event.KailleraEventListener;
 import org.emulinker.kaillera.model.event.ServerEvent;
 import org.emulinker.kaillera.model.event.UserEvent;
-import org.emulinker.kaillera.model.event.ChatEvent;
-import org.emulinker.kaillera.model.event.ConnectedEvent;
-import org.emulinker.kaillera.model.event.GameChatEvent;
-import org.emulinker.kaillera.model.event.GameClosedEvent;
-import org.emulinker.kaillera.model.event.GameCreatedEvent;
-import org.emulinker.kaillera.model.event.GameDataEvent;
-import org.emulinker.kaillera.model.event.GameDesynchEvent;
-import org.emulinker.kaillera.model.event.GameInfoEvent;
-import org.emulinker.kaillera.model.event.GameStartedEvent;
-import org.emulinker.kaillera.model.event.GameStatusChangedEvent;
-import org.emulinker.kaillera.model.event.GameTimeoutEvent;
-import org.emulinker.kaillera.model.event.InfoMessageEvent;
-import org.emulinker.kaillera.model.event.PlayerDesynchEvent;
-import org.emulinker.kaillera.model.event.UserDroppedGameEvent;
-import org.emulinker.kaillera.model.event.UserJoinedEvent;
-import org.emulinker.kaillera.model.event.UserJoinedGameEvent;
-import org.emulinker.kaillera.model.event.UserQuitEvent;
-import org.emulinker.kaillera.model.event.UserQuitGameEvent;
 import org.emulinker.kaillera.model.exception.NewConnectionException;
 import org.emulinker.kaillera.model.exception.ServerFullException;
 import org.emulinker.net.BindException;
@@ -108,28 +51,21 @@ public final class V086Controller implements KailleraServerController {
 
     private final EmuLinkerExecutor threadPool;
     private final KailleraServer server;
-    private final AccessManager accessManager;
     private final String[] clientTypes;
     private final Map<Integer, V086ClientHandler> clientHandlers = new ConcurrentHashMap<Integer, V086ClientHandler>();
 
     private final int portRangeStart;
     private final int extraPorts;
-    private final Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<Integer>();
+    private final Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<>();
 
-    // shouldn't need to use a synchronized or concurrent map since all thread
-    // access will be read only
-    private final Map<Class, V086ServerEventHandler> serverEventHandlers = new HashMap<Class, V086ServerEventHandler>();
-    private final Map<Class, V086GameEventHandler> gameEventHandlers = new HashMap<Class, V086GameEventHandler>();
-    private final Map<Class, V086UserEventHandler> userEventHandlers = new HashMap<Class, V086UserEventHandler>();
-
-    private final V086Action[] actions = new V086Action[25];
+    private final ActionRouter actionRouter;
 
     public V086Controller(KailleraServer server, EmuLinkerExecutor threadPool,
-            AccessManager accessManager, ControllersConfig controllersConfig,
-            ServerConfig serverConfig) {
+            ControllersConfig controllersConfig, ServerConfig serverConfig,
+            ActionRouter actionRouter) {
         this.threadPool = threadPool;
         this.server = server;
-        this.accessManager = accessManager;
+        this.actionRouter = actionRouter;
 
         ControllersConfig.V086 v086Config = controllersConfig.getV086();
         this.bufferSize = v086Config.getBufferSize();
@@ -146,50 +82,6 @@ public final class V086Controller implements KailleraServerController {
 
         log.warn("Listening on UDP ports: " + portRangeStart + " to " + maxPort
                 + ".  Make sure these ports are open in your firewall!");
-
-        // array access should be faster than a hash and we won't have to create
-        // a new Integer each time
-        actions[UserInformation.ID] = LoginAction.getInstance();
-        actions[ClientACK.ID] = ACKAction.getInstance();
-        actions[Chat.ID] = ChatAction.getInstance();
-        actions[CreateGame.ID] = CreateGameAction.getInstance();
-        actions[JoinGame.ID] = JoinGameAction.getInstance();
-        actions[KeepAlive.ID] = KeepAliveAction.getInstance();
-        actions[QuitGame.ID] = QuitGameAction.getInstance();
-        actions[Quit.ID] = QuitAction.getInstance();
-        actions[StartGame.ID] = StartGameAction.getInstance();
-        actions[GameChat.ID] = GameChatAction.getInstance();
-        actions[GameKick.ID] = GameKickAction.getInstance();
-        actions[AllReady.ID] = UserReadyAction.getInstance();
-        actions[CachedGameData.ID] = CachedGameDataAction.getInstance();
-        actions[GameData.ID] = GameDataAction.getInstance();
-        actions[PlayerDrop.ID] = DropGameAction.getInstance();
-
-        // setup the server event handlers
-        serverEventHandlers.put(ChatEvent.class, ChatAction.getInstance());
-        serverEventHandlers.put(GameCreatedEvent.class, CreateGameAction.getInstance());
-        serverEventHandlers.put(UserJoinedEvent.class, LoginAction.getInstance());
-        serverEventHandlers.put(GameClosedEvent.class, CloseGameAction.getInstance());
-        serverEventHandlers.put(UserQuitEvent.class, QuitAction.getInstance());
-        serverEventHandlers.put(GameStatusChangedEvent.class, GameStatusAction.getInstance());
-
-        // setup the game event handlers
-        gameEventHandlers.put(UserJoinedGameEvent.class, JoinGameAction.getInstance());
-        gameEventHandlers.put(UserQuitGameEvent.class, QuitGameAction.getInstance());
-        gameEventHandlers.put(GameStartedEvent.class, StartGameAction.getInstance());
-        gameEventHandlers.put(GameChatEvent.class, GameChatAction.getInstance());
-        gameEventHandlers.put(AllReadyEvent.class, UserReadyAction.getInstance());
-        gameEventHandlers.put(GameDataEvent.class, GameDataAction.getInstance());
-        gameEventHandlers.put(UserDroppedGameEvent.class, DropGameAction.getInstance());
-        gameEventHandlers.put(GameDesynchEvent.class, GameDesynchAction.getInstance());
-        gameEventHandlers.put(PlayerDesynchEvent.class, PlayerDesynchAction.getInstance());
-        gameEventHandlers.put(GameInfoEvent.class, GameInfoAction.getInstance());
-        gameEventHandlers.put(GameTimeoutEvent.class, GameTimeoutAction.getInstance());
-        gameEventHandlers.put(GameTimeoutEvent.class, GameTimeoutAction.getInstance());
-
-        // setup the user event handlers
-        userEventHandlers.put(ConnectedEvent.class, ACKAction.getInstance());
-        userEventHandlers.put(InfoMessageEvent.class, InfoMessageAction.getInstance());
     }
 
     public String getVersion() {
@@ -212,20 +104,24 @@ public final class V086Controller implements KailleraServerController {
         return bufferSize;
     }
 
-    public final Map<Class, V086ServerEventHandler> getServerEventHandlers() {
-        return serverEventHandlers;
+    public Map<Class<?>, V086ServerEventHandler> getServerEventHandlers() {
+        return actionRouter.getServerEventHandlers();
     }
 
-    public final Map<Class, V086GameEventHandler> getGameEventHandlers() {
-        return gameEventHandlers;
+    public Map<Class<?>, V086GameEventHandler> getGameEventHandlers() {
+        return actionRouter.getGameEventHandlers();
     }
 
-    public final Map<Class, V086UserEventHandler> getUserEventHandlers() {
-        return userEventHandlers;
+    public Map<Class<?>, V086UserEventHandler> getUserEventHandlers() {
+        return actionRouter.getUserEventHandlers();
     }
 
-    public final V086Action[] getActions() {
-        return actions;
+    public V086Action[] getActions() {
+        return actionRouter.getActions();
+    }
+
+    public ActionRouter getActionRouter() {
+        return actionRouter;
     }
 
     public final Map<Integer, V086ClientHandler> getClientHandlers() {
@@ -523,7 +419,7 @@ public final class V086Controller implements KailleraServerController {
                                 user.droppedPacket();
                             }
 
-                            V086Action action = actions[messages[i].getID()];
+                            V086Action action = actionRouter.getAction(messages[i].getID());
                             if (action == null) {
                                 log.error("No action defined to handle client message: "
                                         + messages[i]);
@@ -544,7 +440,8 @@ public final class V086Controller implements KailleraServerController {
 
         public void actionPerformed(KailleraEvent event) {
             if (event instanceof GameEvent gameEvent) {
-                V086GameEventHandler eventHandler = gameEventHandlers.get(event.getClass());
+                V086GameEventHandler eventHandler = actionRouter
+                        .getGameEventHandler(event.getClass());
                 if (eventHandler == null) {
                     log.error(toString()
                             + " found no GameEventHandler registered to handle game event: "
@@ -554,7 +451,8 @@ public final class V086Controller implements KailleraServerController {
 
                 eventHandler.handleEvent(gameEvent, this);
             } else if (event instanceof ServerEvent serverEvent) {
-                V086ServerEventHandler eventHandler = serverEventHandlers.get(event.getClass());
+                V086ServerEventHandler eventHandler = actionRouter
+                        .getServerEventHandler(event.getClass());
                 if (eventHandler == null) {
                     log.error(toString()
                             + " found no ServerEventHandler registered to handle server event: "
@@ -564,7 +462,8 @@ public final class V086Controller implements KailleraServerController {
 
                 eventHandler.handleEvent(serverEvent, this);
             } else if (event instanceof UserEvent userEvent) {
-                V086UserEventHandler eventHandler = userEventHandlers.get(event.getClass());
+                V086UserEventHandler eventHandler = actionRouter
+                        .getUserEventHandler(event.getClass());
                 if (eventHandler == null) {
                     log.error(toString()
                             + " found no UserEventHandler registered to handle user event: "

@@ -12,16 +12,10 @@ import org.slf4j.LoggerFactory;
 public final class GameKickAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(GameKickAction.class);
     private static final String DESC = "GameKickAction";
-    private static GameKickAction singleton = new GameKickAction();
-
-    public static GameKickAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
 
-    private GameKickAction() {
-
+    public GameKickAction() {
     }
 
     public int getActionPerformedCount() {

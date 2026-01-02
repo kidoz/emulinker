@@ -22,18 +22,12 @@ import org.slf4j.LoggerFactory;
 public final class ACKAction implements V086Action, V086UserEventHandler {
     private static final Logger log = LoggerFactory.getLogger(ACKAction.class);
     private static final String DESC = "ACKAction";
-    private static ACKAction singleton = new ACKAction();
     private static int numAcksForSpeedTest = 3;
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    public static ACKAction getInstance() {
-        return singleton;
-    }
-
-    private ACKAction() {
-
+    public ACKAction() {
     }
 
     public int getActionPerformedCount() {

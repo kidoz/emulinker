@@ -12,16 +12,10 @@ import org.slf4j.LoggerFactory;
 public final class GameTimeoutAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameTimeoutAction.class);
     private static final String DESC = "GameTimeoutAction";
-    private static GameTimeoutAction singleton = new GameTimeoutAction();
-
-    public static GameTimeoutAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private GameTimeoutAction() {
-
+    public GameTimeoutAction() {
     }
 
     public int getHandledEventCount() {

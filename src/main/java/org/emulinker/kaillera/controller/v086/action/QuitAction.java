@@ -18,17 +18,10 @@ public final class QuitAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(QuitAction.class);
     private static final String DESC = "QuitAction";
 
-    private static QuitAction singleton = new QuitAction();
-
-    public static QuitAction getInstance() {
-        return singleton;
-    }
-
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private QuitAction() {
-
+    public QuitAction() {
     }
 
     public int getActionPerformedCount() {

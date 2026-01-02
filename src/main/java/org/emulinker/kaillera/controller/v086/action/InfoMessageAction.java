@@ -13,16 +13,10 @@ import org.slf4j.LoggerFactory;
 public final class InfoMessageAction implements V086UserEventHandler {
     private static final Logger log = LoggerFactory.getLogger(InfoMessageAction.class);
     private static final String DESC = "InfoMessageAction";
-    private static InfoMessageAction singleton = new InfoMessageAction();
-
-    public static InfoMessageAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private InfoMessageAction() {
-
+    public InfoMessageAction() {
     }
 
     public int getHandledEventCount() {

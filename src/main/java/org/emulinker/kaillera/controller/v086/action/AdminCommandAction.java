@@ -41,16 +41,10 @@ public final class AdminCommandAction implements V086Action {
 
     private static final Logger log = LoggerFactory.getLogger(AdminCommandAction.class);
     private static final String DESC = "AdminCommandAction"; //$NON-NLS-1$
-    private static AdminCommandAction singleton = new AdminCommandAction();
-
-    public static AdminCommandAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
 
-    private AdminCommandAction() {
-
+    public AdminCommandAction() {
     }
 
     public int getActionPerformedCount() {

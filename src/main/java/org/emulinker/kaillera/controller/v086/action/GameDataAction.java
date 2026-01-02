@@ -16,17 +16,11 @@ import org.slf4j.LoggerFactory;
 public final class GameDataAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameDataAction.class);
     private static final String DESC = "GameDataAction";
-    private static GameDataAction singleton = new GameDataAction();
-
-    public static GameDataAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private GameDataAction() {
-
+    public GameDataAction() {
     }
 
     public int getActionPerformedCount() {

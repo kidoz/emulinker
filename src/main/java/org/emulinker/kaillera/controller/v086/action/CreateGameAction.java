@@ -23,18 +23,11 @@ import org.slf4j.LoggerFactory;
 public final class CreateGameAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(CreateGameAction.class);
     private static final String DESC = "CreateGameAction";
-    private static CreateGameAction singleton = new CreateGameAction();
-
-    public static CreateGameAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
-
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private CreateGameAction() {
-
+    public CreateGameAction() {
     }
 
     public int getActionPerformedCount() {

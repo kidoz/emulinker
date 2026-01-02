@@ -14,16 +14,10 @@ import org.slf4j.LoggerFactory;
 public final class GameDesynchAction implements V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(GameDesynchAction.class);
     private static final String DESC = "GameDesynchAction"; //$NON-NLS-1$
-    private static GameDesynchAction singleton = new GameDesynchAction();
-
-    public static GameDesynchAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private GameDesynchAction() {
-
+    public GameDesynchAction() {
     }
 
     public int getHandledEventCount() {

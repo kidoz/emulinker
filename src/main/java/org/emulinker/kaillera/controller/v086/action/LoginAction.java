@@ -20,17 +20,11 @@ import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 public final class LoginAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(LoginAction.class);
     private static final String DESC = "LoginAction";
-    private static LoginAction singleton = new LoginAction();
-
-    public static LoginAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private LoginAction() {
-
+    public LoginAction() {
     }
 
     public int getActionPerformedCount() {

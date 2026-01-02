@@ -19,17 +19,13 @@ public final class GameChatAction implements V086Action, V086GameEventHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GameChatAction.class);
     private static final String DESC = "GameChatAction";
-    private static GameChatAction singleton = new GameChatAction();
-
-    public static GameChatAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
+    private final GameOwnerCommandAction gameOwnerCommandAction;
 
-    private GameChatAction() {
-
+    public GameChatAction(GameOwnerCommandAction gameOwnerCommandAction) {
+        this.gameOwnerCommandAction = gameOwnerCommandAction;
     }
 
     public int getActionPerformedCount() {
@@ -62,7 +58,7 @@ public final class GameChatAction implements V086Action, V086GameEventHandler {
 
         if (((GameChat) message).getMessage().startsWith(ADMIN_COMMAND_ESCAPE_STRING)) {
             try {
-                GameOwnerCommandAction.getInstance().performAction(message, clientHandler);
+                gameOwnerCommandAction.performAction(message, clientHandler);
             } catch (FatalActionException e) {
                 log.warn("GameOwner command failed, processing as chat: " + e.getMessage());
             }

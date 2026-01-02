@@ -18,17 +18,11 @@ import org.slf4j.LoggerFactory;
 public final class StartGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(StartGameAction.class);
     private static final String DESC = "StartGameAction";
-    private static StartGameAction singleton = new StartGameAction();
-
-    public static StartGameAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private StartGameAction() {
-
+    public StartGameAction() {
     }
 
     public int getActionPerformedCount() {

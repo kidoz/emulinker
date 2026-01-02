@@ -17,17 +17,11 @@ import org.slf4j.LoggerFactory;
 public final class DropGameAction implements V086Action, V086GameEventHandler {
     private static final Logger log = LoggerFactory.getLogger(DropGameAction.class);
     private static final String DESC = "DropGameAction";
-    private static DropGameAction singleton = new DropGameAction();
-
-    public static DropGameAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    private DropGameAction() {
-
+    public DropGameAction() {
     }
 
     public int getActionPerformedCount() {

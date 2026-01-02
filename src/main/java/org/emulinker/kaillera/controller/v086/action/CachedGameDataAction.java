@@ -15,16 +15,10 @@ import org.emulinker.kaillera.model.exception.GameDataException;
 public final class CachedGameDataAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(CachedGameDataAction.class);
     private static final String DESC = "CachedGameDataAction";
-    private static CachedGameDataAction singleton = new CachedGameDataAction();
-
-    public static CachedGameDataAction getInstance() {
-        return singleton;
-    }
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
 
-    private CachedGameDataAction() {
-
+    public CachedGameDataAction() {
     }
 
     public int getActionPerformedCount() {

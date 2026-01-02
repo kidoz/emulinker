@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for thread safety of action class counters.
  *
+ * <p>
  * The original bug was that action classes used non-atomic int counters
  * (actionCount, handledCount) which could lead to data races and incorrect
  * counts when accessed concurrently. The fix was to use AtomicInteger for
@@ -30,14 +31,10 @@ class ActionThreadSafetyTest {
     @Test
     @DisplayName("ACKAction counter should be thread-safe")
     void ackActionCounterThreadSafe() throws Exception {
-        // Get initial count
-        int initialCount = ACKAction.getInstance().getActionPerformedCount();
+        ACKAction action = new ACKAction();
 
-        // Note: We can't easily test the increment because performAction requires
-        // complex setup
-        // This test verifies the getter doesn't throw exceptions and returns consistent
-        // values
-        ACKAction action = ACKAction.getInstance();
+        // Get initial count
+        int initialCount = action.getActionPerformedCount();
 
         ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
         List<Future<Integer>> futures = new ArrayList<>();
@@ -68,28 +65,32 @@ class ActionThreadSafetyTest {
     @Test
     @DisplayName("LoginAction getActionPerformedCount returns non-negative value")
     void loginActionCounterNonNegative() {
-        int count = LoginAction.getInstance().getActionPerformedCount();
+        LoginAction action = new LoginAction();
+        int count = action.getActionPerformedCount();
         assertTrue(count >= 0, "Action count should be non-negative");
     }
 
     @Test
     @DisplayName("LoginAction getHandledEventCount returns non-negative value")
     void loginActionHandledCountNonNegative() {
-        int count = LoginAction.getInstance().getHandledEventCount();
+        LoginAction action = new LoginAction();
+        int count = action.getHandledEventCount();
         assertTrue(count >= 0, "Handled count should be non-negative");
     }
 
     @Test
     @DisplayName("ChatAction getActionPerformedCount returns non-negative value")
     void chatActionCounterNonNegative() {
-        int count = ChatAction.getInstance().getActionPerformedCount();
+        AdminCommandAction adminCommandAction = new AdminCommandAction();
+        ChatAction action = new ChatAction(adminCommandAction);
+        int count = action.getActionPerformedCount();
         assertTrue(count >= 0, "Action count should be non-negative");
     }
 
     @Test
     @DisplayName("GameDataAction counter methods work correctly")
     void gameDataActionCounters() {
-        GameDataAction action = GameDataAction.getInstance();
+        GameDataAction action = new GameDataAction();
 
         int actionCount = action.getActionPerformedCount();
         int handledCount = action.getHandledEventCount();
@@ -101,7 +102,7 @@ class ActionThreadSafetyTest {
     @Test
     @DisplayName("CreateGameAction counter methods work correctly")
     void createGameActionCounters() {
-        CreateGameAction action = CreateGameAction.getInstance();
+        CreateGameAction action = new CreateGameAction();
 
         int actionCount = action.getActionPerformedCount();
         int handledCount = action.getHandledEventCount();
@@ -113,7 +114,7 @@ class ActionThreadSafetyTest {
     @Test
     @DisplayName("JoinGameAction counter methods work correctly")
     void joinGameActionCounters() {
-        JoinGameAction action = JoinGameAction.getInstance();
+        JoinGameAction action = new JoinGameAction();
 
         int actionCount = action.getActionPerformedCount();
         int handledCount = action.getHandledEventCount();
@@ -125,7 +126,7 @@ class ActionThreadSafetyTest {
     @Test
     @DisplayName("QuitAction counter methods work correctly")
     void quitActionCounters() {
-        QuitAction action = QuitAction.getInstance();
+        QuitAction action = new QuitAction();
 
         int actionCount = action.getActionPerformedCount();
         int handledCount = action.getHandledEventCount();
@@ -137,7 +138,7 @@ class ActionThreadSafetyTest {
     @Test
     @DisplayName("StartGameAction counter methods work correctly")
     void startGameActionCounters() {
-        StartGameAction action = StartGameAction.getInstance();
+        StartGameAction action = new StartGameAction();
 
         int actionCount = action.getActionPerformedCount();
         int handledCount = action.getHandledEventCount();
@@ -147,40 +148,45 @@ class ActionThreadSafetyTest {
     }
 
     @Test
-    @DisplayName("All action singletons are properly initialized")
-    void allActionSingletonsInitialized() {
-        assertNotNull(ACKAction.getInstance());
-        assertNotNull(AdminCommandAction.getInstance());
-        assertNotNull(CachedGameDataAction.getInstance());
-        assertNotNull(ChatAction.getInstance());
-        assertNotNull(CloseGameAction.getInstance());
-        assertNotNull(CreateGameAction.getInstance());
-        assertNotNull(DropGameAction.getInstance());
-        assertNotNull(GameChatAction.getInstance());
-        assertNotNull(GameDataAction.getInstance());
-        assertNotNull(GameDesynchAction.getInstance());
-        assertNotNull(GameInfoAction.getInstance());
-        assertNotNull(GameKickAction.getInstance());
-        assertNotNull(GameOwnerCommandAction.getInstance());
-        assertNotNull(GameStatusAction.getInstance());
-        assertNotNull(GameTimeoutAction.getInstance());
-        assertNotNull(InfoMessageAction.getInstance());
-        assertNotNull(JoinGameAction.getInstance());
-        assertNotNull(KeepAliveAction.getInstance());
-        assertNotNull(LoginAction.getInstance());
-        assertNotNull(PlayerDesynchAction.getInstance());
-        assertNotNull(QuitAction.getInstance());
-        assertNotNull(QuitGameAction.getInstance());
-        assertNotNull(StartGameAction.getInstance());
-        assertNotNull(UserReadyAction.getInstance());
+    @DisplayName("All action classes can be instantiated")
+    void allActionClassesCanBeInstantiated() {
+        AdminCommandAction adminCommandAction = new AdminCommandAction();
+        GameOwnerCommandAction gameOwnerCommandAction = new GameOwnerCommandAction();
+
+        assertNotNull(new ACKAction());
+        assertNotNull(adminCommandAction);
+        assertNotNull(new CachedGameDataAction());
+        assertNotNull(new ChatAction(adminCommandAction));
+        assertNotNull(new CloseGameAction());
+        assertNotNull(new CreateGameAction());
+        assertNotNull(new DropGameAction());
+        assertNotNull(new GameChatAction(gameOwnerCommandAction));
+        assertNotNull(new GameDataAction());
+        assertNotNull(new GameDesynchAction());
+        assertNotNull(new GameInfoAction());
+        assertNotNull(new GameKickAction());
+        assertNotNull(gameOwnerCommandAction);
+        assertNotNull(new GameStatusAction());
+        assertNotNull(new GameTimeoutAction());
+        assertNotNull(new InfoMessageAction());
+        assertNotNull(new JoinGameAction());
+        assertNotNull(new KeepAliveAction());
+        assertNotNull(new LoginAction());
+        assertNotNull(new PlayerDesynchAction());
+        assertNotNull(new QuitAction());
+        assertNotNull(new QuitGameAction());
+        assertNotNull(new StartGameAction());
+        assertNotNull(new UserReadyAction());
     }
 
     @Test
     @DisplayName("Action toString returns non-null description")
     void actionToStringReturnsDescription() {
-        assertNotNull(ACKAction.getInstance().toString());
-        assertNotNull(LoginAction.getInstance().toString());
-        assertNotNull(ChatAction.getInstance().toString());
-        assertNotNull(GameDataAction.getInstance().toString());
+        AdminCommandAction adminCommandAction = new AdminCommandAction();
+
+        assertNotNull(new ACKAction().toString());
+        assertNotNull(new LoginAction().toString());
+        assertNotNull(new ChatAction(adminCommandAction).toString());
+        assertNotNull(new GameDataAction().toString());
     }
 }

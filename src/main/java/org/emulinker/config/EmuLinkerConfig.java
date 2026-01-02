@@ -5,6 +5,32 @@ import org.emulinker.kaillera.access.FileBasedAccessManager;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.controller.v086.V086Controller;
+import org.emulinker.kaillera.controller.v086.action.ACKAction;
+import org.emulinker.kaillera.controller.v086.action.ActionBundle;
+import org.emulinker.kaillera.controller.v086.action.ActionRouter;
+import org.emulinker.kaillera.controller.v086.action.AdminCommandAction;
+import org.emulinker.kaillera.controller.v086.action.CachedGameDataAction;
+import org.emulinker.kaillera.controller.v086.action.ChatAction;
+import org.emulinker.kaillera.controller.v086.action.CloseGameAction;
+import org.emulinker.kaillera.controller.v086.action.CreateGameAction;
+import org.emulinker.kaillera.controller.v086.action.DropGameAction;
+import org.emulinker.kaillera.controller.v086.action.GameChatAction;
+import org.emulinker.kaillera.controller.v086.action.GameDataAction;
+import org.emulinker.kaillera.controller.v086.action.GameDesynchAction;
+import org.emulinker.kaillera.controller.v086.action.GameInfoAction;
+import org.emulinker.kaillera.controller.v086.action.GameKickAction;
+import org.emulinker.kaillera.controller.v086.action.GameOwnerCommandAction;
+import org.emulinker.kaillera.controller.v086.action.GameStatusAction;
+import org.emulinker.kaillera.controller.v086.action.GameTimeoutAction;
+import org.emulinker.kaillera.controller.v086.action.InfoMessageAction;
+import org.emulinker.kaillera.controller.v086.action.JoinGameAction;
+import org.emulinker.kaillera.controller.v086.action.KeepAliveAction;
+import org.emulinker.kaillera.controller.v086.action.LoginAction;
+import org.emulinker.kaillera.controller.v086.action.PlayerDesynchAction;
+import org.emulinker.kaillera.controller.v086.action.QuitAction;
+import org.emulinker.kaillera.controller.v086.action.QuitGameAction;
+import org.emulinker.kaillera.controller.v086.action.StartGameAction;
+import org.emulinker.kaillera.controller.v086.action.UserReadyAction;
 import org.emulinker.kaillera.master.MasterListStatsCollector;
 import org.emulinker.kaillera.master.client.MasterListUpdaterImpl;
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl;
@@ -67,10 +93,10 @@ public class EmuLinkerConfig {
 
     @Bean
     public V086Controller v086Controller(KailleraServerImpl kailleraServer,
-            EmuLinkerExecutor executor, FileBasedAccessManager accessManager,
-            ControllersConfig controllersConfig, ServerConfig serverConfig) throws Exception {
-        return new V086Controller(kailleraServer, executor, accessManager, controllersConfig,
-                serverConfig);
+            EmuLinkerExecutor executor, ControllersConfig controllersConfig,
+            ServerConfig serverConfig, ActionRouter actionRouter) throws Exception {
+        return new V086Controller(kailleraServer, executor, controllersConfig, serverConfig,
+                actionRouter);
     }
 
     @Bean
@@ -128,5 +154,153 @@ public class EmuLinkerConfig {
     public ServerAdminService serverAdminService(KailleraServerImpl kailleraServer,
             FileBasedAccessManager accessManager) {
         return new ServerAdminServiceImpl(kailleraServer, accessManager);
+    }
+
+    // V086 Action beans
+
+    @Bean
+    public ACKAction ackAction() {
+        return new ACKAction();
+    }
+
+    @Bean
+    public AdminCommandAction adminCommandAction() {
+        return new AdminCommandAction();
+    }
+
+    @Bean
+    public CachedGameDataAction cachedGameDataAction() {
+        return new CachedGameDataAction();
+    }
+
+    @Bean
+    public ChatAction chatAction(AdminCommandAction adminCommandAction) {
+        return new ChatAction(adminCommandAction);
+    }
+
+    @Bean
+    public CloseGameAction closeGameAction() {
+        return new CloseGameAction();
+    }
+
+    @Bean
+    public CreateGameAction createGameAction() {
+        return new CreateGameAction();
+    }
+
+    @Bean
+    public DropGameAction dropGameAction() {
+        return new DropGameAction();
+    }
+
+    @Bean
+    public GameChatAction gameChatAction(GameOwnerCommandAction gameOwnerCommandAction) {
+        return new GameChatAction(gameOwnerCommandAction);
+    }
+
+    @Bean
+    public GameDataAction gameDataAction() {
+        return new GameDataAction();
+    }
+
+    @Bean
+    public GameDesynchAction gameDesynchAction() {
+        return new GameDesynchAction();
+    }
+
+    @Bean
+    public GameInfoAction gameInfoAction() {
+        return new GameInfoAction();
+    }
+
+    @Bean
+    public GameKickAction gameKickAction() {
+        return new GameKickAction();
+    }
+
+    @Bean
+    public GameOwnerCommandAction gameOwnerCommandAction() {
+        return new GameOwnerCommandAction();
+    }
+
+    @Bean
+    public GameStatusAction gameStatusAction() {
+        return new GameStatusAction();
+    }
+
+    @Bean
+    public GameTimeoutAction gameTimeoutAction() {
+        return new GameTimeoutAction();
+    }
+
+    @Bean
+    public InfoMessageAction infoMessageAction() {
+        return new InfoMessageAction();
+    }
+
+    @Bean
+    public JoinGameAction joinGameAction() {
+        return new JoinGameAction();
+    }
+
+    @Bean
+    public KeepAliveAction keepAliveAction() {
+        return new KeepAliveAction();
+    }
+
+    @Bean
+    public LoginAction loginAction() {
+        return new LoginAction();
+    }
+
+    @Bean
+    public PlayerDesynchAction playerDesynchAction() {
+        return new PlayerDesynchAction();
+    }
+
+    @Bean
+    public QuitAction quitAction() {
+        return new QuitAction();
+    }
+
+    @Bean
+    public QuitGameAction quitGameAction() {
+        return new QuitGameAction();
+    }
+
+    @Bean
+    public StartGameAction startGameAction() {
+        return new StartGameAction();
+    }
+
+    @Bean
+    public UserReadyAction userReadyAction() {
+        return new UserReadyAction();
+    }
+
+    @Bean
+    public ActionBundle actionBundle(ACKAction ackAction, AdminCommandAction adminCommandAction,
+            CachedGameDataAction cachedGameDataAction, ChatAction chatAction,
+            CloseGameAction closeGameAction, CreateGameAction createGameAction,
+            DropGameAction dropGameAction, GameChatAction gameChatAction,
+            GameDataAction gameDataAction, GameDesynchAction gameDesynchAction,
+            GameInfoAction gameInfoAction, GameKickAction gameKickAction,
+            GameOwnerCommandAction gameOwnerCommandAction, GameStatusAction gameStatusAction,
+            GameTimeoutAction gameTimeoutAction, InfoMessageAction infoMessageAction,
+            JoinGameAction joinGameAction, KeepAliveAction keepAliveAction, LoginAction loginAction,
+            PlayerDesynchAction playerDesynchAction, QuitAction quitAction,
+            QuitGameAction quitGameAction, StartGameAction startGameAction,
+            UserReadyAction userReadyAction) {
+        return new ActionBundle(ackAction, adminCommandAction, cachedGameDataAction, chatAction,
+                closeGameAction, createGameAction, dropGameAction, gameChatAction, gameDataAction,
+                gameDesynchAction, gameInfoAction, gameKickAction, gameOwnerCommandAction,
+                gameStatusAction, gameTimeoutAction, infoMessageAction, joinGameAction,
+                keepAliveAction, loginAction, playerDesynchAction, quitAction, quitGameAction,
+                startGameAction, userReadyAction);
+    }
+
+    @Bean
+    public ActionRouter actionRouter(ActionBundle actionBundle) {
+        return new ActionRouter(actionBundle);
     }
 }
