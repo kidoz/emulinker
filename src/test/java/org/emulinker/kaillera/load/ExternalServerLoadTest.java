@@ -25,13 +25,15 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * These tests connect to a running server via UDP and perform load testing.
+ * Requires a server to be running before executing.
  *
  * <p>
  * Run with: ./gradlew test --tests "ExternalServerLoadTest" -Dload.tests=true
- * -Dkaillera.host=localhost -Dkaillera.port=27888
+ * -Dload.external=true -Dkaillera.host=localhost -Dkaillera.port=27888
  */
 @Tag("load")
 @EnabledIfSystemProperty(named = "load.tests", matches = "true")
+@EnabledIfSystemProperty(named = "load.external", matches = "true")
 class ExternalServerLoadTest {
 
     private static final Logger log = LoggerFactory.getLogger(ExternalServerLoadTest.class);
@@ -281,9 +283,13 @@ class ExternalServerLoadTest {
                         }
 
                         if (client.connect(CONNECT_TIMEOUT_MS)) {
-                            successCount.incrementAndGet();
-                            // Immediately disconnect
-                            client.quit("Cycle test");
+                            // Must login before quit - server rejects quit from non-logged-in users
+                            if (client.login(LOGIN_TIMEOUT_MS)) {
+                                client.quit("Cycle test");
+                                successCount.incrementAndGet();
+                            } else {
+                                failCount.incrementAndGet();
+                            }
                         } else {
                             failCount.incrementAndGet();
                         }
@@ -294,6 +300,9 @@ class ExternalServerLoadTest {
                         latch.countDown();
                     }
                 });
+
+                // Small delay to reduce port exhaustion pressure
+                Thread.sleep(50);
             }
 
             latch.await(30, TimeUnit.SECONDS);

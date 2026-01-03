@@ -22,9 +22,27 @@ format:
 lint:
     ./gradlew checkstyleMain
 
-# Run load tests
-load-test:
-    ./gradlew test --tests "org.emulinker.kaillera.load.ServerLoadTest" -Dload.tests=true
+# Run load tests with configurable parameters
+# Usage: just load-test [clients] [timeout]
+# Example: just load-test 50 120
+load-test clients="100" timeout="60":
+    ./gradlew test --tests "org.emulinker.kaillera.load.ServerLoadTest" \
+        -Dload.tests=true \
+        -Dload.clients={{clients}} \
+        -Dload.timeout={{timeout}}
+
+# Run external server load tests (requires server running on localhost:27888)
+# Usage: just load-test-external [clients]
+# Example: just load-test-external 20
+load-test-external clients="10":
+    ./gradlew test --tests "org.emulinker.kaillera.load.ExternalServerLoadTest" \
+        -Dload.tests=true \
+        -Dload.external=true \
+        -Dkaillera.clients={{clients}}
+
+# Run E2E protocol tests (starts embedded server)
+e2e-test:
+    ./gradlew test --tests "org.emulinker.kaillera.protocol.ProtocolE2ETest"
 
 # Admin UI commands
 admin-install:

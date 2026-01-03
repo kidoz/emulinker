@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -109,7 +110,13 @@ public final class UdpKailleraClient implements Closeable {
 
         // Receive HELLOD00D with assigned port
         receiveBuffer.clear();
-        java.net.SocketAddress responseAddr = channel.receive(receiveBuffer);
+        java.net.SocketAddress responseAddr;
+        try {
+            responseAddr = channel.receive(receiveBuffer);
+        } catch (ClosedChannelException e) {
+            log.debug("{}: Channel closed during receive", clientName);
+            return false;
+        }
         receiveBuffer.flip();
 
         if (receiveBuffer.remaining() == 0) {
@@ -193,9 +200,9 @@ public final class UdpKailleraClient implements Closeable {
         int msgNum = messageNumber.incrementAndGet() & 0xFFFF;
         sendBuffer.putShort((short) msgNum);
 
-        // Message body
+        // Message body: msgType(1) + username\0(1) + message\0
         byte[] msgBytes = (message + "\0").getBytes(StandardCharsets.US_ASCII);
-        int bodyLength = 3 + msgBytes.length; // username(empty) + \0 + message + \0
+        int bodyLength = 1 + 1 + msgBytes.length; // msgType + empty_username\0 + message\0
         sendBuffer.putShort((short) bodyLength);
         sendBuffer.put(MSG_CHAT);
         sendBuffer.put((byte) 0x00); // empty username (server fills it in)
@@ -224,12 +231,14 @@ public final class UdpKailleraClient implements Closeable {
             int msgNum = messageNumber.incrementAndGet() & 0xFFFF;
             sendBuffer.putShort((short) msgNum);
 
-            // Message body
+            // Message body: msgType(1) + userName\0(1) + userID(2) + message\0
             byte[] msgBytes = (message + "\0").getBytes(StandardCharsets.US_ASCII);
-            int bodyLength = 3 + msgBytes.length; // userID (2) + message + \0
+            int bodyLength = 1 + 1 + 2 + msgBytes.length; // msgType + empty_username\0 + userID +
+                                                          // message\0
             sendBuffer.putShort((short) bodyLength);
             sendBuffer.put(MSG_QUIT);
-            sendBuffer.putShort((short) 0xFFFF); // userID (server fills it)
+            sendBuffer.put((byte) 0x00); // empty username
+            sendBuffer.putShort((short) 0xFFFF); // userID (0xFFFF = request)
             sendBuffer.put(msgBytes);
 
             sendBuffer.flip();
@@ -252,6 +261,9 @@ public final class UdpKailleraClient implements Closeable {
         try {
             channel.receive(receiveBuffer);
         } catch (java.net.SocketTimeoutException e) {
+            return false;
+        } catch (ClosedChannelException e) {
+            log.debug("{}: Channel closed during receive", clientName);
             return false;
         }
         receiveBuffer.flip();
