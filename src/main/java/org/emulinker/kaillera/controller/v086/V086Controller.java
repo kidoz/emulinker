@@ -5,9 +5,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.emulinker.config.ControllersConfig;
 import org.emulinker.config.ServerConfig;
@@ -26,6 +25,8 @@ import org.emulinker.util.EmuLinkerExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
+import su.kidoz.kaillera.controller.v086.PortAllocator;
+import su.kidoz.kaillera.controller.v086.PortAllocatorImpl;
 import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 
 public final class V086Controller implements KailleraServerController, SmartLifecycle {
@@ -37,11 +38,11 @@ public final class V086Controller implements KailleraServerController, SmartLife
     private final EmuLinkerExecutor threadPool;
     private final KailleraServer server;
     private final String[] clientTypes;
-    private final Map<Integer, V086ClientHandler> clientHandlers = new ConcurrentHashMap<Integer, V086ClientHandler>();
+    private final Map<Integer, V086ClientHandler> clientHandlers = new ConcurrentHashMap<>();
 
     private final int portRangeStart;
     private final int extraPorts;
-    private final Queue<Integer> portRangeQueue = new ConcurrentLinkedQueue<>();
+    private final PortAllocator portAllocator;
     private final List<InetAddress> bindAddresses;
 
     private final ActionRouter actionRouter;
@@ -60,12 +61,9 @@ public final class V086Controller implements KailleraServerController, SmartLife
 
         this.portRangeStart = v086Config.getPortRangeStart();
         this.extraPorts = v086Config.getExtraPorts();
-        int maxPort = 0;
-        for (int i = portRangeStart; i <= (portRangeStart + serverConfig.getMaxUsers()
-                + extraPorts); i++) {
-            portRangeQueue.add(i);
-            maxPort = i;
-        }
+        int portCount = serverConfig.getMaxUsers() + extraPorts + 1;
+        this.portAllocator = new PortAllocatorImpl(portRangeStart, portCount);
+        int maxPort = portRangeStart + portCount - 1;
 
         log.warn(
                 "Listening on UDP ports: {} to {} (addresses: {}). "
@@ -118,6 +116,28 @@ public final class V086Controller implements KailleraServerController, SmartLife
         return clientHandlers;
     }
 
+    /**
+     * Registers a client handler for the given user ID.
+     *
+     * @param userId
+     *            the user's ID
+     * @param handler
+     *            the client handler
+     */
+    public void registerClientHandler(int userId, V086ClientHandler handler) {
+        clientHandlers.put(userId, handler);
+    }
+
+    /**
+     * Unregisters the client handler for the given user ID.
+     *
+     * @param userId
+     *            the user's ID
+     */
+    public void unregisterClientHandler(int userId) {
+        clientHandlers.remove(userId);
+    }
+
     @Override
     public boolean isRunning() {
         return isRunning;
@@ -136,17 +156,17 @@ public final class V086Controller implements KailleraServerController, SmartLife
         InetAddress bindAddress = selectBindAddress(clientSocketAddress.getAddress());
 
         V086ClientHandler clientHandler = new V086ClientHandler(clientSocketAddress, this,
-                bufferSize, threadPool, clientHandlers, portRangeQueue, server, actionRouter);
+                bufferSize, threadPool, portAllocator, server, actionRouter);
         KailleraUser user = server.newConnection(clientSocketAddress, protocol, clientHandler);
 
         int boundPort = -1;
         int bindAttempts = 0;
         while (bindAttempts++ < 5) {
-            Integer portInteger = portRangeQueue.poll();
-            if (portInteger == null) {
+            OptionalInt portOpt = portAllocator.allocate();
+            if (portOpt.isEmpty()) {
                 log.error("No ports are available to bind for: " + user);
             } else {
-                int port = portInteger.intValue();
+                int port = portOpt.getAsInt();
                 log.info("Private port {} allocated to {} (bind address: {})", port, user,
                         bindAddress.getHostAddress());
 
@@ -158,8 +178,8 @@ public final class V086Controller implements KailleraServerController, SmartLife
                     log.error("Failed to bind to {}:{} for {}: {}", bindAddress.getHostAddress(),
                             port, user, e.getMessage(), e);
                     log.debug("{} returning port {} to available port queue: {} available", this,
-                            port, portRangeQueue.size() + 1);
-                    portRangeQueue.add(port);
+                            port, portAllocator.availableCount() + 1);
+                    portAllocator.release(port);
                 }
             }
 

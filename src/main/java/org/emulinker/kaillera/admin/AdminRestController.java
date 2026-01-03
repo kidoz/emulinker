@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.emulinker.kaillera.admin.dto.ActionResultDTO;
 import org.emulinker.kaillera.admin.dto.ControllerDTO;
+import org.emulinker.kaillera.admin.dto.EventMetricsDTO;
 import org.emulinker.kaillera.admin.dto.GameDTO;
 import org.emulinker.kaillera.admin.dto.KickUserRequest;
 import org.emulinker.kaillera.admin.dto.ServerInfoDTO;
@@ -101,6 +102,39 @@ public class AdminRestController {
                         controller.getBufferSize(), controller.getNumClients(),
                         Arrays.asList(controller.getClientTypes())))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns event queue metrics for all connected users.
+     *
+     * @return list of event metrics for each user
+     */
+    @GetMapping("/event-metrics")
+    public List<EventMetricsDTO> getAllEventMetrics() {
+        return userService.getAllUsers().stream()
+                .map(user -> EventMetricsDTO.of(user.getID(), user.getName(),
+                        user.getEventQueueSize(), user.getDroppedEventsCount()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns event queue metrics for a specific user.
+     *
+     * @param userId
+     *            the user ID
+     * @return event metrics for the user, or 404 if not found
+     */
+    @GetMapping("/users/{userId}/events")
+    public ResponseEntity<EventMetricsDTO> getUserEventMetrics(@PathVariable int userId) {
+        var userOpt = userService.findUser(userId);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        KailleraUser user = userOpt.get();
+        return ResponseEntity.ok(EventMetricsDTO.of(user.getID(), user.getName(),
+                user.getEventQueueSize(), user.getDroppedEventsCount()));
     }
 
     /**

@@ -3,7 +3,9 @@ package org.emulinker.kaillera.model;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
+import org.emulinker.kaillera.access.AccessManager;
 import org.emulinker.kaillera.model.event.KailleraEventListener;
+import org.emulinker.kaillera.model.event.ServerEvent;
 import org.emulinker.kaillera.model.exception.ChatException;
 import org.emulinker.kaillera.model.exception.ClientAddressException;
 import org.emulinker.kaillera.model.exception.CloseGameException;
@@ -213,4 +215,29 @@ public interface KailleraServer {
      */
     void quit(KailleraUser user, String message)
             throws QuitException, DropGameException, QuitGameException, CloseGameException;
+
+    /**
+     * Returns the access manager for checking user permissions.
+     *
+     * @return the access manager instance
+     */
+    AccessManager getAccessManager();
+
+    /**
+     * Adds a server event to be broadcast to all listeners.
+     *
+     * @param event
+     *            the server event to broadcast
+     */
+    void addEvent(ServerEvent event);
+
+    /**
+     * Broadcasts an announcement message to all connected users.
+     *
+     * @param message
+     *            the announcement text
+     * @param gamesAlso
+     *            if true, also announce to users in games
+     */
+    void announce(String message, boolean gamesAlso);
 }

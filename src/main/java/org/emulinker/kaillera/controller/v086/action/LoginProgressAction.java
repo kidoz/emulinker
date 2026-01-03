@@ -3,12 +3,12 @@ package org.emulinker.kaillera.controller.v086.action;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.emulinker.kaillera.access.AccessManager;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.InfoMessageEvent;
 import org.emulinker.kaillera.model.event.LoginProgressEvent;
 import org.emulinker.kaillera.model.event.UserEvent;
 import org.emulinker.kaillera.model.event.UserJoinedEvent;
-import org.emulinker.kaillera.model.impl.KailleraServerImpl;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.emulinker.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ public final class LoginProgressAction implements V086UserEventHandler {
             return;
         }
 
-        KailleraUserImpl user = (KailleraUserImpl) progressEvent.getUser();
+        KailleraUser user = progressEvent.getUser();
         LoginNotificationState state = progressEvent.getState();
 
         log.debug("{} processing login state: {}", user, state);
@@ -74,9 +74,9 @@ public final class LoginProgressAction implements V086UserEventHandler {
         }
     }
 
-    private void processConnectedState(LoginProgressEvent event, KailleraUserImpl user) {
+    private void processConnectedState(LoginProgressEvent event, KailleraUser user) {
         // Send UserJoinedEvent to all logged-in users
-        KailleraServerImpl server = (KailleraServerImpl) event.getServer();
+        KailleraServer server = event.getServer();
         server.addEvent(new UserJoinedEvent(server, user));
 
         // Queue next state
@@ -86,7 +86,7 @@ public final class LoginProgressAction implements V086UserEventHandler {
         }
     }
 
-    private void processUserJoinedState(LoginProgressEvent event, KailleraUserImpl user) {
+    private void processUserJoinedState(LoginProgressEvent event, KailleraUser user) {
         // Send login messages to this user
         for (String loginMessage : event.getLoginMessages()) {
             user.addEvent(new InfoMessageEvent(user, loginMessage));
@@ -101,7 +101,7 @@ public final class LoginProgressAction implements V086UserEventHandler {
         }
 
         // Check for announcement
-        KailleraServerImpl server = (KailleraServerImpl) event.getServer();
+        KailleraServer server = event.getServer();
         String announcement = server.getAccessManager()
                 .getAnnouncement(user.getSocketAddress().getAddress());
         if (announcement != null) {
@@ -115,7 +115,7 @@ public final class LoginProgressAction implements V086UserEventHandler {
         }
     }
 
-    private void processMessagesSentState(LoginProgressEvent event, KailleraUserImpl user) {
+    private void processMessagesSentState(LoginProgressEvent event, KailleraUser user) {
         int access = event.getAccessLevel();
 
         // Send admin welcome message if applicable
@@ -131,7 +131,7 @@ public final class LoginProgressAction implements V086UserEventHandler {
         }
     }
 
-    private void processAdminInfoState(LoginProgressEvent event, KailleraUserImpl user) {
+    private void processAdminInfoState(LoginProgressEvent event, KailleraUser user) {
         int access = event.getAccessLevel();
 
         // Send Kaillux client-specific info
@@ -146,13 +146,13 @@ public final class LoginProgressAction implements V086UserEventHandler {
         // Login complete - no next state needed
     }
 
-    private void sendAdminUserInfo(LoginProgressEvent event, KailleraUserImpl admin) {
-        KailleraServerImpl server = (KailleraServerImpl) event.getServer();
+    private void sendAdminUserInfo(LoginProgressEvent event, KailleraUser admin) {
+        KailleraServer server = event.getServer();
         StringBuilder sb = new StringBuilder();
         sb.append(":USERINFO=");
         int sbCount = 0;
 
-        for (KailleraUserImpl u3 : server.getUsers()) {
+        for (KailleraUser u3 : server.getUsers()) {
             if (!u3.isLoggedIn()) {
                 continue;
             }

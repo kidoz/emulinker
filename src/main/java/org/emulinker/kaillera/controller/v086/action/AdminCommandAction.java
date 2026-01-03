@@ -12,10 +12,10 @@ import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.Chat;
 import org.emulinker.kaillera.controller.v086.protocol.InformationMessage;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
+import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraServer;
+import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.exception.ActionException;
-import org.emulinker.kaillera.model.impl.KailleraGameImpl;
-import org.emulinker.kaillera.model.impl.KailleraServerImpl;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.emulinker.release.ReleaseInfo;
 import org.emulinker.util.EmuLang;
 import org.emulinker.util.WildcardStringPattern;
@@ -57,9 +57,9 @@ public final class AdminCommandAction implements V086Action {
             throws FatalActionException {
         Chat chatMessage = (Chat) message;
         String chat = chatMessage.getMessage();
-        KailleraServerImpl server = (KailleraServerImpl) clientHandler.getController().getServer();
+        KailleraServer server = clientHandler.getController().getServer();
         AccessManager accessManager = server.getAccessManager();
-        KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
+        KailleraUser user = clientHandler.getUser();
         if (accessManager
                 .getAccess(clientHandler.getRemoteInetAddress()) != AccessManager.ACCESS_ADMIN)
             throw new FatalActionException(
@@ -108,7 +108,7 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processHelp(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processHelp(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(), "server",
                 EmuLang.getString("AdminCommandAction.AdminCommands")));
@@ -138,7 +138,7 @@ public final class AdminCommandAction implements V086Action {
                 EmuLang.getString("AdminCommandAction.HelpFindGame")));
     }
 
-    private void processFindUser(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processFindUser(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         int space = message.indexOf(' ');
         if (space < 0)
@@ -146,7 +146,7 @@ public final class AdminCommandAction implements V086Action {
 
         int foundCount = 0;
         WildcardStringPattern pattern = new WildcardStringPattern(message.substring(space + 1));
-        for (KailleraUserImpl user : server.getUsers()) {
+        for (KailleraUser user : server.getUsers()) {
             if (!user.isLoggedIn())
                 continue;
 
@@ -170,7 +170,7 @@ public final class AdminCommandAction implements V086Action {
                     "server", EmuLang.getString("AdminCommandAction.NoUsersFound")));
     }
 
-    private void processFindGame(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processFindGame(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         int space = message.indexOf(' ');
         if (space < 0)
@@ -178,7 +178,7 @@ public final class AdminCommandAction implements V086Action {
 
         int foundCount = 0;
         WildcardStringPattern pattern = new WildcardStringPattern(message.substring(space + 1));
-        for (KailleraGameImpl game : server.getGames()) {
+        for (KailleraGame game : server.getGames()) {
             if (pattern.match(game.getRomName())) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(game.getID());
@@ -197,14 +197,14 @@ public final class AdminCommandAction implements V086Action {
                     "server", EmuLang.getString("AdminCommandAction.NoGamesFound")));
     }
 
-    private void processSilence(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processSilence(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try (Scanner scanner = new Scanner(message).useDelimiter(" ")) {
             scanner.next();
             int userID = scanner.nextInt();
             int minutes = scanner.nextInt();
 
-            KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
+            KailleraUser user = server.getUser(userID);
             if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound") + userID);
@@ -232,13 +232,13 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processKick(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processKick(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try (Scanner scanner = new Scanner(message).useDelimiter(" ")) {
             scanner.next();
             int userID = scanner.nextInt();
 
-            KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
+            KailleraUser user = server.getUser(userID);
             if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound", userID));
@@ -260,19 +260,19 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processCloseGame(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processCloseGame(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try (Scanner scanner = new Scanner(message).useDelimiter(" ")) {
             scanner.next();
             int gameID = scanner.nextInt();
 
-            KailleraGameImpl game = (KailleraGameImpl) server.getGame(gameID);
+            KailleraGame game = server.getGame(gameID);
             if (game == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.GameNotFound", gameID));
             }
 
-            KailleraUserImpl owner = (KailleraUserImpl) game.getOwner();
+            KailleraUser owner = game.getOwner();
             int access = server.getAccessManager()
                     .getAccess(owner.getConnectSocketAddress().getAddress());
 
@@ -287,14 +287,14 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processBan(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processBan(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try (Scanner scanner = new Scanner(message).useDelimiter(" ")) {
             scanner.next();
             int userID = scanner.nextInt();
             int minutes = scanner.nextInt();
 
-            KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
+            KailleraUser user = server.getUser(userID);
             if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound", userID));
@@ -321,14 +321,14 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processTempAdmin(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processTempAdmin(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try (Scanner scanner = new Scanner(message).useDelimiter(" ")) {
             scanner.next();
             int userID = scanner.nextInt();
             int minutes = scanner.nextInt();
 
-            KailleraUserImpl user = (KailleraUserImpl) server.getUser(userID);
+            KailleraUser user = server.getUser(userID);
             if (user == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.UserNotFound", userID));
@@ -353,7 +353,7 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processAnnounce(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processAnnounce(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         int space = message.indexOf(' ');
         if (space < 0)
@@ -372,9 +372,8 @@ public final class AdminCommandAction implements V086Action {
         server.announce(announcement, all);
     }
 
-    private void processGameAnnounce(String message, KailleraServerImpl server,
-            KailleraUserImpl admin, V086ClientHandler clientHandler)
-            throws ActionException, MessageFormatException {
+    private void processGameAnnounce(String message, KailleraServer server, KailleraUser admin,
+            V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try (Scanner scanner = new Scanner(message).useDelimiter(" ")) {
             scanner.next();
             int gameID = scanner.nextInt();
@@ -385,7 +384,7 @@ public final class AdminCommandAction implements V086Action {
                 sb.append(" ");
             }
 
-            KailleraGameImpl game = (KailleraGameImpl) server.getGame(gameID);
+            KailleraGame game = server.getGame(gameID);
             if (game == null) {
                 throw new ActionException(
                         EmuLang.getString("AdminCommandAction.GameNoutFound") + gameID);
@@ -397,7 +396,7 @@ public final class AdminCommandAction implements V086Action {
         }
     }
 
-    private void processClear(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processClear(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         int space = message.indexOf(' ');
         if (space < 0)
@@ -420,7 +419,7 @@ public final class AdminCommandAction implements V086Action {
                     "server", EmuLang.getString("AdminCommandAction.ClearNotFound")));
     }
 
-    private void processVersion(String message, KailleraServerImpl server, KailleraUserImpl admin,
+    private void processVersion(String message, KailleraServer server, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         try {
             ReleaseInfo releaseInfo = server.getReleaseInfo();

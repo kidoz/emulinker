@@ -4,8 +4,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Map;
-import java.util.Queue;
 
 import org.emulinker.kaillera.controller.messaging.MessageFormatException;
 import org.emulinker.kaillera.controller.messaging.ParseException;
@@ -48,8 +46,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
     private final V086Controller controller;
     private final int bufferSize;
     private final EmuLinkerExecutor threadPool;
-    private final Map<Integer, V086ClientHandler> clientHandlers;
-    private final Queue<Integer> portRangeQueue;
+    private final PortAllocator portAllocator;
     private final KailleraServer server;
     private final ActionRouter actionRouter;
 
@@ -88,18 +85,15 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
      *            the buffer size for messages
      * @param threadPool
      *            the thread pool for async operations
-     * @param clientHandlers
-     *            the map of active client handlers
-     * @param portRangeQueue
-     *            the queue of available ports
+     * @param portAllocator
+     *            the port allocator for releasing ports
      * @param server
      *            the Kaillera server instance
      * @param actionRouter
      *            the action router for message handling
      */
     public V086ClientHandler(InetSocketAddress remoteSocketAddress, V086Controller controller,
-            int bufferSize, EmuLinkerExecutor threadPool,
-            Map<Integer, V086ClientHandler> clientHandlers, Queue<Integer> portRangeQueue,
+            int bufferSize, EmuLinkerExecutor threadPool, PortAllocator portAllocator,
             KailleraServer server, ActionRouter actionRouter) {
         super(false, remoteSocketAddress.getAddress());
 
@@ -113,8 +107,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
         this.controller = controller;
         this.bufferSize = bufferSize;
         this.threadPool = threadPool;
-        this.clientHandlers = clientHandlers;
-        this.portRangeQueue = portRangeQueue;
+        this.portAllocator = portAllocator;
         this.server = server;
         this.actionRouter = actionRouter;
 
@@ -212,9 +205,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
         log.debug(toString() + " thread started (ThreadPool:" + threadPool.getActiveCount() + "/"
                 + threadPool.getPoolSize() + ")");
-        synchronized (clientHandlers) {
-            clientHandlers.put(user.getID(), this);
-        }
+        controller.registerClientHandler(user.getID(), this);
     }
 
     public void stop() {
@@ -230,18 +221,14 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
             if (port > 0) {
                 log.debug(toString() + " returning port " + port + " to available port queue: "
-                        + (portRangeQueue.size() + 1) + " available");
-                synchronized (portRangeQueue) {
-                    portRangeQueue.add(port);
-                }
+                        + (portAllocator.availableCount() + 1) + " available");
+                portAllocator.release(port);
             }
         }
 
         KailleraUser localUser = user;
         if (localUser != null) {
-            synchronized (clientHandlers) {
-                clientHandlers.remove(localUser.getID());
-            }
+            controller.unregisterClientHandler(localUser.getID());
             localUser.stop();
             user = null;
         }

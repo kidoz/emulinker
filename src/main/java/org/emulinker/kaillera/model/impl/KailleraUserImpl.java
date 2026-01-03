@@ -76,6 +76,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
 
     private static final int MAX_EVENT_QUEUE_SIZE = 2000;
     private static final int DROPPED_EVENTS_LOG_THRESHOLD = 10;
+    private static final int QUEUE_WARNING_THRESHOLD = (int) (MAX_EVENT_QUEUE_SIZE * 0.8);
 
     private final KailleraEventListener listener;
     private final BlockingQueue<KailleraEvent> eventQueue = new LinkedBlockingQueue<>(
@@ -200,7 +201,8 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         return server;
     }
 
-    public KailleraGameImpl getGame() {
+    @Override
+    public KailleraGame getGame() {
         return game;
     }
 
@@ -230,10 +232,12 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         lastTimeout = System.currentTimeMillis();
     }
 
+    @Override
     public int getAccess() {
         return access;
     }
 
+    @Override
     public String getAccessStr() {
         return AccessManager.ACCESS_NAMES[access];
     }
@@ -564,6 +568,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
 
     private static final int CRITICAL_EVENT_TIMEOUT_MS = 100;
 
+    @Override
     public void addEvent(KailleraEvent event) {
         if (event == null) {
             log.error(this + ": ignoring null event!");
@@ -602,7 +607,25 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         } else {
             // Reset counter on successful add
             droppedEventsCount = 0;
+
+            // Warn when queue is approaching capacity
+            int currentSize = eventQueue.size();
+            if (currentSize >= QUEUE_WARNING_THRESHOLD) {
+                log.warn("{}: event queue at {}% capacity ({}/{})", this,
+                        (currentSize * 100) / MAX_EVENT_QUEUE_SIZE, currentSize,
+                        MAX_EVENT_QUEUE_SIZE);
+            }
         }
+    }
+
+    @Override
+    public int getEventQueueSize() {
+        return eventQueue.size();
+    }
+
+    @Override
+    public int getDroppedEventsCount() {
+        return droppedEventsCount;
     }
 
     public void run() {

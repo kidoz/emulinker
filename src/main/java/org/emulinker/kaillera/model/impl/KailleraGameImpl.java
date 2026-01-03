@@ -191,11 +191,13 @@ public final class KailleraGameImpl implements KailleraGame {
         // return readyCount;
     }
 
-    void addEvent(GameEvent event) {
+    @Override
+    public void addEvent(GameEvent event) {
         for (KailleraUserImpl player : players)
             player.addEvent(event);
     }
 
+    @Override
     public AutoFireDetector getAutoFireDetector() {
         return autoFireDetector;
     }
@@ -215,6 +217,7 @@ public final class KailleraGameImpl implements KailleraGame {
         addEvent(new GameChatEvent(this, user, message));
     }
 
+    @Override
     public synchronized void announce(String announcement) {
         addEvent(new GameInfoEvent(this, announcement));
     }

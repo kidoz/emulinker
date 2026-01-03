@@ -2,6 +2,7 @@ package org.emulinker.kaillera.model;
 
 import java.net.InetSocketAddress;
 
+import org.emulinker.kaillera.model.event.KailleraEvent;
 import org.emulinker.kaillera.model.event.KailleraEventListener;
 import org.emulinker.kaillera.model.exception.ChatException;
 import org.emulinker.kaillera.model.exception.ClientAddressException;
@@ -126,6 +127,13 @@ public interface KailleraUser {
 
     KailleraGame joinGame(int gameID) throws JoinGameException;
 
+    /**
+     * Returns the game this user is currently in.
+     *
+     * @return the current game, or null if not in a game
+     */
+    KailleraGame getGame();
+
     int getPlayerNumber();
 
     void startGame() throws StartGameException;
@@ -145,4 +153,41 @@ public interface KailleraUser {
     void droppedPacket();
 
     void stop();
+
+    /**
+     * Returns the access level of this user.
+     *
+     * @return the access level from AccessManager
+     * @see org.emulinker.kaillera.access.AccessManager
+     */
+    int getAccess();
+
+    /**
+     * Returns a human-readable string representing the user's access level.
+     *
+     * @return the access level description (e.g., "Normal", "Admin", "SuperAdmin")
+     */
+    String getAccessStr();
+
+    /**
+     * Adds an event to this user's event queue for processing.
+     *
+     * @param event
+     *            the event to add
+     */
+    void addEvent(KailleraEvent event);
+
+    /**
+     * Returns the current size of the event queue.
+     *
+     * @return number of events waiting to be processed
+     */
+    int getEventQueueSize();
+
+    /**
+     * Returns the total count of dropped events since connection.
+     *
+     * @return count of events that could not be queued
+     */
+    int getDroppedEventsCount();
 }

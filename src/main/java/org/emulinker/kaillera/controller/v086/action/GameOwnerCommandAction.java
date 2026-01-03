@@ -8,9 +8,8 @@ import su.kidoz.kaillera.controller.v086.V086ClientHandler;
 import org.emulinker.kaillera.controller.v086.protocol.GameChat;
 import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.KailleraGame;
+import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.exception.ActionException;
-import org.emulinker.kaillera.model.impl.KailleraGameImpl;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.emulinker.util.EmuLang;
@@ -40,8 +39,8 @@ public final class GameOwnerCommandAction implements V086Action {
         GameChat chatMessage = (GameChat) message;
         String chat = chatMessage.getMessage();
 
-        KailleraUserImpl user = (KailleraUserImpl) clientHandler.getUser();
-        KailleraGameImpl game = user.getGame();
+        KailleraUser user = clientHandler.getUser();
+        KailleraGame game = user.getGame();
 
         if (game == null) {
             throw new FatalActionException("GameOwner Command Failed: Not in a game: " + chat);
@@ -70,13 +69,13 @@ public final class GameOwnerCommandAction implements V086Action {
         }
     }
 
-    private void processHelp(String message, KailleraGameImpl game, KailleraUserImpl admin,
+    private void processHelp(String message, KailleraGame game, KailleraUser admin,
             V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         game.announce(EmuLang.getString("GameOwnerCommandAction.AvailableCommands"));
         game.announce(EmuLang.getString("GameOwnerCommandAction.SetAutofireDetection"));
     }
 
-    private void autoFireHelp(KailleraGameImpl game) {
+    private void autoFireHelp(KailleraGame game) {
         if (game.getAutoFireDetector() == null) {
             game.announce(EmuLang.getString("GameOwnerCommandAction.HelpSensitivity"));
             game.announce(EmuLang.getString("GameOwnerCommandAction.HelpDisable"));
@@ -91,9 +90,8 @@ public final class GameOwnerCommandAction implements V086Action {
                 + (cur == 0 ? (EmuLang.getString("GameOwnerCommandAction.HelpDisabled")) : ""));
     }
 
-    private void processDetectAutoFire(String message, KailleraGameImpl game,
-            KailleraUserImpl admin, V086ClientHandler clientHandler)
-            throws ActionException, MessageFormatException {
+    private void processDetectAutoFire(String message, KailleraGame game, KailleraUser admin,
+            V086ClientHandler clientHandler) throws ActionException, MessageFormatException {
         if (game.getStatus() != KailleraGame.STATUS_WAITING) {
             game.announce(EmuLang.getString("GameOwnerCommandAction.AutoFireChangeDeniedInGame"));
             return;

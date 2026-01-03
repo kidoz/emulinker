@@ -159,6 +159,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             this.statsCollector = statsCollector;
     }
 
+    @Override
     public AccessManager getAccessManager() {
         return accessManager;
     }
@@ -421,8 +422,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         if (userManager.removeUser(user.getID()) == null)
             log.error(user + " quit failed: not in user list");
 
-        KailleraGameImpl userGame = ((KailleraUserImpl) user).getGame();
-        if (userGame != null)
+        if (user.getGame() != null)
             user.quitGame();
 
         String quitMsg = message.trim();
@@ -563,16 +563,12 @@ public class KailleraServerImpl implements KailleraServer, Executable {
         }
     }
 
+    @Override
     public void announce(String announcement, boolean gamesAlso) {
         announcementService.announce(announcement, gamesAlso, getUsers(), getGames());
     }
 
-    /**
-     * Broadcasts a server event to all logged-in users.
-     *
-     * @param event
-     *            the event to broadcast
-     */
+    @Override
     public void addEvent(ServerEvent event) {
         for (KailleraUserImpl user : userManager.getUsers()) {
             if (user.isLoggedIn())

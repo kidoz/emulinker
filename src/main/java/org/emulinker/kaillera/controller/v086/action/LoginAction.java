@@ -15,7 +15,6 @@ import org.emulinker.kaillera.controller.v086.protocol.V086Message;
 import org.emulinker.kaillera.model.KailleraUser;
 import org.emulinker.kaillera.model.event.ServerEvent;
 import org.emulinker.kaillera.model.event.UserJoinedEvent;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
 
 public final class LoginAction implements V086Action, V086ServerEventHandler {
     private static final Logger log = LoggerFactory.getLogger(LoginAction.class);
@@ -64,11 +63,11 @@ public final class LoginAction implements V086Action, V086ServerEventHandler {
         UserJoinedEvent userJoinedEvent = (UserJoinedEvent) event;
 
         try {
-            KailleraUserImpl user = (KailleraUserImpl) userJoinedEvent.getUser();
+            KailleraUser user = userJoinedEvent.getUser();
             clientHandler.send(new UserJoined(clientHandler.getNextMessageNumber(), user.getName(),
                     user.getID(), user.getPing(), (byte) user.getConnectionType()));
 
-            KailleraUserImpl thisUser = (KailleraUserImpl) clientHandler.getUser();
+            KailleraUser thisUser = clientHandler.getUser();
             if (thisUser.isEmuLinkerClient()
                     && thisUser.getAccess() == AccessManager.ACCESS_ADMIN) {
                 if (!user.equals(thisUser))

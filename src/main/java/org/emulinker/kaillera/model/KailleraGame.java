@@ -2,6 +2,8 @@ package org.emulinker.kaillera.model;
 
 import java.util.Collection;
 
+import org.emulinker.kaillera.model.event.GameEvent;
+import org.emulinker.kaillera.model.impl.AutoFireDetector;
 import org.emulinker.kaillera.model.exception.CloseGameException;
 import org.emulinker.kaillera.model.exception.DropGameException;
 import org.emulinker.kaillera.model.exception.GameChatException;
@@ -81,4 +83,27 @@ public interface KailleraGame {
 
     void quit(KailleraUser user, int playerNumber)
             throws DropGameException, QuitGameException, CloseGameException;
+
+    /**
+     * Broadcasts an announcement message to all players in this game.
+     *
+     * @param message
+     *            the announcement text
+     */
+    void announce(String message);
+
+    /**
+     * Returns the auto-fire detector for this game.
+     *
+     * @return the auto-fire detector, or null if detection is disabled
+     */
+    AutoFireDetector getAutoFireDetector();
+
+    /**
+     * Adds a game event to be broadcast to all player listeners.
+     *
+     * @param event
+     *            the game event to broadcast
+     */
+    void addEvent(GameEvent event);
 }
