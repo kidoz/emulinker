@@ -26,6 +26,12 @@ import org.emulinker.kaillera.model.event.KailleraEvent;
 import org.emulinker.kaillera.model.event.KailleraEventListener;
 import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
 import org.emulinker.util.EmuLinkerExecutor;
+
+import su.kidoz.kaillera.model.impl.GameManager;
+import su.kidoz.kaillera.model.impl.UserManager;
+import su.kidoz.kaillera.model.validation.LoginValidator;
+import su.kidoz.kaillera.service.AnnouncementService;
+import su.kidoz.kaillera.service.ChatModerationService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,9 +58,19 @@ class KailleraServerConcurrencyTest {
         GameConfig gameConfig = createTestGameConfig();
         MasterListConfig masterListConfig = createTestMasterListConfig();
 
-        server = new KailleraServerImpl(executor, new TestAccessManager(), serverConfig, gameConfig,
+        // Create dependencies for server
+        TestAccessManager accessManager = new TestAccessManager();
+        LoginValidator loginValidator = new LoginValidator(accessManager, serverConfig);
+        ChatModerationService chatModerationService = new ChatModerationService(accessManager,
+                serverConfig.getChatFloodTime(), serverConfig.getMaxChatLength());
+        AnnouncementService announcementService = new AnnouncementService();
+        UserManager userManager = new UserManager(serverConfig.getMaxUsers());
+        GameManager gameManager = new GameManager(serverConfig.getMaxUsers());
+
+        server = new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
                 masterListConfig, new TestStatsCollector(), new KailleraServerReleaseInfo(),
-                new AutoFireDetectorFactoryImpl());
+                new AutoFireDetectorFactoryImpl(), loginValidator, chatModerationService,
+                announcementService, userManager, gameManager);
 
     }
 

@@ -12,8 +12,10 @@ import org.emulinker.kaillera.admin.dto.ServerInfoDTO;
 import org.emulinker.kaillera.admin.dto.UserDTO;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.model.KailleraGame;
-import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
+import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
+import org.emulinker.kaillera.service.GameService;
+import org.emulinker.kaillera.service.UserService;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +34,19 @@ public class AdminRestController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminRestController.class);
 
-    private final KailleraServer kailleraServer;
+    private final UserService userService;
+    private final GameService gameService;
+    private final KailleraServerReleaseInfo releaseInfo;
     private final ConnectController connectController;
     private final EmuLinkerExecutor executor;
 
     @Autowired
-    public AdminRestController(KailleraServer kailleraServer, ConnectController connectController,
+    public AdminRestController(UserService userService, GameService gameService,
+            KailleraServerReleaseInfo releaseInfo, ConnectController connectController,
             EmuLinkerExecutor executor) {
-        this.kailleraServer = kailleraServer;
+        this.userService = userService;
+        this.gameService = gameService;
+        this.releaseInfo = releaseInfo;
         this.connectController = connectController;
         this.executor = executor;
     }
@@ -56,18 +63,16 @@ public class AdminRestController {
                 executor.getActiveCount(), executor.getPoolSize(), executor.getMaximumPoolSize(),
                 executor.getTaskCount());
 
-        return new ServerInfoDTO(kailleraServer.getReleaseInfo().getProductName(),
-                kailleraServer.getReleaseInfo().getVersionString(),
-                kailleraServer.getReleaseInfo().getBuildNumber(), true,
-                connectController.getBindPort(),
+        return new ServerInfoDTO(releaseInfo.getProductName(), releaseInfo.getVersionString(),
+                releaseInfo.getBuildNumber(), true, connectController.getBindPort(),
                 (System.currentTimeMillis() - connectController.getStartTime()) / 60000,
-                kailleraServer.getNumUsers(), kailleraServer.getMaxUsers(),
-                kailleraServer.getNumGames(), kailleraServer.getMaxGames(), stats, threadPool);
+                userService.getUserCount(), userService.getMaxUsers(), gameService.getGameCount(),
+                gameService.getMaxGames(), stats, threadPool);
     }
 
     @GetMapping("/users")
     public List<UserDTO> getUsers() {
-        return kailleraServer.getUsers().stream().map(user -> {
+        return userService.getAllUsers().stream().map(user -> {
             // Null-safe socket address handling for users that haven't fully connected
             String address = "unknown";
             var socketAddr = user.getSocketAddress();
@@ -83,7 +88,7 @@ public class AdminRestController {
 
     @GetMapping("/games")
     public List<GameDTO> getGames() {
-        return kailleraServer.getGames().stream()
+        return gameService.getAllGames().stream()
                 .map(game -> new GameDTO(game.getID(), game.getRomName(), game.getOwner().getName(),
                         KailleraGame.STATUS_NAMES[game.getStatus()], game.getNumPlayers()))
                 .collect(Collectors.toList());
@@ -110,19 +115,20 @@ public class AdminRestController {
     @PostMapping("/users/{userId}/kick")
     public ResponseEntity<ActionResultDTO> kickUser(@PathVariable int userId,
             @RequestBody KickUserRequest request) {
-        KailleraUser user = kailleraServer.getUser(userId);
+        var userOpt = userService.findUser(userId);
 
-        if (user == null) {
+        if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
+        KailleraUser user = userOpt.get();
         String reason = request.reason();
         if (reason == null || reason.isBlank()) {
             reason = "Kicked by administrator";
         }
 
         try {
-            user.quit("Kicked: " + reason);
+            userService.quit(user, "Kicked: " + reason);
             log.info("Admin kicked user {} (ID: {}): {}", user.getName(), userId, reason);
             return ResponseEntity
                     .ok(ActionResultDTO.ok("User " + user.getName() + " has been kicked"));

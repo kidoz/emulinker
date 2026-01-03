@@ -15,9 +15,10 @@ import java.util.List;
 import org.emulinker.kaillera.controller.KailleraServerController;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
 import org.emulinker.kaillera.model.KailleraGame;
-import org.emulinker.kaillera.model.KailleraServer;
 import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.release.ReleaseInfo;
+import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
+import org.emulinker.kaillera.service.GameService;
+import org.emulinker.kaillera.service.UserService;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +45,13 @@ class AdminRestControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private KailleraServer kailleraServer;
+    private UserService userService;
+
+    @Mock
+    private GameService gameService;
+
+    @Mock
+    private KailleraServerReleaseInfo releaseInfo;
 
     @Mock
     private ConnectController connectController;
@@ -54,8 +61,8 @@ class AdminRestControllerTest {
 
     @BeforeEach
     void setUp() {
-        AdminRestController controller = new AdminRestController(kailleraServer, connectController,
-                executor);
+        AdminRestController controller = new AdminRestController(userService, gameService,
+                releaseInfo, connectController, executor);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -67,16 +74,14 @@ class AdminRestControllerTest {
         @DisplayName("should return server information with all fields")
         void shouldReturnServerInfo() throws Exception {
             // Setup mocks
-            ReleaseInfo releaseInfo = mock(ReleaseInfo.class);
             when(releaseInfo.getProductName()).thenReturn("EmuLinker");
             when(releaseInfo.getVersionString()).thenReturn("1.1.0");
             when(releaseInfo.getBuildNumber()).thenReturn(100);
 
-            when(kailleraServer.getReleaseInfo()).thenReturn(releaseInfo);
-            when(kailleraServer.getNumUsers()).thenReturn(5);
-            when(kailleraServer.getMaxUsers()).thenReturn(100);
-            when(kailleraServer.getNumGames()).thenReturn(2);
-            when(kailleraServer.getMaxGames()).thenReturn(50);
+            when(userService.getUserCount()).thenReturn(5);
+            when(userService.getMaxUsers()).thenReturn(100);
+            when(gameService.getGameCount()).thenReturn(2);
+            when(gameService.getMaxGames()).thenReturn(50);
 
             when(connectController.getBindPort()).thenReturn(27888);
             when(connectController.getStartTime()).thenReturn(System.currentTimeMillis() - 60000);
@@ -121,7 +126,7 @@ class AdminRestControllerTest {
         @Test
         @DisplayName("should return empty list when no users")
         void shouldReturnEmptyListWhenNoUsers() throws Exception {
-            doReturn(Collections.emptyList()).when(kailleraServer).getUsers();
+            doReturn(Collections.emptyList()).when(userService).getAllUsers();
 
             mockMvc.perform(get("/api/admin/users").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -151,7 +156,7 @@ class AdminRestControllerTest {
             when(user2.getSocketAddress()).thenReturn(new InetSocketAddress("10.0.0.50", 27890));
             when(user2.getConnectTime()).thenReturn(System.currentTimeMillis());
 
-            doReturn(List.of(user1, user2)).when(kailleraServer).getUsers();
+            doReturn(List.of(user1, user2)).when(userService).getAllUsers();
 
             mockMvc.perform(get("/api/admin/users").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2))
@@ -175,7 +180,7 @@ class AdminRestControllerTest {
         @Test
         @DisplayName("should return empty list when no games")
         void shouldReturnEmptyListWhenNoGames() throws Exception {
-            doReturn(Collections.emptyList()).when(kailleraServer).getGames();
+            doReturn(Collections.emptyList()).when(gameService).getAllGames();
 
             mockMvc.perform(get("/api/admin/games").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -196,7 +201,7 @@ class AdminRestControllerTest {
             when(game.getStatus()).thenReturn((int) KailleraGame.STATUS_WAITING);
             when(game.getNumPlayers()).thenReturn(2);
 
-            doReturn(Collections.singletonList(game)).when(kailleraServer).getGames();
+            doReturn(Collections.singletonList(game)).when(gameService).getAllGames();
 
             mockMvc.perform(get("/api/admin/games").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))

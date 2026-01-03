@@ -117,23 +117,34 @@ public class KailleraServerImpl implements KailleraServer, Executable {
      *            version and release information
      * @param autoFireDetectorFactory
      *            factory for creating auto-fire detectors
+     * @param loginValidator
+     *            validates user login requests
+     * @param chatModerationService
+     *            handles chat validation and flood control
+     * @param announcementService
+     *            sends announcements to users
+     * @param userManager
+     *            manages user storage and lifecycle
+     * @param gameManager
+     *            manages game storage and lifecycle
      */
     public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
             ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
             StatsCollector statsCollector, ReleaseInfo releaseInfo,
-            AutoFireDetectorFactory autoFireDetectorFactory) {
+            AutoFireDetectorFactory autoFireDetectorFactory, LoginValidator loginValidator,
+            ChatModerationService chatModerationService, AnnouncementService announcementService,
+            UserManager userManager, GameManager gameManager) {
         this.threadPool = threadPool;
         this.accessManager = accessManager;
         this.releaseInfo = releaseInfo;
         this.autoFireDetectorFactory = autoFireDetectorFactory;
         this.serverConfig = serverConfig;
         this.gameConfig = gameConfig;
-        this.loginValidator = new LoginValidator(accessManager, serverConfig);
-        this.announcementService = new AnnouncementService();
-
-        // Initialize services that depend on config values
-        this.chatModerationService = new ChatModerationService(accessManager,
-                serverConfig.getChatFloodTime(), serverConfig.getMaxChatLength());
+        this.loginValidator = loginValidator;
+        this.chatModerationService = chatModerationService;
+        this.announcementService = announcementService;
+        this.userManager = userManager;
+        this.gameManager = gameManager;
 
         // Load login messages from language bundle
         for (int i = 1; i <= 999; i++) {
@@ -142,10 +153,6 @@ public class KailleraServerImpl implements KailleraServer, Executable {
             else
                 break;
         }
-
-        // Initialize managers
-        this.userManager = new UserManager(serverConfig.getMaxUsers());
-        this.gameManager = new GameManager(serverConfig.getMaxUsers());
 
         // Master list config
         if (masterListConfig.isTouchKaillera())

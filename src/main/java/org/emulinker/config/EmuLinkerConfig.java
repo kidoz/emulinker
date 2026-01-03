@@ -37,6 +37,12 @@ import org.emulinker.kaillera.master.client.MasterListUpdaterImpl;
 import org.emulinker.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import org.emulinker.kaillera.model.impl.KailleraServerImpl;
 import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
+
+import su.kidoz.kaillera.model.impl.GameManager;
+import su.kidoz.kaillera.model.impl.UserManager;
+import su.kidoz.kaillera.model.validation.LoginValidator;
+import su.kidoz.kaillera.service.AnnouncementService;
+import su.kidoz.kaillera.service.ChatModerationService;
 import org.emulinker.kaillera.service.CommunicationService;
 import org.emulinker.kaillera.service.GameInputService;
 import org.emulinker.kaillera.service.GameService;
@@ -101,13 +107,44 @@ public class EmuLinkerConfig {
     }
 
     @Bean
+    public LoginValidator loginValidator(FileBasedAccessManager accessManager,
+            ServerConfig serverConfig) {
+        return new LoginValidator(accessManager, serverConfig);
+    }
+
+    @Bean
+    public ChatModerationService chatModerationService(FileBasedAccessManager accessManager,
+            ServerConfig serverConfig) {
+        return new ChatModerationService(accessManager, serverConfig.getChatFloodTime(),
+                serverConfig.getMaxChatLength());
+    }
+
+    @Bean
+    public AnnouncementService announcementService() {
+        return new AnnouncementService();
+    }
+
+    @Bean
+    public UserManager userManager(ServerConfig serverConfig) {
+        return new UserManager(serverConfig.getMaxUsers());
+    }
+
+    @Bean
+    public GameManager gameManager(ServerConfig serverConfig) {
+        return new GameManager(serverConfig.getMaxUsers());
+    }
+
+    @Bean
     public KailleraServerImpl kailleraServerImpl(EmuLinkerExecutor executor,
             FileBasedAccessManager accessManager, ServerConfig serverConfig, GameConfig gameConfig,
             MasterListConfig masterListConfig, MasterListStatsCollector statsCollector,
-            KailleraServerReleaseInfo releaseInfo, AutoFireDetectorFactoryImpl autoFireFactory)
-            throws Exception {
+            KailleraServerReleaseInfo releaseInfo, AutoFireDetectorFactoryImpl autoFireFactory,
+            LoginValidator loginValidator, ChatModerationService chatModerationService,
+            AnnouncementService announcementService, UserManager userManager,
+            GameManager gameManager) throws Exception {
         return new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
-                masterListConfig, statsCollector, releaseInfo, autoFireFactory);
+                masterListConfig, statsCollector, releaseInfo, autoFireFactory, loginValidator,
+                chatModerationService, announcementService, userManager, gameManager);
     }
 
     @Bean

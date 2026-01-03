@@ -10,8 +10,9 @@ import java.util.Collections;
 
 import org.emulinker.config.SecurityConfig;
 import org.emulinker.kaillera.controller.connectcontroller.ConnectController;
-import org.emulinker.kaillera.model.KailleraServer;
-import org.emulinker.release.ReleaseInfo;
+import org.emulinker.kaillera.release.KailleraServerReleaseInfo;
+import org.emulinker.kaillera.service.GameService;
+import org.emulinker.kaillera.service.UserService;
 import org.emulinker.util.EmuLinkerExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +39,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class AdminSecurityTest {
 
     @Mock
-    private KailleraServer kailleraServer;
+    private UserService userService;
+
+    @Mock
+    private GameService gameService;
+
+    @Mock
+    private KailleraServerReleaseInfo releaseInfo;
 
     @Mock
     private ConnectController connectController;
@@ -50,8 +57,8 @@ class AdminSecurityTest {
 
     @BeforeEach
     void setUp() {
-        AdminRestController controller = new AdminRestController(kailleraServer, connectController,
-                executor);
+        AdminRestController controller = new AdminRestController(userService, gameService,
+                releaseInfo, connectController, executor);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -63,11 +70,9 @@ class AdminSecurityTest {
         @DisplayName("GET /api/admin/server-info should be available")
         void serverInfoShouldBeAvailable() throws Exception {
             // Setup minimal mocks to prevent NPE
-            ReleaseInfo releaseInfo = mock(ReleaseInfo.class);
             when(releaseInfo.getProductName()).thenReturn("Test");
             when(releaseInfo.getVersionString()).thenReturn("1.0");
             when(releaseInfo.getBuildNumber()).thenReturn(1);
-            when(kailleraServer.getReleaseInfo()).thenReturn(releaseInfo);
 
             mockMvc.perform(get("/api/admin/server-info").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -76,7 +81,7 @@ class AdminSecurityTest {
         @Test
         @DisplayName("GET /api/admin/users should be available")
         void usersShouldBeAvailable() throws Exception {
-            when(kailleraServer.getUsers()).thenReturn(Collections.emptyList());
+            when(userService.getAllUsers()).thenReturn(Collections.emptyList());
 
             mockMvc.perform(get("/api/admin/users").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -85,7 +90,7 @@ class AdminSecurityTest {
         @Test
         @DisplayName("GET /api/admin/games should be available")
         void gamesShouldBeAvailable() throws Exception {
-            when(kailleraServer.getGames()).thenReturn(Collections.emptyList());
+            when(gameService.getAllGames()).thenReturn(Collections.emptyList());
 
             mockMvc.perform(get("/api/admin/games").accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
