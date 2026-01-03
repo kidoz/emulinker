@@ -194,7 +194,8 @@ public final class V086Controller implements KailleraServerController, SmartLife
 
         KailleraUser user;
         try {
-            user = server.newConnection(clientSocketAddress, protocol, clientHandler);
+            user = server.newConnection(clientSocketAddress, protocol,
+                    clientHandler.getEventDispatcher());
         } catch (NewConnectionException e) {
             clientHandler.stop();
             throw e;
@@ -221,12 +222,22 @@ public final class V086Controller implements KailleraServerController, SmartLife
 
     @Override
     public synchronized void start() {
-        log.info("V086Controller started");
+        if (isRunning) {
+            log.debug("V086Controller start request ignored: already running!");
+            return;
+        }
+
         isRunning = true;
+        log.info("V086Controller started");
     }
 
     @Override
     public synchronized void stop() {
+        if (!isRunning) {
+            log.debug("V086Controller stop request ignored: not running!");
+            return;
+        }
+
         isRunning = false;
 
         for (V086ClientHandler clientHandler : clientHandlers.values())
@@ -234,5 +245,11 @@ public final class V086Controller implements KailleraServerController, SmartLife
 
         clientHandlers.clear();
         log.info("V086Controller stopped");
+    }
+
+    @Override
+    public int getPhase() {
+        // Phase 20: Protocol handler, after core server
+        return 20;
     }
 }

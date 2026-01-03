@@ -7,8 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.net.InetSocketAddress;
+import su.kidoz.kaillera.model.event.DefaultEventDispatcher;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.KailleraEvent;
-import su.kidoz.kaillera.model.event.KailleraEventListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,15 +29,15 @@ class KailleraUserImplTest {
     @Mock
     private KailleraServerImpl server;
 
-    @Mock
-    private KailleraEventListener listener;
+    private EventDispatcher eventDispatcher;
 
     private KailleraUserImpl user;
 
     @BeforeEach
     void setUp() {
         InetSocketAddress address = new InetSocketAddress("127.0.0.1", 27888);
-        user = new KailleraUserImpl(1, "v086", address, listener, server);
+        eventDispatcher = new DefaultEventDispatcher();
+        user = new KailleraUserImpl(1, "v086", address, eventDispatcher, server);
     }
 
     @Test

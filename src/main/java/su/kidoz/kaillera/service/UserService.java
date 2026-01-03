@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import su.kidoz.kaillera.model.KailleraUser;
-import su.kidoz.kaillera.model.event.KailleraEventListener;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.exception.CloseGameException;
 import su.kidoz.kaillera.model.exception.DropGameException;
 import su.kidoz.kaillera.model.exception.LoginException;
@@ -28,8 +28,8 @@ public interface UserService {
      *            the client's socket address
      * @param protocol
      *            the protocol version
-     * @param listener
-     *            the event listener for this user
+     * @param eventDispatcher
+     *            dispatcher for routing events to the protocol handler
      * @return the newly created user
      * @throws ServerFullException
      *             if the server is at capacity
@@ -37,7 +37,7 @@ public interface UserService {
      *             if the connection cannot be created
      */
     KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol,
-            KailleraEventListener listener) throws ServerFullException, NewConnectionException;
+            EventDispatcher eventDispatcher) throws ServerFullException, NewConnectionException;
 
     /**
      * Validates and logs in a user.

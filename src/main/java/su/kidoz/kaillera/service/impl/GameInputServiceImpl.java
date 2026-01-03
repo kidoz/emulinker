@@ -6,7 +6,6 @@ import su.kidoz.kaillera.model.exception.GameDataException;
 import su.kidoz.kaillera.model.exception.GameKickException;
 import su.kidoz.kaillera.model.exception.UserReadyException;
 import su.kidoz.kaillera.model.impl.AutoFireDetector;
-import su.kidoz.kaillera.model.impl.KailleraGameImpl;
 import su.kidoz.kaillera.service.GameInputService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +55,10 @@ public class GameInputServiceImpl implements GameInputService {
             return false;
         }
 
-        if (game instanceof KailleraGameImpl gameImpl) {
-            AutoFireDetector detector = gameImpl.getAutoFireDetector();
-            if (detector != null) {
-                detector.setSensitivity(autofireValue);
-                return true;
-            }
+        AutoFireDetector detector = game.getAutoFireDetector();
+        if (detector != null) {
+            detector.setSensitivity(autofireValue);
+            return true;
         }
 
         return false;

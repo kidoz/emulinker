@@ -3,11 +3,49 @@ package su.kidoz.kaillera.controller.v086.action;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import java.util.List;
+
+import su.kidoz.kaillera.controller.v086.command.ACKCommandAction;
+import su.kidoz.kaillera.controller.v086.command.AdminCommandAction;
+import su.kidoz.kaillera.controller.v086.command.CachedGameDataAction;
+import su.kidoz.kaillera.controller.v086.command.ChatCommandAction;
+import su.kidoz.kaillera.controller.v086.command.CreateGameCommandAction;
+import su.kidoz.kaillera.controller.v086.command.DropGameCommandAction;
+import su.kidoz.kaillera.controller.v086.command.GameChatCommandAction;
+import su.kidoz.kaillera.controller.v086.command.GameDataCommandAction;
+import su.kidoz.kaillera.controller.v086.command.GameKickAction;
+import su.kidoz.kaillera.controller.v086.command.GameOwnerCommandAction;
+import su.kidoz.kaillera.controller.v086.command.JoinGameCommandAction;
+import su.kidoz.kaillera.controller.v086.command.KeepAliveAction;
+import su.kidoz.kaillera.controller.v086.command.LoginCommandAction;
+import su.kidoz.kaillera.controller.v086.command.QuitCommandAction;
+import su.kidoz.kaillera.controller.v086.command.QuitGameCommandAction;
+import su.kidoz.kaillera.controller.v086.command.StartGameCommandAction;
+import su.kidoz.kaillera.controller.v086.command.UserReadyCommandAction;
+import su.kidoz.kaillera.controller.v086.event.ACKEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.ChatEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.CloseGameAction;
+import su.kidoz.kaillera.controller.v086.event.CreateGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.DropGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameChatEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameDataEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameDesynchAction;
+import su.kidoz.kaillera.controller.v086.event.GameInfoAction;
+import su.kidoz.kaillera.controller.v086.event.GameStatusAction;
+import su.kidoz.kaillera.controller.v086.event.GameTimeoutAction;
+import su.kidoz.kaillera.controller.v086.event.InfoMessageAction;
+import su.kidoz.kaillera.controller.v086.event.JoinGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.LoginEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.LoginProgressAction;
+import su.kidoz.kaillera.controller.v086.event.PlayerDesynchAction;
+import su.kidoz.kaillera.controller.v086.event.QuitEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.QuitGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.StartGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.UserReadyEventRenderer;
 import su.kidoz.kaillera.controller.v086.protocol.AllReady;
 import su.kidoz.kaillera.controller.v086.protocol.CachedGameData;
 import su.kidoz.kaillera.controller.v086.protocol.Chat;
@@ -55,7 +93,6 @@ import org.junit.jupiter.api.Test;
 @DisplayName("ActionRouter Tests")
 class ActionRouterTest {
 
-    private ActionBundle actionBundle;
     private ActionRouter router;
 
     @BeforeEach
@@ -64,18 +101,23 @@ class ActionRouterTest {
         AdminCommandAction adminCommandAction = new AdminCommandAction();
         GameOwnerCommandAction gameOwnerCommandAction = new GameOwnerCommandAction();
 
-        actionBundle = new ActionBundle(new ACKAction(), adminCommandAction,
-                new CachedGameDataAction(), new ChatAction(adminCommandAction),
-                new CloseGameAction(), new CreateGameAction(), new DropGameAction(),
-                new GameChatAction(gameOwnerCommandAction), new GameDataAction(),
-                new GameDesynchAction(), new GameInfoAction(), new GameKickAction(),
-                gameOwnerCommandAction, new GameStatusAction(), new GameTimeoutAction(),
-                new InfoMessageAction(), new JoinGameAction(), new KeepAliveAction(),
-                new LoginAction(), new LoginProgressAction(), new PlayerDesynchAction(),
-                new QuitAction(), new QuitGameAction(), new StartGameAction(),
-                new UserReadyAction());
-
-        router = new ActionRouter(actionBundle);
+        router = new ActionRouter(List.of(new ACKCommandAction(),
+                new ChatCommandAction(adminCommandAction), new CreateGameCommandAction(),
+                new DropGameCommandAction(), new GameChatCommandAction(gameOwnerCommandAction),
+                new GameDataCommandAction(), new JoinGameCommandAction(), new LoginCommandAction(),
+                new QuitCommandAction(), new QuitGameCommandAction(), new StartGameCommandAction(),
+                new UserReadyCommandAction(), adminCommandAction, new CachedGameDataAction(),
+                new GameKickAction(), gameOwnerCommandAction, new KeepAliveAction()),
+                List.of(new ChatEventRenderer(), new CreateGameEventRenderer(),
+                        new LoginEventRenderer(), new CloseGameAction(), new QuitEventRenderer(),
+                        new GameStatusAction()),
+                List.of(new JoinGameEventRenderer(), new QuitGameEventRenderer(),
+                        new StartGameEventRenderer(), new GameChatEventRenderer(),
+                        new UserReadyEventRenderer(), new GameDataEventRenderer(),
+                        new DropGameEventRenderer(), new GameDesynchAction(),
+                        new PlayerDesynchAction(), new GameInfoAction(), new GameTimeoutAction()),
+                List.of(new ACKEventRenderer(), new InfoMessageAction(),
+                        new LoginProgressAction()));
     }
 
     @Nested
@@ -83,43 +125,43 @@ class ActionRouterTest {
     class MessageIdToActionMapping {
 
         @Test
-        @DisplayName("should map UserInformation ID to LoginAction")
+        @DisplayName("should map UserInformation ID to LoginCommandAction")
         void shouldMapUserInformationToLogin() {
             V086Action action = router.getAction(UserInformation.ID);
             assertNotNull(action);
-            assertTrue(action instanceof LoginAction);
+            assertTrue(action instanceof LoginCommandAction);
         }
 
         @Test
-        @DisplayName("should map ClientACK ID to ACKAction")
+        @DisplayName("should map ClientACK ID to ACKCommandAction")
         void shouldMapClientACKToAck() {
             V086Action action = router.getAction(ClientACK.ID);
             assertNotNull(action);
-            assertTrue(action instanceof ACKAction);
+            assertTrue(action instanceof ACKCommandAction);
         }
 
         @Test
-        @DisplayName("should map Chat ID to ChatAction")
+        @DisplayName("should map Chat ID to ChatCommandAction")
         void shouldMapChatToChatAction() {
             V086Action action = router.getAction(Chat.ID);
             assertNotNull(action);
-            assertTrue(action instanceof ChatAction);
+            assertTrue(action instanceof ChatCommandAction);
         }
 
         @Test
-        @DisplayName("should map CreateGame ID to CreateGameAction")
+        @DisplayName("should map CreateGame ID to CreateGameCommandAction")
         void shouldMapCreateGameToAction() {
             V086Action action = router.getAction(CreateGame.ID);
             assertNotNull(action);
-            assertTrue(action instanceof CreateGameAction);
+            assertTrue(action instanceof CreateGameCommandAction);
         }
 
         @Test
-        @DisplayName("should map JoinGame ID to JoinGameAction")
+        @DisplayName("should map JoinGame ID to JoinGameCommandAction")
         void shouldMapJoinGameToAction() {
             V086Action action = router.getAction(JoinGame.ID);
             assertNotNull(action);
-            assertTrue(action instanceof JoinGameAction);
+            assertTrue(action instanceof JoinGameCommandAction);
         }
 
         @Test
@@ -131,35 +173,35 @@ class ActionRouterTest {
         }
 
         @Test
-        @DisplayName("should map QuitGame ID to QuitGameAction")
+        @DisplayName("should map QuitGame ID to QuitGameCommandAction")
         void shouldMapQuitGameToAction() {
             V086Action action = router.getAction(QuitGame.ID);
             assertNotNull(action);
-            assertTrue(action instanceof QuitGameAction);
+            assertTrue(action instanceof QuitGameCommandAction);
         }
 
         @Test
-        @DisplayName("should map Quit ID to QuitAction")
+        @DisplayName("should map Quit ID to QuitCommandAction")
         void shouldMapQuitToAction() {
             V086Action action = router.getAction(Quit.ID);
             assertNotNull(action);
-            assertTrue(action instanceof QuitAction);
+            assertTrue(action instanceof QuitCommandAction);
         }
 
         @Test
-        @DisplayName("should map StartGame ID to StartGameAction")
+        @DisplayName("should map StartGame ID to StartGameCommandAction")
         void shouldMapStartGameToAction() {
             V086Action action = router.getAction(StartGame.ID);
             assertNotNull(action);
-            assertTrue(action instanceof StartGameAction);
+            assertTrue(action instanceof StartGameCommandAction);
         }
 
         @Test
-        @DisplayName("should map GameChat ID to GameChatAction")
+        @DisplayName("should map GameChat ID to GameChatCommandAction")
         void shouldMapGameChatToAction() {
             V086Action action = router.getAction(GameChat.ID);
             assertNotNull(action);
-            assertTrue(action instanceof GameChatAction);
+            assertTrue(action instanceof GameChatCommandAction);
         }
 
         @Test
@@ -171,11 +213,11 @@ class ActionRouterTest {
         }
 
         @Test
-        @DisplayName("should map AllReady ID to UserReadyAction")
+        @DisplayName("should map AllReady ID to UserReadyCommandAction")
         void shouldMapAllReadyToAction() {
             V086Action action = router.getAction(AllReady.ID);
             assertNotNull(action);
-            assertTrue(action instanceof UserReadyAction);
+            assertTrue(action instanceof UserReadyCommandAction);
         }
 
         @Test
@@ -187,19 +229,19 @@ class ActionRouterTest {
         }
 
         @Test
-        @DisplayName("should map GameData ID to GameDataAction")
+        @DisplayName("should map GameData ID to GameDataCommandAction")
         void shouldMapGameDataToAction() {
             V086Action action = router.getAction(GameData.ID);
             assertNotNull(action);
-            assertTrue(action instanceof GameDataAction);
+            assertTrue(action instanceof GameDataCommandAction);
         }
 
         @Test
-        @DisplayName("should map PlayerDrop ID to DropGameAction")
+        @DisplayName("should map PlayerDrop ID to DropGameCommandAction")
         void shouldMapPlayerDropToAction() {
             V086Action action = router.getAction(PlayerDrop.ID);
             assertNotNull(action);
-            assertTrue(action instanceof DropGameAction);
+            assertTrue(action instanceof DropGameCommandAction);
         }
     }
 
@@ -232,27 +274,27 @@ class ActionRouterTest {
     class ServerEventHandlerMapping {
 
         @Test
-        @DisplayName("should map ChatEvent to ChatAction handler")
+        @DisplayName("should map ChatEvent to ChatEventRenderer handler")
         void shouldMapChatEventToHandler() {
             V086ServerEventHandler handler = router.getServerEventHandler(ChatEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.chatAction(), handler);
+            assertTrue(handler instanceof ChatEventRenderer);
         }
 
         @Test
-        @DisplayName("should map GameCreatedEvent to CreateGameAction handler")
+        @DisplayName("should map GameCreatedEvent to CreateGameEventRenderer handler")
         void shouldMapGameCreatedEventToHandler() {
             V086ServerEventHandler handler = router.getServerEventHandler(GameCreatedEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.createGameAction(), handler);
+            assertTrue(handler instanceof CreateGameEventRenderer);
         }
 
         @Test
-        @DisplayName("should map UserJoinedEvent to LoginAction handler")
+        @DisplayName("should map UserJoinedEvent to LoginEventRenderer handler")
         void shouldMapUserJoinedEventToHandler() {
             V086ServerEventHandler handler = router.getServerEventHandler(UserJoinedEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.loginAction(), handler);
+            assertTrue(handler instanceof LoginEventRenderer);
         }
 
         @Test
@@ -260,15 +302,15 @@ class ActionRouterTest {
         void shouldMapGameClosedEventToHandler() {
             V086ServerEventHandler handler = router.getServerEventHandler(GameClosedEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.closeGameAction(), handler);
+            assertTrue(handler instanceof CloseGameAction);
         }
 
         @Test
-        @DisplayName("should map UserQuitEvent to QuitAction handler")
+        @DisplayName("should map UserQuitEvent to QuitEventRenderer handler")
         void shouldMapUserQuitEventToHandler() {
             V086ServerEventHandler handler = router.getServerEventHandler(UserQuitEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.quitAction(), handler);
+            assertTrue(handler instanceof QuitEventRenderer);
         }
 
         @Test
@@ -283,43 +325,43 @@ class ActionRouterTest {
     class GameEventHandlerMapping {
 
         @Test
-        @DisplayName("should map UserJoinedGameEvent to JoinGameAction handler")
+        @DisplayName("should map UserJoinedGameEvent to JoinGameEventRenderer handler")
         void shouldMapUserJoinedGameEventToHandler() {
             V086GameEventHandler handler = router.getGameEventHandler(UserJoinedGameEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.joinGameAction(), handler);
+            assertTrue(handler instanceof JoinGameEventRenderer);
         }
 
         @Test
-        @DisplayName("should map UserQuitGameEvent to QuitGameAction handler")
+        @DisplayName("should map UserQuitGameEvent to QuitGameEventRenderer handler")
         void shouldMapUserQuitGameEventToHandler() {
             V086GameEventHandler handler = router.getGameEventHandler(UserQuitGameEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.quitGameAction(), handler);
+            assertTrue(handler instanceof QuitGameEventRenderer);
         }
 
         @Test
-        @DisplayName("should map GameStartedEvent to StartGameAction handler")
+        @DisplayName("should map GameStartedEvent to StartGameEventRenderer handler")
         void shouldMapGameStartedEventToHandler() {
             V086GameEventHandler handler = router.getGameEventHandler(GameStartedEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.startGameAction(), handler);
+            assertTrue(handler instanceof StartGameEventRenderer);
         }
 
         @Test
-        @DisplayName("should map GameDataEvent to GameDataAction handler")
+        @DisplayName("should map GameDataEvent to GameDataEventRenderer handler")
         void shouldMapGameDataEventToHandler() {
             V086GameEventHandler handler = router.getGameEventHandler(GameDataEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.gameDataAction(), handler);
+            assertTrue(handler instanceof GameDataEventRenderer);
         }
 
         @Test
-        @DisplayName("should map AllReadyEvent to UserReadyAction handler")
+        @DisplayName("should map AllReadyEvent to UserReadyEventRenderer handler")
         void shouldMapAllReadyEventToHandler() {
             V086GameEventHandler handler = router.getGameEventHandler(AllReadyEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.userReadyAction(), handler);
+            assertTrue(handler instanceof UserReadyEventRenderer);
         }
     }
 
@@ -328,11 +370,11 @@ class ActionRouterTest {
     class UserEventHandlerMapping {
 
         @Test
-        @DisplayName("should map ConnectedEvent to ACKAction handler")
+        @DisplayName("should map ConnectedEvent to ACKEventRenderer handler")
         void shouldMapConnectedEventToHandler() {
             V086UserEventHandler handler = router.getUserEventHandler(ConnectedEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.ackAction(), handler);
+            assertTrue(handler instanceof ACKEventRenderer);
         }
 
         @Test
@@ -340,7 +382,7 @@ class ActionRouterTest {
         void shouldMapInfoMessageEventToHandler() {
             V086UserEventHandler handler = router.getUserEventHandler(InfoMessageEvent.class);
             assertNotNull(handler);
-            assertSame(actionBundle.infoMessageAction(), handler);
+            assertTrue(handler instanceof InfoMessageAction);
         }
     }
 
@@ -360,7 +402,9 @@ class ActionRouterTest {
             // But contents should be the same
             assertEquals(actions1.length, actions2.length);
             for (int i = 0; i < actions1.length; i++) {
-                assertSame(actions1[i], actions2[i]);
+                if (actions1[i] != null || actions2[i] != null) {
+                    assertEquals(actions1[i], actions2[i]);
+                }
             }
         }
 
@@ -374,7 +418,7 @@ class ActionRouterTest {
             actions[UserInformation.ID] = null;
 
             // Router should still have the original action
-            assertSame(original, router.getAction(UserInformation.ID));
+            assertEquals(original, router.getAction(UserInformation.ID));
         }
     }
 
@@ -414,20 +458,32 @@ class ActionRouterTest {
         @Test
         @DisplayName("should throw exception when required action is missing")
         void shouldThrowWhenRequiredActionMissing() {
-            // Create a bundle with a null action for a required message ID
-            ActionBundle invalidBundle = new ActionBundle(null, // ACKAction is required
-                    new AdminCommandAction(), new CachedGameDataAction(),
-                    new ChatAction(new AdminCommandAction()), new CloseGameAction(),
-                    new CreateGameAction(), new DropGameAction(),
-                    new GameChatAction(new GameOwnerCommandAction()), new GameDataAction(),
-                    new GameDesynchAction(), new GameInfoAction(), new GameKickAction(),
-                    new GameOwnerCommandAction(), new GameStatusAction(), new GameTimeoutAction(),
-                    new InfoMessageAction(), new JoinGameAction(), new KeepAliveAction(),
-                    new LoginAction(), new LoginProgressAction(), new PlayerDesynchAction(),
-                    new QuitAction(), new QuitGameAction(), new StartGameAction(),
-                    new UserReadyAction());
+            // Create a router with a missing required action mapping (no ACKCommandAction)
+            AdminCommandAction adminCommandAction = new AdminCommandAction();
+            GameOwnerCommandAction gameOwnerCommandAction = new GameOwnerCommandAction();
 
-            assertThrows(IllegalStateException.class, () -> new ActionRouter(invalidBundle));
+            assertThrows(IllegalStateException.class,
+                    () -> new ActionRouter(
+                            List.of(new ChatCommandAction(adminCommandAction),
+                                    new CreateGameCommandAction(), new DropGameCommandAction(),
+                                    new GameChatCommandAction(gameOwnerCommandAction),
+                                    new GameDataCommandAction(), new JoinGameCommandAction(),
+                                    new LoginCommandAction(), new QuitCommandAction(),
+                                    new QuitGameCommandAction(), new StartGameCommandAction(),
+                                    new UserReadyCommandAction(), adminCommandAction,
+                                    new CachedGameDataAction(), new GameKickAction(),
+                                    gameOwnerCommandAction, new KeepAliveAction()),
+                            List.of(new ChatEventRenderer(), new CreateGameEventRenderer(),
+                                    new LoginEventRenderer(), new CloseGameAction(),
+                                    new QuitEventRenderer(), new GameStatusAction()),
+                            List.of(new JoinGameEventRenderer(), new QuitGameEventRenderer(),
+                                    new StartGameEventRenderer(), new GameChatEventRenderer(),
+                                    new UserReadyEventRenderer(), new GameDataEventRenderer(),
+                                    new DropGameEventRenderer(), new GameDesynchAction(),
+                                    new PlayerDesynchAction(), new GameInfoAction(),
+                                    new GameTimeoutAction()),
+                            List.of(new ACKEventRenderer(), new InfoMessageAction(),
+                                    new LoginProgressAction())));
         }
     }
 }

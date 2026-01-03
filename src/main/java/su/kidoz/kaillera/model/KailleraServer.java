@@ -4,7 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 
 import su.kidoz.kaillera.access.AccessManager;
-import su.kidoz.kaillera.model.event.KailleraEventListener;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.ServerEvent;
 import su.kidoz.kaillera.model.exception.ChatException;
 import su.kidoz.kaillera.model.exception.ClientAddressException;
@@ -137,8 +137,8 @@ public interface KailleraServer {
      *            the client's network address
      * @param protocol
      *            the protocol version string (e.g., "v086")
-     * @param listener
-     *            event listener for user notifications
+     * @param eventDispatcher
+     *            dispatcher for routing events to the protocol handler
      * @return the newly created user
      * @throws ServerFullException
      *             if the server has reached maximum capacity
@@ -146,7 +146,7 @@ public interface KailleraServer {
      *             if connection cannot be established
      */
     KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol,
-            KailleraEventListener listener) throws ServerFullException, NewConnectionException;
+            EventDispatcher eventDispatcher) throws ServerFullException, NewConnectionException;
 
     /**
      * Authenticates a user and completes their login to the server lobby.

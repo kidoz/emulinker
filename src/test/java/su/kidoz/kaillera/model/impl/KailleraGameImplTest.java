@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.InetSocketAddress;
 import su.kidoz.kaillera.model.KailleraUser;
-import su.kidoz.kaillera.model.event.KailleraEventListener;
+import su.kidoz.kaillera.model.event.DefaultEventDispatcher;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,8 +30,7 @@ class KailleraGameImplTest {
     @Mock
     private KailleraServerImpl server;
 
-    @Mock
-    private KailleraEventListener listener;
+    private EventDispatcher eventDispatcher;
 
     private KailleraUserImpl owner;
     private KailleraGameImpl game;
@@ -38,7 +38,8 @@ class KailleraGameImplTest {
     @BeforeEach
     void setUp() {
         InetSocketAddress address = new InetSocketAddress("127.0.0.1", 27888);
-        owner = new KailleraUserImpl(1, "v086", address, listener, server);
+        eventDispatcher = new DefaultEventDispatcher();
+        owner = new KailleraUserImpl(1, "v086", address, eventDispatcher, server);
         owner.setName("GameOwner");
 
         game = new KailleraGameImpl(1, "TestROM", owner, server, BUFFER_SIZE, TIMEOUT_MILLIS,

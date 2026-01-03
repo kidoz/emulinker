@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import su.kidoz.util.EmuLinkerExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.SmartLifecycle;
 
 import su.kidoz.kaillera.access.parser.AccessConfigParser;
 import su.kidoz.kaillera.access.parser.ParseResult;
@@ -29,7 +30,7 @@ import su.kidoz.kaillera.access.store.TemporaryRuleStore;
  * <li>Checks for config file changes (hot-reload)
  * </ul>
  */
-public class FileBasedAccessManager implements AccessManager, Runnable {
+public class FileBasedAccessManager implements AccessManager, Runnable, SmartLifecycle {
 
     private static final Logger log = LoggerFactory.getLogger(FileBasedAccessManager.class);
     private static final String DEFAULT_ACCESS_FILE = "access.cfg";
@@ -60,7 +61,7 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
 
         resolveAccessFile(accessFilePath);
         loadAccess();
-        threadPool.execute(this);
+        // Thread is started via SmartLifecycle.start(), not in constructor
     }
 
     private void resolveAccessFile(String accessFilePath) throws FileNotFoundException {
@@ -99,17 +100,26 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         log.info("Loading access rules from: {}", accessFile.getAbsolutePath());
     }
 
+    @Override
     public synchronized void start() {
-        log.debug("FileBasedAccessManager thread received start request!");
+        if (isRunning) {
+            log.debug("FileBasedAccessManager start request ignored: already running!");
+            return;
+        }
+
         log.debug("FileBasedAccessManager thread starting (ThreadPool: {}/{})",
                 threadPool.getActiveCount(), threadPool.getPoolSize());
+        stopFlag = false;
         threadPool.execute(this);
+        log.info("FileBasedAccessManager started");
     }
 
+    @Override
     public boolean isRunning() {
         return isRunning;
     }
 
+    @Override
     public synchronized void stop() {
         log.debug("FileBasedAccessManager thread received stop request!");
 
@@ -121,6 +131,13 @@ public class FileBasedAccessManager implements AccessManager, Runnable {
         stopFlag = true;
         ruleStore.clear();
         tempStore.clear();
+        log.info("FileBasedAccessManager stopped");
+    }
+
+    @Override
+    public int getPhase() {
+        // Phase 0: Must be ready first (access rules needed by other components)
+        return 0;
     }
 
     @Override

@@ -12,6 +12,7 @@ import su.kidoz.kaillera.model.event.AllReadyEvent;
 import su.kidoz.kaillera.model.event.GameDataEvent;
 import su.kidoz.kaillera.model.event.GameStartedEvent;
 import su.kidoz.kaillera.model.event.KailleraEvent;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.KailleraEventListener;
 import su.kidoz.kaillera.model.event.UserQuitEvent;
 import su.kidoz.kaillera.model.event.UserQuitGameEvent;
@@ -78,18 +79,18 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     private static final int DROPPED_EVENTS_LOG_THRESHOLD = 10;
     private static final int QUEUE_WARNING_THRESHOLD = (int) (MAX_EVENT_QUEUE_SIZE * 0.8);
 
-    private final KailleraEventListener listener;
+    private final EventDispatcher eventDispatcher;
     private final BlockingQueue<KailleraEvent> eventQueue = new LinkedBlockingQueue<>(
             MAX_EVENT_QUEUE_SIZE);
     private volatile int droppedEventsCount = 0;
 
     public KailleraUserImpl(int userID, String protocol, InetSocketAddress connectSocketAddress,
-            KailleraEventListener listener, KailleraServerImpl server) {
+            EventDispatcher eventDispatcher, KailleraServerImpl server) {
         this.id = userID;
         this.protocol = protocol;
         this.connectSocketAddress = connectSocketAddress;
         this.server = server;
-        this.listener = listener;
+        this.eventDispatcher = eventDispatcher;
 
         toString = "User" + userID + "(" + connectSocketAddress.getAddress().getHostAddress() + ")";
 
@@ -194,7 +195,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
     }
 
     public KailleraEventListener getListener() {
-        return listener;
+        return eventDispatcher.getListener();
     }
 
     public KailleraServerImpl getServer() {
@@ -216,6 +217,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         this.status = status;
     }
 
+    @Override
     public long getLastChatTime() {
         return lastChatTime;
     }
@@ -337,7 +339,10 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
             addEvent(new StopFlagEvent());
         }
 
-        listener.stop();
+        KailleraEventListener l = eventDispatcher.getListener();
+        if (l != null) {
+            l.stop();
+        }
     }
 
     public synchronized void droppedPacket() {
@@ -641,7 +646,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
                 else if (event instanceof StopFlagEvent)
                     break;
 
-                listener.actionPerformed(event);
+                eventDispatcher.dispatch(event);
 
                 if (event instanceof GameStartedEvent) {
                     setStatus(KailleraUser.STATUS_PLAYING);

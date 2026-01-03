@@ -22,6 +22,8 @@ import su.kidoz.kaillera.master.StatsCollector;
 import su.kidoz.kaillera.model.KailleraGame;
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.model.event.DefaultEventDispatcher;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.KailleraEvent;
 import su.kidoz.kaillera.model.event.KailleraEventListener;
 import su.kidoz.kaillera.release.KailleraServerReleaseInfo;
@@ -100,7 +102,8 @@ class KailleraServerConcurrencyTest {
                 try {
                     InetSocketAddress address = new InetSocketAddress("127.0.0.1",
                             10000 + clientId);
-                    KailleraUser user = server.newConnection(address, "v086", new NoOpListener());
+                    KailleraUser user = server.newConnection(address, "v086",
+                            createTestDispatcher());
 
                     if (!userIds.add(user.getID())) {
                         duplicates.incrementAndGet();
@@ -129,7 +132,7 @@ class KailleraServerConcurrencyTest {
             final int clientId = i;
             InetSocketAddress address = new InetSocketAddress("127.0.0.1", 10000 + clientId);
             try {
-                KailleraUser user = server.newConnection(address, "v086", new NoOpListener());
+                KailleraUser user = server.newConnection(address, "v086", createTestDispatcher());
                 user.setName("User" + clientId);
                 user.setClientType("TestClient");
                 user.setConnectionType(KailleraUser.CONNECTION_TYPE_LAN);
@@ -175,7 +178,7 @@ class KailleraServerConcurrencyTest {
                 try {
                     InetSocketAddress address = new InetSocketAddress("127.0.0.1",
                             10000 + clientId);
-                    server.newConnection(address, "v086", new NoOpListener());
+                    server.newConnection(address, "v086", createTestDispatcher());
                     connected.incrementAndGet();
                 } catch (Exception ignored) {
                 } finally {
@@ -198,7 +201,7 @@ class KailleraServerConcurrencyTest {
         for (int i = 0; i < numUsers; i++) {
             InetSocketAddress address = new InetSocketAddress("127.0.0.1", 10000 + i);
             try {
-                KailleraUser user = server.newConnection(address, "v086", new NoOpListener());
+                KailleraUser user = server.newConnection(address, "v086", createTestDispatcher());
                 user.setName("User" + i);
                 user.setClientType("TestClient");
                 user.setConnectionType(KailleraUser.CONNECTION_TYPE_LAN);
@@ -235,6 +238,12 @@ class KailleraServerConcurrencyTest {
     }
 
     // Helper classes
+
+    private static EventDispatcher createTestDispatcher() {
+        EventDispatcher dispatcher = new DefaultEventDispatcher();
+        dispatcher.setListener(new NoOpListener());
+        return dispatcher;
+    }
 
     private static final class NoOpListener implements KailleraEventListener {
         @Override

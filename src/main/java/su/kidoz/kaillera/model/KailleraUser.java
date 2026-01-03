@@ -190,4 +190,11 @@ public interface KailleraUser {
      * @return count of events that could not be queued
      */
     int getDroppedEventsCount();
+
+    /**
+     * Returns the timestamp of the user's last chat message.
+     *
+     * @return the last chat time in milliseconds since epoch
+     */
+    long getLastChatTime();
 }

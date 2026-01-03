@@ -3,9 +3,14 @@ package su.kidoz.kaillera.controller.v086.action;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import su.kidoz.kaillera.controller.v086.annotation.V086Command;
+import su.kidoz.kaillera.controller.v086.annotation.V086GameEvent;
+import su.kidoz.kaillera.controller.v086.annotation.V086ServerEvent;
+import su.kidoz.kaillera.controller.v086.annotation.V086UserEvent;
 import su.kidoz.kaillera.controller.v086.protocol.AllReady;
 import su.kidoz.kaillera.controller.v086.protocol.CachedGameData;
 import su.kidoz.kaillera.controller.v086.protocol.Chat;
@@ -21,33 +26,13 @@ import su.kidoz.kaillera.controller.v086.protocol.Quit;
 import su.kidoz.kaillera.controller.v086.protocol.QuitGame;
 import su.kidoz.kaillera.controller.v086.protocol.StartGame;
 import su.kidoz.kaillera.controller.v086.protocol.UserInformation;
-import su.kidoz.kaillera.model.event.AllReadyEvent;
-import su.kidoz.kaillera.model.event.ChatEvent;
-import su.kidoz.kaillera.model.event.ConnectedEvent;
-import su.kidoz.kaillera.model.event.GameChatEvent;
-import su.kidoz.kaillera.model.event.GameClosedEvent;
-import su.kidoz.kaillera.model.event.GameCreatedEvent;
-import su.kidoz.kaillera.model.event.GameDataEvent;
-import su.kidoz.kaillera.model.event.GameDesynchEvent;
-import su.kidoz.kaillera.model.event.GameInfoEvent;
-import su.kidoz.kaillera.model.event.GameStartedEvent;
-import su.kidoz.kaillera.model.event.GameStatusChangedEvent;
-import su.kidoz.kaillera.model.event.GameTimeoutEvent;
-import su.kidoz.kaillera.model.event.InfoMessageEvent;
-import su.kidoz.kaillera.model.event.PlayerDesynchEvent;
-import su.kidoz.kaillera.model.event.UserDroppedGameEvent;
-import su.kidoz.kaillera.model.event.UserJoinedEvent;
-import su.kidoz.kaillera.model.event.UserJoinedGameEvent;
-import su.kidoz.kaillera.model.event.UserQuitEvent;
-import su.kidoz.kaillera.model.event.UserQuitGameEvent;
-import su.kidoz.kaillera.model.event.LoginProgressEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Central routing hub for the V086 protocol controller. Maps incoming protocol
- * messages to their action handlers and domain events to their protocol
- * response handlers.
+ * messages to their command action handlers and domain events to their event
+ * renderer handlers.
  *
  * <p>
  * The router provides O(1) lookup for actions via array indexing by message ID,
@@ -60,11 +45,11 @@ import org.slf4j.LoggerFactory;
  *     ↓ parse
  * V086Message (with ID)
  *     ↓ getAction(messageId)
- * V086Action.performAction()
+ * CommandAction.performAction()
  *     ↓ modifies domain model
  * KailleraEvent fired
  *     ↓ getXxxEventHandler(eventClass)
- * V086XxxEventHandler.handleEvent()
+ * EventRenderer.handleEvent()
  *     ↓ creates response
  * V086Message sent to client
  * </pre>
@@ -80,7 +65,6 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * @see V086Action
- * @see ActionBundle
  */
 public final class ActionRouter {
 
@@ -102,13 +86,17 @@ public final class ActionRouter {
     private final Map<Class<?>, V086GameEventHandler> gameEventHandlers;
     private final Map<Class<?>, V086UserEventHandler> userEventHandlers;
 
-    public ActionRouter(ActionBundle actionBundle) {
-        this.actions = createActionMappings(actionBundle);
+    public ActionRouter(List<V086Action> actions, List<V086ServerEventHandler> serverEventHandlers,
+            List<V086GameEventHandler> gameEventHandlers,
+            List<V086UserEventHandler> userEventHandlers) {
+        this.actions = createActionMappings(actions);
         validateActionMappings();
         this.serverEventHandlers = Collections
-                .unmodifiableMap(createServerEventHandlers(actionBundle));
-        this.gameEventHandlers = Collections.unmodifiableMap(createGameEventHandlers(actionBundle));
-        this.userEventHandlers = Collections.unmodifiableMap(createUserEventHandlers(actionBundle));
+                .unmodifiableMap(createServerEventHandlers(serverEventHandlers));
+        this.gameEventHandlers = Collections
+                .unmodifiableMap(createGameEventHandlers(gameEventHandlers));
+        this.userEventHandlers = Collections
+                .unmodifiableMap(createUserEventHandlers(userEventHandlers));
     }
 
     /**
@@ -195,67 +183,101 @@ public final class ActionRouter {
         return userEventHandlers;
     }
 
-    private V086Action[] createActionMappings(ActionBundle bundle) {
+    private V086Action[] createActionMappings(List<V086Action> availableActions) {
         V086Action[] actionArray = new V086Action[MAX_MESSAGE_ID];
 
-        // Map message IDs to actions
+        // Map message IDs to command actions (inbound)
         // Array access is faster than HashMap and avoids Integer boxing
-        actionArray[UserInformation.ID] = bundle.loginAction();
-        actionArray[ClientACK.ID] = bundle.ackAction();
-        actionArray[Chat.ID] = bundle.chatAction();
-        actionArray[CreateGame.ID] = bundle.createGameAction();
-        actionArray[JoinGame.ID] = bundle.joinGameAction();
-        actionArray[KeepAlive.ID] = bundle.keepAliveAction();
-        actionArray[QuitGame.ID] = bundle.quitGameAction();
-        actionArray[Quit.ID] = bundle.quitAction();
-        actionArray[StartGame.ID] = bundle.startGameAction();
-        actionArray[GameChat.ID] = bundle.gameChatAction();
-        actionArray[GameKick.ID] = bundle.gameKickAction();
-        actionArray[AllReady.ID] = bundle.userReadyAction();
-        actionArray[CachedGameData.ID] = bundle.cachedGameDataAction();
-        actionArray[GameData.ID] = bundle.gameDataAction();
-        actionArray[PlayerDrop.ID] = bundle.dropGameAction();
+        for (V086Action action : availableActions) {
+            V086Command mapping = action.getClass().getAnnotation(V086Command.class);
+            if (mapping == null) {
+                log.debug("Skipping unannotated action: {}", action.getClass().getSimpleName());
+                continue;
+            }
+
+            int messageId = mapping.messageId();
+            if (messageId < 0 || messageId >= MAX_MESSAGE_ID) {
+                throw new IllegalStateException("Invalid message ID " + messageId + " for action "
+                        + action.getClass().getName());
+            }
+            if (actionArray[messageId] != null) {
+                throw new IllegalStateException("Duplicate action mapping for message ID 0x"
+                        + Integer.toHexString(messageId) + ": "
+                        + actionArray[messageId].getClass().getName() + " and "
+                        + action.getClass().getName());
+            }
+
+            actionArray[messageId] = action;
+        }
 
         return actionArray;
     }
 
-    private Map<Class<?>, V086ServerEventHandler> createServerEventHandlers(ActionBundle bundle) {
+    private Map<Class<?>, V086ServerEventHandler> createServerEventHandlers(
+            List<V086ServerEventHandler> availableHandlers) {
         Map<Class<?>, V086ServerEventHandler> handlers = new HashMap<>();
 
-        handlers.put(ChatEvent.class, bundle.chatAction());
-        handlers.put(GameCreatedEvent.class, bundle.createGameAction());
-        handlers.put(UserJoinedEvent.class, bundle.loginAction());
-        handlers.put(GameClosedEvent.class, bundle.closeGameAction());
-        handlers.put(UserQuitEvent.class, bundle.quitAction());
-        handlers.put(GameStatusChangedEvent.class, bundle.gameStatusAction());
+        // Map server events to event renderers (outbound)
+        for (V086ServerEventHandler handler : availableHandlers) {
+            V086ServerEvent mapping = handler.getClass().getAnnotation(V086ServerEvent.class);
+            if (mapping == null) {
+                log.debug("Skipping unannotated server handler: {}",
+                        handler.getClass().getSimpleName());
+                continue;
+            }
+
+            Class<?> eventType = mapping.eventType();
+            if (handlers.put(eventType, handler) != null) {
+                throw new IllegalStateException(
+                        "Duplicate server event handler for " + eventType.getName());
+            }
+        }
 
         return handlers;
     }
 
-    private Map<Class<?>, V086GameEventHandler> createGameEventHandlers(ActionBundle bundle) {
+    private Map<Class<?>, V086GameEventHandler> createGameEventHandlers(
+            List<V086GameEventHandler> availableHandlers) {
         Map<Class<?>, V086GameEventHandler> handlers = new HashMap<>();
 
-        handlers.put(UserJoinedGameEvent.class, bundle.joinGameAction());
-        handlers.put(UserQuitGameEvent.class, bundle.quitGameAction());
-        handlers.put(GameStartedEvent.class, bundle.startGameAction());
-        handlers.put(GameChatEvent.class, bundle.gameChatAction());
-        handlers.put(AllReadyEvent.class, bundle.userReadyAction());
-        handlers.put(GameDataEvent.class, bundle.gameDataAction());
-        handlers.put(UserDroppedGameEvent.class, bundle.dropGameAction());
-        handlers.put(GameDesynchEvent.class, bundle.gameDesynchAction());
-        handlers.put(PlayerDesynchEvent.class, bundle.playerDesynchAction());
-        handlers.put(GameInfoEvent.class, bundle.gameInfoAction());
-        handlers.put(GameTimeoutEvent.class, bundle.gameTimeoutAction());
+        // Map game events to event renderers (outbound)
+        for (V086GameEventHandler handler : availableHandlers) {
+            V086GameEvent mapping = handler.getClass().getAnnotation(V086GameEvent.class);
+            if (mapping == null) {
+                log.debug("Skipping unannotated game handler: {}",
+                        handler.getClass().getSimpleName());
+                continue;
+            }
+
+            Class<?> eventType = mapping.eventType();
+            if (handlers.put(eventType, handler) != null) {
+                throw new IllegalStateException(
+                        "Duplicate game event handler for " + eventType.getName());
+            }
+        }
 
         return handlers;
     }
 
-    private Map<Class<?>, V086UserEventHandler> createUserEventHandlers(ActionBundle bundle) {
+    private Map<Class<?>, V086UserEventHandler> createUserEventHandlers(
+            List<V086UserEventHandler> availableHandlers) {
         Map<Class<?>, V086UserEventHandler> handlers = new HashMap<>();
 
-        handlers.put(ConnectedEvent.class, bundle.ackAction());
-        handlers.put(InfoMessageEvent.class, bundle.infoMessageAction());
-        handlers.put(LoginProgressEvent.class, bundle.loginProgressAction());
+        // Map user events to event renderers (outbound)
+        for (V086UserEventHandler handler : availableHandlers) {
+            V086UserEvent mapping = handler.getClass().getAnnotation(V086UserEvent.class);
+            if (mapping == null) {
+                log.debug("Skipping unannotated user handler: {}",
+                        handler.getClass().getSimpleName());
+                continue;
+            }
+
+            Class<?> eventType = mapping.eventType();
+            if (handlers.put(eventType, handler) != null) {
+                throw new IllegalStateException(
+                        "Duplicate user event handler for " + eventType.getName());
+            }
+        }
 
         return handlers;
     }

@@ -11,6 +11,8 @@ import su.kidoz.kaillera.model.KailleraGame;
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.kaillera.model.KailleraUser;
 import su.kidoz.kaillera.model.event.ConnectedEvent;
+import su.kidoz.kaillera.model.event.DefaultEventDispatcher;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.GameStartedEvent;
 import su.kidoz.kaillera.model.event.KailleraEvent;
 import su.kidoz.kaillera.model.event.KailleraEventListener;
@@ -117,7 +119,9 @@ public class MockKailleraClient implements KailleraEventListener {
 
             InetSocketAddress address = new InetSocketAddress("127.0.0.1",
                     27888 + (clientId % 1000));
-            user = server.newConnection(address, "v086", this);
+            EventDispatcher dispatcher = new DefaultEventDispatcher();
+            dispatcher.setListener(this);
+            user = server.newConnection(address, "v086", dispatcher);
             connected.set(true);
 
             // Set the socket address for game operations (normally done by V086Controller)

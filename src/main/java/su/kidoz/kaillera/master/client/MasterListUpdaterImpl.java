@@ -7,12 +7,12 @@ import su.kidoz.kaillera.master.StatsCollector;
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.release.ReleaseInfo;
 import su.kidoz.util.EmuLinkerExecutor;
-import su.kidoz.util.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.web.client.RestClient;
 
-public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
+public class MasterListUpdaterImpl implements MasterListUpdater, Runnable, SmartLifecycle {
     private static final Logger log = LoggerFactory.getLogger(MasterListUpdaterImpl.class);
 
     private final EmuLinkerExecutor threadPool;
@@ -59,6 +59,7 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
                     kailleraServer, releaseInfo, restClient, config.getEmulinkerMasterUrl());
     }
 
+    @Override
     public synchronized boolean isRunning() {
         return isRunning;
     }
@@ -68,30 +69,44 @@ public class MasterListUpdaterImpl implements MasterListUpdater, Executable {
                 + touchEmulinker + "]";
     }
 
+    @Override
     public synchronized void start() {
+        if (isRunning) {
+            log.debug("MasterListUpdater start request ignored: already running!");
+            return;
+        }
+
         if (publicInfo != null) {
-            log.debug("MasterListUpdater thread received start request!");
             log.debug("MasterListUpdater thread starting (ThreadPool:" + threadPool.getActiveCount()
                     + "/" + threadPool.getPoolSize() + ")");
+            stopFlag = false;
             threadPool.execute(this);
-            log.debug("MasterListUpdater thread started (ThreadPool:" + threadPool.getActiveCount()
-                    + "/" + threadPool.getPoolSize() + ")");
+            log.info("MasterListUpdater started");
+        } else {
+            log.info("MasterListUpdater not started (no master servers configured)");
         }
     }
 
+    @Override
     public synchronized void stop() {
-        if (publicInfo != null) {
-            log.debug("MasterListUpdater thread received stop request!");
+        log.debug("MasterListUpdater thread received stop request!");
 
-            if (!isRunning()) {
-                log.debug("MasterListUpdater thread stop request ignored: not running!");
-                return;
-            }
-
-            stopFlag = true;
+        if (!isRunning()) {
+            log.debug("MasterListUpdater thread stop request ignored: not running!");
+            return;
         }
+
+        stopFlag = true;
+        log.info("MasterListUpdater stopped");
     }
 
+    @Override
+    public int getPhase() {
+        // Phase 40: Master registration, after server is fully running
+        return 40;
+    }
+
+    @Override
     public void run() {
         isRunning = true;
         log.debug("MasterListUpdater thread running...");

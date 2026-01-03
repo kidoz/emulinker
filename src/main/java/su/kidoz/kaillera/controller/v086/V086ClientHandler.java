@@ -18,6 +18,8 @@ import su.kidoz.kaillera.controller.v086.protocol.V086BundleFormatException;
 import su.kidoz.kaillera.controller.v086.protocol.V086Message;
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.model.event.DefaultEventDispatcher;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.GameEvent;
 import su.kidoz.kaillera.model.event.KailleraEvent;
 import su.kidoz.kaillera.model.event.KailleraEventListener;
@@ -47,6 +49,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
     private final PortAllocator portAllocator;
     private final KailleraServer server;
     private final ActionRouter actionRouter;
+    private final EventDispatcher eventDispatcher;
 
     private volatile KailleraUser user;
     private int messageNumberCounter = 0;
@@ -109,6 +112,10 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
         this.server = server;
         this.actionRouter = actionRouter;
 
+        // Create event dispatcher and register this handler as the listener
+        this.eventDispatcher = new DefaultEventDispatcher();
+        this.eventDispatcher.setListener(this);
+
         this.inBuffer = ByteBuffer.allocateDirect(bufferSize);
         this.outBuffer = ByteBuffer.allocateDirect(bufferSize);
 
@@ -127,6 +134,10 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
     public V086Controller getController() {
         return controller;
+    }
+
+    public EventDispatcher getEventDispatcher() {
+        return eventDispatcher;
     }
 
     public KailleraUser getUser() {

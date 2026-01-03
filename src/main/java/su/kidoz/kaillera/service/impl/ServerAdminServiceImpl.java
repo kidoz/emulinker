@@ -9,8 +9,6 @@ import java.util.Optional;
 import su.kidoz.kaillera.access.AccessManager;
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.kaillera.model.KailleraUser;
-import su.kidoz.kaillera.model.impl.KailleraServerImpl;
-import su.kidoz.kaillera.model.impl.KailleraUserImpl;
 import su.kidoz.kaillera.service.ServerAdminService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,10 +172,7 @@ public class ServerAdminServiceImpl implements ServerAdminService {
             }
         }
 
-        int accessLevel = AccessManager.ACCESS_NORMAL;
-        if (user instanceof KailleraUserImpl userImpl) {
-            accessLevel = userImpl.getAccess();
-        }
+        int accessLevel = user.getAccess();
 
         return Optional.of(new UserInfo(user.getID(), user.getName(),
                 user.getConnectSocketAddress().getAddress().getHostAddress(), user.getClientType(),
@@ -212,10 +207,8 @@ public class ServerAdminServiceImpl implements ServerAdminService {
             return;
         }
 
-        if (server instanceof KailleraServerImpl serverImpl) {
-            serverImpl.announce(message, true);
-            log.info("Admin {} announced: {}", admin.getName(), message);
-        }
+        server.announce(message, true);
+        log.info("Admin {} announced: {}", admin.getName(), message);
     }
 
     @Override
@@ -232,9 +225,6 @@ public class ServerAdminServiceImpl implements ServerAdminService {
     }
 
     private boolean isAdmin(final KailleraUser user) {
-        if (user instanceof KailleraUserImpl userImpl) {
-            return userImpl.getAccess() >= AccessManager.ACCESS_ADMIN;
-        }
-        return false;
+        return user.getAccess() >= AccessManager.ACCESS_ADMIN;
     }
 }

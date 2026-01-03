@@ -29,8 +29,9 @@ import su.kidoz.util.EmuLinkerExecutor;
 import su.kidoz.util.EmuUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.SmartLifecycle;
 
-public class ConnectController extends MultiAddressUDPServer {
+public class ConnectController extends MultiAddressUDPServer implements SmartLifecycle {
     private static final Logger log = LoggerFactory.getLogger(ConnectController.class);
 
     private final EmuLinkerExecutor threadPool;
@@ -140,6 +141,7 @@ public class ConnectController extends MultiAddressUDPServer {
             return "ConnectController(unbound)";
     }
 
+    @Override
     public synchronized void start() {
         if (isRunning()) {
             log.debug(this + " start request ignored: already running!");
@@ -152,14 +154,21 @@ public class ConnectController extends MultiAddressUDPServer {
                 + threadPool.getPoolSize() + ")");
         // run() starts all channel handlers using the executor
         this.run();
-        log.debug(this + " Handlers started (ThreadPool:" + threadPool.getActiveCount() + "/"
-                + threadPool.getPoolSize() + ")");
+        log.info("ConnectController started on port " + getBindPort());
     }
 
+    @Override
     public synchronized void stop() {
         super.stop();
         for (KailleraServerController controller : controllersMap.values())
             controller.stop();
+        log.info("ConnectController stopped");
+    }
+
+    @Override
+    public int getPhase() {
+        // Phase 30: UDP listener, after protocol handler
+        return 30;
     }
 
     protected synchronized void handleReceived(ByteBuffer buffer,

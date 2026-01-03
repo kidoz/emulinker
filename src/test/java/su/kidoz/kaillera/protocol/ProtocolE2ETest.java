@@ -15,33 +15,44 @@ import su.kidoz.kaillera.access.AccessManager;
 import su.kidoz.kaillera.controller.KailleraServerController;
 import su.kidoz.kaillera.controller.connectcontroller.ConnectController;
 import su.kidoz.kaillera.controller.v086.V086Controller;
-import su.kidoz.kaillera.controller.v086.action.ACKAction;
-import su.kidoz.kaillera.controller.v086.action.ActionBundle;
+import su.kidoz.kaillera.controller.v086.command.ACKCommandAction;
+import su.kidoz.kaillera.controller.v086.event.ACKEventRenderer;
 import su.kidoz.kaillera.controller.v086.action.ActionRouter;
-import su.kidoz.kaillera.controller.v086.action.AdminCommandAction;
-import su.kidoz.kaillera.controller.v086.action.CachedGameDataAction;
-import su.kidoz.kaillera.controller.v086.action.ChatAction;
-import su.kidoz.kaillera.controller.v086.action.CloseGameAction;
-import su.kidoz.kaillera.controller.v086.action.CreateGameAction;
-import su.kidoz.kaillera.controller.v086.action.DropGameAction;
-import su.kidoz.kaillera.controller.v086.action.GameChatAction;
-import su.kidoz.kaillera.controller.v086.action.GameDataAction;
-import su.kidoz.kaillera.controller.v086.action.GameDesynchAction;
-import su.kidoz.kaillera.controller.v086.action.GameInfoAction;
-import su.kidoz.kaillera.controller.v086.action.GameKickAction;
-import su.kidoz.kaillera.controller.v086.action.GameOwnerCommandAction;
-import su.kidoz.kaillera.controller.v086.action.GameStatusAction;
-import su.kidoz.kaillera.controller.v086.action.GameTimeoutAction;
-import su.kidoz.kaillera.controller.v086.action.InfoMessageAction;
-import su.kidoz.kaillera.controller.v086.action.JoinGameAction;
-import su.kidoz.kaillera.controller.v086.action.KeepAliveAction;
-import su.kidoz.kaillera.controller.v086.action.LoginAction;
-import su.kidoz.kaillera.controller.v086.action.LoginProgressAction;
-import su.kidoz.kaillera.controller.v086.action.PlayerDesynchAction;
-import su.kidoz.kaillera.controller.v086.action.QuitAction;
-import su.kidoz.kaillera.controller.v086.action.QuitGameAction;
-import su.kidoz.kaillera.controller.v086.action.StartGameAction;
-import su.kidoz.kaillera.controller.v086.action.UserReadyAction;
+import su.kidoz.kaillera.controller.v086.command.AdminCommandAction;
+import su.kidoz.kaillera.controller.v086.command.CachedGameDataAction;
+import su.kidoz.kaillera.controller.v086.command.ChatCommandAction;
+import su.kidoz.kaillera.controller.v086.event.ChatEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.CloseGameAction;
+import su.kidoz.kaillera.controller.v086.command.CreateGameCommandAction;
+import su.kidoz.kaillera.controller.v086.event.CreateGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.DropGameCommandAction;
+import su.kidoz.kaillera.controller.v086.event.DropGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.GameChatCommandAction;
+import su.kidoz.kaillera.controller.v086.event.GameChatEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.GameDataCommandAction;
+import su.kidoz.kaillera.controller.v086.event.GameDataEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameDesynchAction;
+import su.kidoz.kaillera.controller.v086.event.GameInfoAction;
+import su.kidoz.kaillera.controller.v086.command.GameKickAction;
+import su.kidoz.kaillera.controller.v086.command.GameOwnerCommandAction;
+import su.kidoz.kaillera.controller.v086.event.GameStatusAction;
+import su.kidoz.kaillera.controller.v086.event.GameTimeoutAction;
+import su.kidoz.kaillera.controller.v086.event.InfoMessageAction;
+import su.kidoz.kaillera.controller.v086.command.JoinGameCommandAction;
+import su.kidoz.kaillera.controller.v086.event.JoinGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.KeepAliveAction;
+import su.kidoz.kaillera.controller.v086.command.LoginCommandAction;
+import su.kidoz.kaillera.controller.v086.event.LoginEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.LoginProgressAction;
+import su.kidoz.kaillera.controller.v086.event.PlayerDesynchAction;
+import su.kidoz.kaillera.controller.v086.command.QuitCommandAction;
+import su.kidoz.kaillera.controller.v086.event.QuitEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.QuitGameCommandAction;
+import su.kidoz.kaillera.controller.v086.event.QuitGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.StartGameCommandAction;
+import su.kidoz.kaillera.controller.v086.event.StartGameEventRenderer;
+import su.kidoz.kaillera.controller.v086.command.UserReadyCommandAction;
+import su.kidoz.kaillera.controller.v086.event.UserReadyEventRenderer;
 import su.kidoz.kaillera.load.UdpKailleraClient;
 import su.kidoz.kaillera.master.StatsCollector;
 import su.kidoz.kaillera.model.KailleraGame;
@@ -454,18 +465,23 @@ class ProtocolE2ETest {
         AdminCommandAction adminCommandAction = new AdminCommandAction();
         GameOwnerCommandAction gameOwnerCommandAction = new GameOwnerCommandAction();
 
-        ActionBundle bundle = new ActionBundle(new ACKAction(), adminCommandAction,
-                new CachedGameDataAction(), new ChatAction(adminCommandAction),
-                new CloseGameAction(), new CreateGameAction(), new DropGameAction(),
-                new GameChatAction(gameOwnerCommandAction), new GameDataAction(),
-                new GameDesynchAction(), new GameInfoAction(), new GameKickAction(),
-                gameOwnerCommandAction, new GameStatusAction(), new GameTimeoutAction(),
-                new InfoMessageAction(), new JoinGameAction(), new KeepAliveAction(),
-                new LoginAction(), new LoginProgressAction(), new PlayerDesynchAction(),
-                new QuitAction(), new QuitGameAction(), new StartGameAction(),
-                new UserReadyAction());
-
-        return new ActionRouter(bundle);
+        return new ActionRouter(List.of(new ACKCommandAction(),
+                new ChatCommandAction(adminCommandAction), new CreateGameCommandAction(),
+                new DropGameCommandAction(), new GameChatCommandAction(gameOwnerCommandAction),
+                new GameDataCommandAction(), new JoinGameCommandAction(), new LoginCommandAction(),
+                new QuitCommandAction(), new QuitGameCommandAction(), new StartGameCommandAction(),
+                new UserReadyCommandAction(), adminCommandAction, new CachedGameDataAction(),
+                new GameKickAction(), gameOwnerCommandAction, new KeepAliveAction()),
+                List.of(new ChatEventRenderer(), new CreateGameEventRenderer(),
+                        new LoginEventRenderer(), new CloseGameAction(), new QuitEventRenderer(),
+                        new GameStatusAction()),
+                List.of(new JoinGameEventRenderer(), new QuitGameEventRenderer(),
+                        new StartGameEventRenderer(), new GameChatEventRenderer(),
+                        new UserReadyEventRenderer(), new GameDataEventRenderer(),
+                        new DropGameEventRenderer(), new GameDesynchAction(),
+                        new PlayerDesynchAction(), new GameInfoAction(), new GameTimeoutAction()),
+                List.of(new ACKEventRenderer(), new InfoMessageAction(),
+                        new LoginProgressAction()));
     }
 
     private static final class TestAccessManager implements AccessManager {

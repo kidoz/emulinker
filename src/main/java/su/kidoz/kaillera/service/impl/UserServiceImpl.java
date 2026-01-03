@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.kaillera.model.KailleraUser;
-import su.kidoz.kaillera.model.event.KailleraEventListener;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.exception.CloseGameException;
 import su.kidoz.kaillera.model.exception.DropGameException;
 import su.kidoz.kaillera.model.exception.LoginException;
@@ -32,9 +32,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public KailleraUser newConnection(final InetSocketAddress clientSocketAddress,
-            final String protocol, final KailleraEventListener listener)
+            final String protocol, final EventDispatcher eventDispatcher)
             throws ServerFullException, NewConnectionException {
-        return server.newConnection(clientSocketAddress, protocol, listener);
+        return server.newConnection(clientSocketAddress, protocol, eventDispatcher);
     }
 
     @Override

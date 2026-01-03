@@ -4,7 +4,6 @@ import su.kidoz.kaillera.access.AccessManager;
 import su.kidoz.kaillera.model.KailleraUser;
 import su.kidoz.kaillera.model.exception.ChatException;
 import su.kidoz.kaillera.model.exception.FloodException;
-import su.kidoz.kaillera.model.impl.KailleraUserImpl;
 import su.kidoz.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ public class ChatModerationService {
 
         // Check flood control
         if (access == AccessManager.ACCESS_NORMAL && chatFloodTime > 0) {
-            final long lastChatTime = ((KailleraUserImpl) user).getLastChatTime();
+            final long lastChatTime = user.getLastChatTime();
             if ((System.currentTimeMillis() - lastChatTime) < (chatFloodTime * 1000L)) {
                 log.warn(user + " chat denied: Flood: " + message);
                 throw new FloodException(

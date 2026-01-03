@@ -19,7 +19,7 @@ import su.kidoz.kaillera.model.event.ChatEvent;
 import su.kidoz.kaillera.model.event.ConnectedEvent;
 import su.kidoz.kaillera.model.event.GameClosedEvent;
 import su.kidoz.kaillera.model.event.GameCreatedEvent;
-import su.kidoz.kaillera.model.event.KailleraEventListener;
+import su.kidoz.kaillera.model.event.EventDispatcher;
 import su.kidoz.kaillera.model.event.ServerEvent;
 import su.kidoz.kaillera.model.event.UserQuitEvent;
 import su.kidoz.kaillera.model.exception.ChatException;
@@ -40,9 +40,9 @@ import su.kidoz.release.ReleaseInfo;
 import su.kidoz.util.EmuLang;
 import su.kidoz.util.EmuLinkerExecutor;
 import su.kidoz.util.EmuUtil;
-import su.kidoz.util.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.SmartLifecycle;
 import su.kidoz.kaillera.model.event.LoginProgressEvent;
 
 import su.kidoz.kaillera.model.LoginNotificationState;
@@ -66,7 +66,7 @@ import su.kidoz.kaillera.service.ChatModerationService;
  * @see KailleraUser
  * @see KailleraGame
  */
-public class KailleraServerImpl implements KailleraServer, Executable {
+public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecycle {
     private static final Logger log = LoggerFactory.getLogger(KailleraServerImpl.class);
 
     // Configuration objects - access values via getters instead of copying
@@ -218,19 +218,26 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                 + " isRunning=" + isRunning() + "]";
     }
 
+    @Override
     public void start() {
         serverLifecycleLock.lock();
         try {
-            log.debug("KailleraServer thread received start request!");
+            if (isRunning) {
+                log.debug("KailleraServer start request ignored: already running!");
+                return;
+            }
+
             log.debug("KailleraServer thread starting (ThreadPool:" + threadPool.getActiveCount()
                     + "/" + threadPool.getPoolSize() + ")");
             stopFlag = false;
             threadPool.execute(this);
+            log.info("KailleraServer started");
         } finally {
             serverLifecycleLock.unlock();
         }
     }
 
+    @Override
     public void stop() {
         serverLifecycleLock.lock();
         try {
@@ -248,9 +255,16 @@ public class KailleraServerImpl implements KailleraServer, Executable {
 
             userManager.stopAllUsers();
             gameManager.clear();
+            log.info("KailleraServer stopped");
         } finally {
             serverLifecycleLock.unlock();
         }
+    }
+
+    @Override
+    public int getPhase() {
+        // Phase 10: Core server logic, after access manager
+        return 10;
     }
 
     StatsCollector getStatsCollector() {
@@ -269,7 +283,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
     }
 
     public KailleraUser newConnection(InetSocketAddress clientSocketAddress, String protocol,
-            KailleraEventListener listener) throws ServerFullException, NewConnectionException {
+            EventDispatcher eventDispatcher) throws ServerFullException, NewConnectionException {
         // we'll assume at this point that ConnectController has already asked
         // AccessManager if this IP is banned, so no need to do it again here
 
@@ -298,7 +312,7 @@ public class KailleraServerImpl implements KailleraServer, Executable {
                         EmuLang.getString("KailleraServerImpl.LoginDeniedServerFull"));
             }
             KailleraUserImpl user = new KailleraUserImpl(userID, protocol, clientSocketAddress,
-                    listener, this);
+                    eventDispatcher, this);
             user.setStatus(KailleraUser.STATUS_CONNECTING);
 
             log.info(user + " attempting new connection using protocol " + protocol + " from "
