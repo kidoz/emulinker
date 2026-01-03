@@ -9,8 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.emulinker.kaillera.model.KailleraGame;
-import org.emulinker.kaillera.model.impl.KailleraGameImpl;
+import su.kidoz.kaillera.model.KailleraGame;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

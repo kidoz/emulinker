@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.emulinker.util.WildcardStringPattern;
+import su.kidoz.util.WildcardStringPattern;
 
 /**
  * Simple pattern matcher for names (games, emulators). Performs

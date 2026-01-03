@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.emulinker.util.WildcardStringPattern;
+import su.kidoz.util.WildcardStringPattern;
 
 /**
  * Base class for time-limited access rules (temporary bans, temporary admin

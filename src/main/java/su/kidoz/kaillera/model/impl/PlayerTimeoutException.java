@@ -1,0 +1,47 @@
+package su.kidoz.kaillera.model.impl;
+
+public class PlayerTimeoutException extends Exception {
+    private int playerNumber;
+    private KailleraUserImpl player;
+    private int timeoutNumber = -1;
+
+    public PlayerTimeoutException(int playerNumber, KailleraUserImpl player) {
+        this.playerNumber = playerNumber;
+        this.player = player;
+    }
+
+    public PlayerTimeoutException(int playerNumber, int timeoutNumber) {
+        this.playerNumber = playerNumber;
+        this.timeoutNumber = timeoutNumber;
+    }
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public KailleraUserImpl getPlayer() {
+        return player;
+    }
+
+    public int getTimeoutNumber() {
+        return timeoutNumber;
+    }
+
+    public void setTimeoutNumber(int timeoutNumber) {
+        this.timeoutNumber = timeoutNumber;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof PlayerTimeoutException e) {
+            return e.getPlayerNumber() == getPlayerNumber()
+                    && e.getTimeoutNumber() == getTimeoutNumber();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * playerNumber + timeoutNumber;
+    }
+}

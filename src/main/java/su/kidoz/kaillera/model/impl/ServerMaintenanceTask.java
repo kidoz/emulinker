@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.emulinker.kaillera.access.AccessManager;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
-import org.emulinker.util.EmuLang;
+import su.kidoz.kaillera.access.AccessManager;
+import su.kidoz.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

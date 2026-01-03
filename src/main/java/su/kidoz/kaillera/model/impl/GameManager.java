@@ -6,8 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.emulinker.kaillera.model.KailleraGame;
-import org.emulinker.kaillera.model.impl.KailleraGameImpl;
+import su.kidoz.kaillera.model.KailleraGame;
 
 /**
  * Manages game storage, ID generation, and game lifecycle tracking. Extracted
@@ -28,7 +27,13 @@ public class GameManager {
      * Generates the next unique game ID, wrapping around at MAX_GAME_ID.
      */
     public int getNextGameID() {
-        return gameCounter.getAndUpdate(val -> val >= MAX_GAME_ID ? 1 : val + 1);
+        for (int attempts = 0; attempts < MAX_GAME_ID; attempts++) {
+            int candidate = gameCounter.getAndUpdate(val -> val >= MAX_GAME_ID ? 1 : val + 1);
+            if (!games.containsKey(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("No available game IDs");
     }
 
     /**

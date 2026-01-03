@@ -75,29 +75,11 @@ For packaged installations (Arch Linux), config files are in `/etc/kaillux/`.
 
 ### Package Structure
 
-The codebase has two package hierarchies reflecting its evolution:
+All code now lives under a single package hierarchy:
 
-- **`org.emulinker.*`** - Original EmuLinker codebase (maintained for stability)
-- **`su.kidoz.*`** - New and refactored components
+- **`su.kidoz.*`** - Kaillux Kaillera server codebase
 
-**Guidelines for contributors:**
-
-| Scenario | Package to Use |
-|----------|----------------|
-| New classes | `su.kidoz.*` |
-| Bug fixes in existing code | Keep original package |
-| Refactoring existing code | Move to `su.kidoz.*` if significant changes |
-| Tests for new code | Mirror the source package |
-
-**Migrated components:**
-
-- Access control: `su.kidoz.kaillera.access.*` (pattern matching, timed rules)
-- Model helpers: `su.kidoz.kaillera.model.impl.*` (UserManager, GameManager)
-- Services: `su.kidoz.kaillera.service.*` (ChatModerationService, AnnouncementService)
-- Validation: `su.kidoz.kaillera.model.validation.*` (LoginValidator)
-- Controller: `su.kidoz.kaillera.controller.v086.*` (V086ClientHandler)
-
-New packages mirror the legacy structure (e.g., `org.emulinker.kaillera.model` → `su.kidoz.kaillera.model`).
+Tests mirror the source package structure (e.g., `su.kidoz.kaillera.model`).
 
 ## Admin, health, and metrics
 

@@ -40,15 +40,15 @@
     <logger name="org.hibernate" level="WARN"/>
 
     <!-- Kaillux specific loggers - configure as needed -->
-    <logger name="org.emulinker" level="DEBUG"/>
-    <logger name="org.emulinker.kaillera.controller" level="DEBUG"/>
-    <logger name="org.emulinker.kaillera.model" level="DEBUG"/>
-    <logger name="org.emulinker.kaillera.master" level="INFO"/>
-    <logger name="org.emulinker.net" level="DEBUG"/>
+    <logger name="su.kidoz" level="DEBUG"/>
+    <logger name="su.kidoz.kaillera.controller" level="DEBUG"/>
+    <logger name="su.kidoz.kaillera.model" level="DEBUG"/>
+    <logger name="su.kidoz.kaillera.master" level="INFO"/>
+    <logger name="su.kidoz.net" level="DEBUG"/>
 
     <!-- Game data logging - can be very verbose, set to INFO or WARN in production -->
-    <logger name="org.emulinker.kaillera.controller.v086.action.GameDataAction" level="INFO"/>
-    <logger name="org.emulinker.kaillera.controller.v086.action.CachedGameDataAction" level="INFO"/>
+    <logger name="su.kidoz.kaillera.controller.v086.action.GameDataAction" level="INFO"/>
+    <logger name="su.kidoz.kaillera.controller.v086.action.CachedGameDataAction" level="INFO"/>
 
     <!-- Root logger -->
     <root level="DEBUG">

@@ -2,9 +2,9 @@ package su.kidoz.kaillera.service;
 
 import java.util.Collection;
 
-import org.emulinker.kaillera.model.event.InfoMessageEvent;
-import org.emulinker.kaillera.model.impl.KailleraGameImpl;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
+import su.kidoz.kaillera.model.event.InfoMessageEvent;
+import su.kidoz.kaillera.model.impl.KailleraGameImpl;
+import su.kidoz.kaillera.model.impl.KailleraUserImpl;
 
 /**
  * Service for sending announcements to users and games.

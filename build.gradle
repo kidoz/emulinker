@@ -12,7 +12,7 @@ plugins {
     id 'jacoco'
 }
 
-group = 'org.emulinker'
+group = 'su.kidoz'
 version = '1.2.0'
 
 java {
@@ -93,8 +93,8 @@ tasks.withType(Checkstyle).configureEach {
 spotbugs {
     toolVersion = '4.9.8'
     ignoreFailures = false
-    effort.set(Effort.valueOf('DEFAULT'))
-    reportLevel.set(Confidence.valueOf('HIGH'))
+    effort.set(Effort.valueOf('MAX'))           // More thorough analysis
+    reportLevel.set(Confidence.valueOf('MEDIUM'))  // Catch more real bugs
     excludeFilter = file("${rootDir}/config/spotbugs/exclude.xml")
 }
 

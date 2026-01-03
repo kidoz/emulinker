@@ -9,8 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.emulinker.kaillera.access.AccessException;
-import org.emulinker.kaillera.access.AccessManager;
+import su.kidoz.kaillera.access.AccessException;
+import su.kidoz.kaillera.access.AccessManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

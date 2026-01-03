@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.emulinker.util.WildcardStringPattern;
+import su.kidoz.util.WildcardStringPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

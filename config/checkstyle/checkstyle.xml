@@ -6,6 +6,7 @@
 <!--
     Checkstyle configuration for Kaillux
     Focused on code quality checks (formatting handled by Spotless)
+    Updated for Java 21+ best practices
 -->
 <module name="Checker">
     <property name="severity" value="warning"/>
@@ -29,6 +30,23 @@
         <module name="InnerAssignment"/>
         <module name="ModifiedControlVariable"/>
 
+        <!-- Exception Handling -->
+        <module name="IllegalThrows">
+            <property name="illegalClassNames" value="Error, RuntimeException, Throwable"/>
+        </module>
+        <module name="IllegalCatch">
+            <property name="illegalClassNames" value="Error, Throwable"/>
+            <property name="severity" value="info"/>
+        </module>
+
+        <!-- Unnecessary Code -->
+        <module name="UnnecessarySemicolonAfterOuterTypeDeclaration"/>
+        <module name="UnnecessarySemicolonAfterTypeMemberDeclaration"/>
+        <module name="UnnecessarySemicolonInEnumeration"/>
+        <module name="UnnecessarySemicolonInTryWithResources"/>
+        <module name="AvoidDoubleBraceInitialization"/>
+        <module name="AvoidNoArgumentSuperConstructorCall"/>
+
         <!-- Imports - Clean Dependencies -->
         <module name="AvoidStarImport">
             <property name="severity" value="info"/>
@@ -40,6 +58,20 @@
 
         <!-- Class Design -->
         <module name="OneTopLevelClass"/>
+
+        <!-- Java 21+ Naming Conventions -->
+        <module name="PatternVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="RecordComponentName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="RecordTypeParameterName">
+            <property name="format" value="^[A-Z]$"/>
+        </module>
+        <module name="LambdaParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
 
         <!-- Modifiers -->
         <module name="FinalClass"/>

@@ -5,33 +5,31 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.emulinker.kaillera.controller.messaging.MessageFormatException;
-import org.emulinker.kaillera.controller.messaging.ParseException;
-import org.emulinker.kaillera.controller.v086.LastMessageBuffer;
-import org.emulinker.kaillera.controller.v086.V086Controller;
-import org.emulinker.kaillera.controller.v086.action.ActionRouter;
-import org.emulinker.kaillera.controller.v086.action.FatalActionException;
-import org.emulinker.kaillera.controller.v086.action.V086Action;
-import org.emulinker.kaillera.controller.v086.action.V086GameEventHandler;
-import org.emulinker.kaillera.controller.v086.action.V086ServerEventHandler;
-import org.emulinker.kaillera.controller.v086.action.V086UserEventHandler;
-import org.emulinker.kaillera.controller.v086.protocol.V086Bundle;
-import org.emulinker.kaillera.controller.v086.protocol.V086BundleFormatException;
-import org.emulinker.kaillera.controller.v086.protocol.V086Message;
-import org.emulinker.kaillera.model.KailleraServer;
-import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.model.event.GameEvent;
-import org.emulinker.kaillera.model.event.KailleraEvent;
-import org.emulinker.kaillera.model.event.KailleraEventListener;
-import org.emulinker.kaillera.model.event.ServerEvent;
-import org.emulinker.kaillera.model.event.UserEvent;
-import org.emulinker.net.BindException;
-import org.emulinker.net.PrivateUDPServer;
-import org.emulinker.util.ClientGameDataCache;
-import org.emulinker.util.EmuLinkerExecutor;
-import org.emulinker.util.EmuUtil;
-import org.emulinker.util.GameDataCache;
-import org.emulinker.util.ServerGameDataCache;
+import su.kidoz.kaillera.controller.messaging.MessageFormatException;
+import su.kidoz.kaillera.controller.messaging.ParseException;
+import su.kidoz.kaillera.controller.v086.action.ActionRouter;
+import su.kidoz.kaillera.controller.v086.action.FatalActionException;
+import su.kidoz.kaillera.controller.v086.action.V086Action;
+import su.kidoz.kaillera.controller.v086.action.V086GameEventHandler;
+import su.kidoz.kaillera.controller.v086.action.V086ServerEventHandler;
+import su.kidoz.kaillera.controller.v086.action.V086UserEventHandler;
+import su.kidoz.kaillera.controller.v086.protocol.V086Bundle;
+import su.kidoz.kaillera.controller.v086.protocol.V086BundleFormatException;
+import su.kidoz.kaillera.controller.v086.protocol.V086Message;
+import su.kidoz.kaillera.model.KailleraServer;
+import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.model.event.GameEvent;
+import su.kidoz.kaillera.model.event.KailleraEvent;
+import su.kidoz.kaillera.model.event.KailleraEventListener;
+import su.kidoz.kaillera.model.event.ServerEvent;
+import su.kidoz.kaillera.model.event.UserEvent;
+import su.kidoz.net.BindException;
+import su.kidoz.net.PrivateUDPServer;
+import su.kidoz.util.ClientGameDataCache;
+import su.kidoz.util.EmuLinkerExecutor;
+import su.kidoz.util.EmuUtil;
+import su.kidoz.util.GameDataCache;
+import su.kidoz.util.ServerGameDataCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,7 +312,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
     public void actionPerformed(KailleraEvent event) {
         if (event instanceof GameEvent gameEvent) {
-            V086GameEventHandler eventHandler = actionRouter.getGameEventHandler(event.getClass());
+            V086GameEventHandler eventHandler = findGameEventHandler(event.getClass());
             if (eventHandler == null) {
                 log.error(toString()
                         + " found no GameEventHandler registered to handle game event: " + event);
@@ -323,8 +321,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
             eventHandler.handleEvent(gameEvent, this);
         } else if (event instanceof ServerEvent serverEvent) {
-            V086ServerEventHandler eventHandler = actionRouter
-                    .getServerEventHandler(event.getClass());
+            V086ServerEventHandler eventHandler = findServerEventHandler(event.getClass());
             if (eventHandler == null) {
                 log.error(toString()
                         + " found no ServerEventHandler registered to handle server event: "
@@ -334,7 +331,7 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
             eventHandler.handleEvent(serverEvent, this);
         } else if (event instanceof UserEvent userEvent) {
-            V086UserEventHandler eventHandler = actionRouter.getUserEventHandler(event.getClass());
+            V086UserEventHandler eventHandler = findUserEventHandler(event.getClass());
             if (eventHandler == null) {
                 log.error(toString()
                         + " found no UserEventHandler registered to handle user event: " + event);
@@ -343,6 +340,42 @@ public final class V086ClientHandler extends PrivateUDPServer implements Kailler
 
             eventHandler.handleEvent(userEvent, this);
         }
+    }
+
+    private V086GameEventHandler findGameEventHandler(Class<?> eventClass) {
+        Class<?> current = eventClass;
+        while (current != null) {
+            V086GameEventHandler handler = actionRouter.getGameEventHandler(current);
+            if (handler != null) {
+                return handler;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private V086ServerEventHandler findServerEventHandler(Class<?> eventClass) {
+        Class<?> current = eventClass;
+        while (current != null) {
+            V086ServerEventHandler handler = actionRouter.getServerEventHandler(current);
+            if (handler != null) {
+                return handler;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private V086UserEventHandler findUserEventHandler(Class<?> eventClass) {
+        Class<?> current = eventClass;
+        while (current != null) {
+            V086UserEventHandler handler = actionRouter.getUserEventHandler(current);
+            if (handler != null) {
+                return handler;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
     }
 
     public void resend(int timeoutCounter) {

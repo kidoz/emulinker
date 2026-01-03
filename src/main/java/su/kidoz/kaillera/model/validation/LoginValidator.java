@@ -1,14 +1,14 @@
 package su.kidoz.kaillera.model.validation;
 
-import org.emulinker.config.ServerConfig;
-import org.emulinker.kaillera.access.AccessManager;
-import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.model.exception.ClientAddressException;
-import org.emulinker.kaillera.model.exception.LoginException;
-import org.emulinker.kaillera.model.exception.PingTimeException;
-import org.emulinker.kaillera.model.exception.UserNameException;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
-import org.emulinker.util.EmuLang;
+import su.kidoz.config.ServerConfig;
+import su.kidoz.kaillera.access.AccessManager;
+import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.model.exception.ClientAddressException;
+import su.kidoz.kaillera.model.exception.LoginException;
+import su.kidoz.kaillera.model.exception.PingTimeException;
+import su.kidoz.kaillera.model.exception.UserNameException;
+import su.kidoz.kaillera.model.impl.KailleraUserImpl;
+import su.kidoz.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

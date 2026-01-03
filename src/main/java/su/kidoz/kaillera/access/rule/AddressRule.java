@@ -1,6 +1,6 @@
 package su.kidoz.kaillera.access.rule;
 
-import org.emulinker.kaillera.access.AccessManager;
+import su.kidoz.kaillera.access.AccessManager;
 
 import su.kidoz.kaillera.access.pattern.DnsResolvingPattern;
 

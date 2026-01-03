@@ -1,0 +1,136 @@
+package su.kidoz.util;
+
+import java.util.LinkedList;
+import java.util.StringTokenizer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class WildcardStringPattern {
+    private static final Logger log = LoggerFactory.getLogger(WildcardStringPattern.class);
+
+    /** Maximum allowed pattern length to prevent excessive memory/CPU usage */
+    private static final int MAX_PATTERN_LENGTH = 1000;
+
+    /** Maximum number of pattern segments to prevent pathological patterns */
+    private static final int MAX_PATTERN_SEGMENTS = 50;
+
+    protected boolean equals;
+    protected boolean startsWith;
+    protected boolean endsWith;
+    protected boolean contains;
+
+    private String startString = "";
+    private String endString = "";
+    private LinkedList<String> containsStrings = new LinkedList<String>();
+
+    public WildcardStringPattern(String pattern) {
+        if (pattern == null || pattern.isEmpty()) {
+            // match() function will always return true.
+            log.warn("Empty wildcard pattern created - will match all strings");
+            return;
+        }
+
+        // Guard against excessively long patterns
+        if (pattern.length() > MAX_PATTERN_LENGTH) {
+            log.warn("Pattern too long ({} chars), truncating to {} chars", pattern.length(),
+                    MAX_PATTERN_LENGTH);
+            pattern = pattern.substring(0, MAX_PATTERN_LENGTH);
+        }
+
+        LinkedList<String> elements = new LinkedList<String>();
+        StringTokenizer st = new StringTokenizer(pattern, "*", true);
+        int segmentCount = 0;
+        while (st.hasMoreElements() && segmentCount < MAX_PATTERN_SEGMENTS) {
+            elements.add(st.nextToken());
+            segmentCount++;
+        }
+
+        if (segmentCount >= MAX_PATTERN_SEGMENTS) {
+            log.warn("Pattern has too many segments, limited to {}", MAX_PATTERN_SEGMENTS);
+        }
+
+        if (elements.size() == 1) {
+            String s = elements.getFirst();
+            if (s.equals("*"))
+                return;
+
+            // Real text
+            equals = true;
+            startString = elements.getFirst();
+            return;
+        }
+
+        // Multiple elements in the pattern
+        // Pick off start and end strings.
+        // Add remaining items to the list of contains strings.
+        if (!elements.getFirst().equals("*")) {
+            startsWith = true;
+            startString = elements.getFirst();
+            elements.removeFirst();
+        }
+
+        if (!elements.getLast().equals("*")) {
+            endsWith = true;
+            endString = elements.getLast();
+            elements.removeLast();
+        }
+
+        for (String x : elements) {
+            if (x.equals("*"))
+                continue;
+            containsStrings.add(x);
+            contains = true;
+        }
+    }
+
+    public boolean match(String s) {
+        if (s == null || s.isEmpty())
+            return false;
+        if (equals && !s.equals(startString))
+            return false;
+        if (startsWith && !s.startsWith(startString))
+            return false;
+        if (endsWith && !s.endsWith(endString))
+            return false;
+        if (contains) {
+            for (String pattern : containsStrings) {
+                int idx = s.indexOf(pattern);
+                if (idx == -1)
+                    return false;
+                if (idx + pattern.length() == s.length()) {
+                    // Match occured at the end of the string.
+                    // In that case, the substring assignment below
+                    // would fail. Continue the loop. If there are
+                    // more items to match, the next test will fail.
+                    // Otherwise, the match has succeeded.
+                    s = "";
+                    continue;
+                }
+                s = s.substring(idx + pattern.length());
+            }
+        }
+        return true;
+    }
+
+    public String toString() {
+        if (equals)
+            return startString;
+
+        // If there is a startString, append "*" to it.
+        // (There must be a follow up, or this would be an equals match.)
+        // If startString is null, the remainder of the pattern is
+        // an endsWith or contains. In either case, it must start
+        // with "*".
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(startString);
+        sb.append("*");
+        for (String pattern : containsStrings) {
+            sb.append(pattern);
+            sb.append("*");
+        }
+        sb.append(endString);
+        return sb.toString();
+    }
+}

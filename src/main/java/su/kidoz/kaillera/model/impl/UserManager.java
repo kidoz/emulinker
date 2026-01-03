@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
-
 /**
  * Manages user storage, ID generation, and user lifecycle tracking. Extracted
  * from KailleraServerImpl to improve separation of concerns.
@@ -27,7 +25,13 @@ public class UserManager {
      * Generates the next unique user ID, wrapping around at MAX_USER_ID.
      */
     public int getNextUserID() {
-        return connectionCounter.getAndUpdate(val -> val >= MAX_USER_ID ? 1 : val + 1);
+        for (int attempts = 0; attempts < MAX_USER_ID; attempts++) {
+            int candidate = connectionCounter.getAndUpdate(val -> val >= MAX_USER_ID ? 1 : val + 1);
+            if (!users.containsKey(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("No available user IDs");
     }
 
     /**

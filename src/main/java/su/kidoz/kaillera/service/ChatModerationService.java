@@ -1,11 +1,11 @@
 package su.kidoz.kaillera.service;
 
-import org.emulinker.kaillera.access.AccessManager;
-import org.emulinker.kaillera.model.KailleraUser;
-import org.emulinker.kaillera.model.exception.ChatException;
-import org.emulinker.kaillera.model.exception.FloodException;
-import org.emulinker.kaillera.model.impl.KailleraUserImpl;
-import org.emulinker.util.EmuLang;
+import su.kidoz.kaillera.access.AccessManager;
+import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.model.exception.ChatException;
+import su.kidoz.kaillera.model.exception.FloodException;
+import su.kidoz.kaillera.model.impl.KailleraUserImpl;
+import su.kidoz.util.EmuLang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

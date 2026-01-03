@@ -1,0 +1,32 @@
+package su.kidoz.kaillera.model.event;
+
+import su.kidoz.kaillera.model.KailleraGame;
+import su.kidoz.kaillera.model.KailleraUser;
+
+public final class GameTimeoutEvent implements GameEvent {
+    private KailleraGame game;
+    private KailleraUser user;
+    private int timeoutNumber;
+
+    public GameTimeoutEvent(KailleraGame game, KailleraUser user, int timeoutNumber) {
+        this.game = game;
+        this.user = user;
+        this.timeoutNumber = timeoutNumber;
+    }
+
+    public String toString() {
+        return "GameTimeoutEvent";
+    }
+
+    public KailleraGame getGame() {
+        return game;
+    }
+
+    public KailleraUser getUser() {
+        return user;
+    }
+
+    public int getTimeoutNumber() {
+        return timeoutNumber;
+    }
+}

@@ -3,7 +3,7 @@ package su.kidoz.kaillera.access.store;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.emulinker.kaillera.access.AccessManager;
+import su.kidoz.kaillera.access.AccessManager;
 
 import su.kidoz.kaillera.access.parser.ParseResult;
 import su.kidoz.kaillera.access.rule.AddressRule;
