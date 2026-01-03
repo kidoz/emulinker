@@ -11,7 +11,7 @@ public final class KailleraServerReleaseInfo implements ReleaseInfo {
     private final String productName = "Kaillux Kaillera Server";
 
     private final int majorVersion = 1;
-    private final int minorVersion = 2;
+    private final int minorVersion = 3;
     private final int buildNumber = 0;
 
     private final String releaseDate = "01/03/2026";
