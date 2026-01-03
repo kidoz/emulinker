@@ -28,20 +28,20 @@ import su.kidoz.kaillera.controller.v086.command.StartGameCommandAction;
 import su.kidoz.kaillera.controller.v086.command.UserReadyCommandAction;
 import su.kidoz.kaillera.controller.v086.event.ACKEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.ChatEventRenderer;
-import su.kidoz.kaillera.controller.v086.event.CloseGameAction;
+import su.kidoz.kaillera.controller.v086.event.CloseGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.CreateGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.DropGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.GameChatEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.GameDataEventRenderer;
-import su.kidoz.kaillera.controller.v086.event.GameDesynchAction;
-import su.kidoz.kaillera.controller.v086.event.GameInfoAction;
-import su.kidoz.kaillera.controller.v086.event.GameStatusAction;
-import su.kidoz.kaillera.controller.v086.event.GameTimeoutAction;
-import su.kidoz.kaillera.controller.v086.event.InfoMessageAction;
+import su.kidoz.kaillera.controller.v086.event.GameDesynchEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameInfoEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameStatusEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameTimeoutEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.InfoMessageEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.JoinGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.LoginEventRenderer;
-import su.kidoz.kaillera.controller.v086.event.LoginProgressAction;
-import su.kidoz.kaillera.controller.v086.event.PlayerDesynchAction;
+import su.kidoz.kaillera.controller.v086.event.LoginProgressEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.PlayerDesynchEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.QuitEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.QuitGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.event.StartGameEventRenderer;
@@ -109,15 +109,16 @@ class ActionRouterTest {
                 new UserReadyCommandAction(), adminCommandAction, new CachedGameDataAction(),
                 new GameKickAction(), gameOwnerCommandAction, new KeepAliveAction()),
                 List.of(new ChatEventRenderer(), new CreateGameEventRenderer(),
-                        new LoginEventRenderer(), new CloseGameAction(), new QuitEventRenderer(),
-                        new GameStatusAction()),
+                        new LoginEventRenderer(), new CloseGameEventRenderer(),
+                        new QuitEventRenderer(), new GameStatusEventRenderer()),
                 List.of(new JoinGameEventRenderer(), new QuitGameEventRenderer(),
                         new StartGameEventRenderer(), new GameChatEventRenderer(),
                         new UserReadyEventRenderer(), new GameDataEventRenderer(),
-                        new DropGameEventRenderer(), new GameDesynchAction(),
-                        new PlayerDesynchAction(), new GameInfoAction(), new GameTimeoutAction()),
-                List.of(new ACKEventRenderer(), new InfoMessageAction(),
-                        new LoginProgressAction()));
+                        new DropGameEventRenderer(), new GameDesynchEventRenderer(),
+                        new PlayerDesynchEventRenderer(), new GameInfoEventRenderer(),
+                        new GameTimeoutEventRenderer()),
+                List.of(new ACKEventRenderer(), new InfoMessageEventRenderer(),
+                        new LoginProgressEventRenderer()));
     }
 
     @Nested
@@ -298,11 +299,11 @@ class ActionRouterTest {
         }
 
         @Test
-        @DisplayName("should map GameClosedEvent to CloseGameAction handler")
+        @DisplayName("should map GameClosedEvent to CloseGameEventRenderer handler")
         void shouldMapGameClosedEventToHandler() {
             V086ServerEventHandler handler = router.getServerEventHandler(GameClosedEvent.class);
             assertNotNull(handler);
-            assertTrue(handler instanceof CloseGameAction);
+            assertTrue(handler instanceof CloseGameEventRenderer);
         }
 
         @Test
@@ -378,11 +379,11 @@ class ActionRouterTest {
         }
 
         @Test
-        @DisplayName("should map InfoMessageEvent to InfoMessageAction handler")
+        @DisplayName("should map InfoMessageEvent to InfoMessageEventRenderer handler")
         void shouldMapInfoMessageEventToHandler() {
             V086UserEventHandler handler = router.getUserEventHandler(InfoMessageEvent.class);
             assertNotNull(handler);
-            assertTrue(handler instanceof InfoMessageAction);
+            assertTrue(handler instanceof InfoMessageEventRenderer);
         }
     }
 
@@ -474,16 +475,16 @@ class ActionRouterTest {
                                     new CachedGameDataAction(), new GameKickAction(),
                                     gameOwnerCommandAction, new KeepAliveAction()),
                             List.of(new ChatEventRenderer(), new CreateGameEventRenderer(),
-                                    new LoginEventRenderer(), new CloseGameAction(),
-                                    new QuitEventRenderer(), new GameStatusAction()),
+                                    new LoginEventRenderer(), new CloseGameEventRenderer(),
+                                    new QuitEventRenderer(), new GameStatusEventRenderer()),
                             List.of(new JoinGameEventRenderer(), new QuitGameEventRenderer(),
                                     new StartGameEventRenderer(), new GameChatEventRenderer(),
                                     new UserReadyEventRenderer(), new GameDataEventRenderer(),
-                                    new DropGameEventRenderer(), new GameDesynchAction(),
-                                    new PlayerDesynchAction(), new GameInfoAction(),
-                                    new GameTimeoutAction()),
-                            List.of(new ACKEventRenderer(), new InfoMessageAction(),
-                                    new LoginProgressAction())));
+                                    new DropGameEventRenderer(), new GameDesynchEventRenderer(),
+                                    new PlayerDesynchEventRenderer(), new GameInfoEventRenderer(),
+                                    new GameTimeoutEventRenderer()),
+                            List.of(new ACKEventRenderer(), new InfoMessageEventRenderer(),
+                                    new LoginProgressEventRenderer())));
         }
     }
 }

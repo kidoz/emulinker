@@ -22,7 +22,7 @@ import su.kidoz.kaillera.controller.v086.command.AdminCommandAction;
 import su.kidoz.kaillera.controller.v086.command.CachedGameDataAction;
 import su.kidoz.kaillera.controller.v086.command.ChatCommandAction;
 import su.kidoz.kaillera.controller.v086.event.ChatEventRenderer;
-import su.kidoz.kaillera.controller.v086.event.CloseGameAction;
+import su.kidoz.kaillera.controller.v086.event.CloseGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.CreateGameCommandAction;
 import su.kidoz.kaillera.controller.v086.event.CreateGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.DropGameCommandAction;
@@ -31,20 +31,20 @@ import su.kidoz.kaillera.controller.v086.command.GameChatCommandAction;
 import su.kidoz.kaillera.controller.v086.event.GameChatEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.GameDataCommandAction;
 import su.kidoz.kaillera.controller.v086.event.GameDataEventRenderer;
-import su.kidoz.kaillera.controller.v086.event.GameDesynchAction;
-import su.kidoz.kaillera.controller.v086.event.GameInfoAction;
+import su.kidoz.kaillera.controller.v086.event.GameDesynchEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameInfoEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.GameKickAction;
 import su.kidoz.kaillera.controller.v086.command.GameOwnerCommandAction;
-import su.kidoz.kaillera.controller.v086.event.GameStatusAction;
-import su.kidoz.kaillera.controller.v086.event.GameTimeoutAction;
-import su.kidoz.kaillera.controller.v086.event.InfoMessageAction;
+import su.kidoz.kaillera.controller.v086.event.GameStatusEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.GameTimeoutEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.InfoMessageEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.JoinGameCommandAction;
 import su.kidoz.kaillera.controller.v086.event.JoinGameEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.KeepAliveAction;
 import su.kidoz.kaillera.controller.v086.command.LoginCommandAction;
 import su.kidoz.kaillera.controller.v086.event.LoginEventRenderer;
-import su.kidoz.kaillera.controller.v086.event.LoginProgressAction;
-import su.kidoz.kaillera.controller.v086.event.PlayerDesynchAction;
+import su.kidoz.kaillera.controller.v086.event.LoginProgressEventRenderer;
+import su.kidoz.kaillera.controller.v086.event.PlayerDesynchEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.QuitCommandAction;
 import su.kidoz.kaillera.controller.v086.event.QuitEventRenderer;
 import su.kidoz.kaillera.controller.v086.command.QuitGameCommandAction;
@@ -473,15 +473,16 @@ class ProtocolE2ETest {
                 new UserReadyCommandAction(), adminCommandAction, new CachedGameDataAction(),
                 new GameKickAction(), gameOwnerCommandAction, new KeepAliveAction()),
                 List.of(new ChatEventRenderer(), new CreateGameEventRenderer(),
-                        new LoginEventRenderer(), new CloseGameAction(), new QuitEventRenderer(),
-                        new GameStatusAction()),
+                        new LoginEventRenderer(), new CloseGameEventRenderer(),
+                        new QuitEventRenderer(), new GameStatusEventRenderer()),
                 List.of(new JoinGameEventRenderer(), new QuitGameEventRenderer(),
                         new StartGameEventRenderer(), new GameChatEventRenderer(),
                         new UserReadyEventRenderer(), new GameDataEventRenderer(),
-                        new DropGameEventRenderer(), new GameDesynchAction(),
-                        new PlayerDesynchAction(), new GameInfoAction(), new GameTimeoutAction()),
-                List.of(new ACKEventRenderer(), new InfoMessageAction(),
-                        new LoginProgressAction()));
+                        new DropGameEventRenderer(), new GameDesynchEventRenderer(),
+                        new PlayerDesynchEventRenderer(), new GameInfoEventRenderer(),
+                        new GameTimeoutEventRenderer()),
+                List.of(new ACKEventRenderer(), new InfoMessageEventRenderer(),
+                        new LoginProgressEventRenderer()));
     }
 
     private static final class TestAccessManager implements AccessManager {

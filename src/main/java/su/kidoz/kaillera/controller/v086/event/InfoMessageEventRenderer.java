@@ -16,13 +16,13 @@ import su.kidoz.kaillera.model.event.UserEvent;
 
 @Component
 @V086UserEvent(eventType = InfoMessageEvent.class)
-public final class InfoMessageAction implements V086UserEventHandler {
-    private static final Logger log = LoggerFactory.getLogger(InfoMessageAction.class);
-    private static final String DESC = "InfoMessageAction";
+public final class InfoMessageEventRenderer implements V086UserEventHandler {
+    private static final Logger log = LoggerFactory.getLogger(InfoMessageEventRenderer.class);
+    private static final String DESC = "InfoMessageEventRenderer";
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    public InfoMessageAction() {
+    public InfoMessageEventRenderer() {
     }
 
     public int getHandledEventCount() {
@@ -33,6 +33,7 @@ public final class InfoMessageAction implements V086UserEventHandler {
         return DESC;
     }
 
+    @Override
     public void handleEvent(UserEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
@@ -42,7 +43,7 @@ public final class InfoMessageAction implements V086UserEventHandler {
             clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
                     "server", infoEvent.getMessage()));
         } catch (MessageFormatException e) {
-            log.error("Failed to contruct InformationMessage message: " + e.getMessage(), e);
+            log.error("Failed to construct InformationMessage message: " + e.getMessage(), e);
         }
     }
 }

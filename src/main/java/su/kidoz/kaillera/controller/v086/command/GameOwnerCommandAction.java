@@ -39,6 +39,7 @@ public final class GameOwnerCommandAction implements V086Action {
         return DESC;
     }
 
+    @Override
     public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         GameChat chatMessage = (GameChat) message;
@@ -70,7 +71,7 @@ public final class GameOwnerCommandAction implements V086Action {
             game.announce(
                     EmuLang.getString("GameOwnerCommandAction.CommandFailed", e.getMessage()));
         } catch (MessageFormatException e) {
-            log.error("Failed to contruct message: " + e.getMessage(), e);
+            log.error("Failed to construct message: " + e.getMessage(), e);
         }
     }
 

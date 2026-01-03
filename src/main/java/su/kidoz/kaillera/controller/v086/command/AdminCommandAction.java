@@ -58,6 +58,7 @@ public final class AdminCommandAction implements V086Action {
         return DESC;
     }
 
+    @Override
     public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         Chat chatMessage = (Chat) message;
@@ -106,10 +107,10 @@ public final class AdminCommandAction implements V086Action {
                 clientHandler.send(new InformationMessage(clientHandler.getNextMessageNumber(),
                         "server", EmuLang.getString("AdminCommandAction.Failed", e.getMessage())));
             } catch (MessageFormatException e2) {
-                log.error("Failed to contruct InformationMessage message: " + e.getMessage(), e);
+                log.error("Failed to construct InformationMessage message: " + e.getMessage(), e);
             }
         } catch (MessageFormatException e) {
-            log.error("Failed to contruct message: " + e.getMessage(), e);
+            log.error("Failed to construct message: " + e.getMessage(), e);
         }
     }
 

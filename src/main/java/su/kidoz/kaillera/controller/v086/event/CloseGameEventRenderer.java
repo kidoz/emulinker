@@ -16,13 +16,13 @@ import su.kidoz.kaillera.model.event.ServerEvent;
 
 @Component
 @V086ServerEvent(eventType = GameClosedEvent.class)
-public final class CloseGameAction implements V086ServerEventHandler {
-    private static final Logger log = LoggerFactory.getLogger(CloseGameAction.class);
-    private static final String DESC = "CloseGameAction";
+public final class CloseGameEventRenderer implements V086ServerEventHandler {
+    private static final Logger log = LoggerFactory.getLogger(CloseGameEventRenderer.class);
+    private static final String DESC = "CloseGameEventRenderer";
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    public CloseGameAction() {
+    public CloseGameEventRenderer() {
     }
 
     public int getHandledEventCount() {
@@ -33,6 +33,7 @@ public final class CloseGameAction implements V086ServerEventHandler {
         return DESC;
     }
 
+    @Override
     public void handleEvent(ServerEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
@@ -42,7 +43,7 @@ public final class CloseGameAction implements V086ServerEventHandler {
             clientHandler.send(new CloseGame(clientHandler.getNextMessageNumber(),
                     gameClosedEvent.getGame().getID(), (short) 0));
         } catch (MessageFormatException e) {
-            log.error("Failed to contruct CloseGame_Notification message: " + e.getMessage(), e);
+            log.error("Failed to construct CloseGame_Notification message: " + e.getMessage(), e);
         }
     }
 }

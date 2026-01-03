@@ -36,6 +36,7 @@ public final class CachedGameDataAction implements V086Action {
         return DESC;
     }
 
+    @Override
     public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         try {
@@ -50,7 +51,7 @@ public final class CachedGameDataAction implements V086Action {
                     clientHandler.send(
                             new GameData(clientHandler.getNextMessageNumber(), e.getResponse()));
                 } catch (MessageFormatException e2) {
-                    log.error("Failed to contruct GameData message: " + e2.getMessage(), e2);
+                    log.error("Failed to construct GameData message: " + e2.getMessage(), e2);
                 }
             }
         } catch (IndexOutOfBoundsException e) {
@@ -62,7 +63,7 @@ public final class CachedGameDataAction implements V086Action {
                 clientHandler.send(new GameChat_Notification(clientHandler.getNextMessageNumber(),
                         "Error", "Game Data Error!  Game state will be inconsistent!"));
             } catch (MessageFormatException e2) {
-                log.error("Failed to contruct new GameChat_Notification", e);
+                log.error("Failed to construct new GameChat_Notification", e);
             }
         }
     }

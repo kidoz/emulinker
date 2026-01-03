@@ -30,14 +30,14 @@ import su.kidoz.kaillera.model.LoginNotificationState;
  */
 @Component
 @V086UserEvent(eventType = LoginProgressEvent.class)
-public final class LoginProgressAction implements V086UserEventHandler {
+public final class LoginProgressEventRenderer implements V086UserEventHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(LoginProgressAction.class);
-    private static final String DESC = "LoginProgressAction";
+    private static final Logger log = LoggerFactory.getLogger(LoginProgressEventRenderer.class);
+    private static final String DESC = "LoginProgressEventRenderer";
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    public LoginProgressAction() {
+    public LoginProgressEventRenderer() {
     }
 
     public int getHandledEventCount() {

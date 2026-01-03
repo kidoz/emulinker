@@ -17,13 +17,13 @@ import su.kidoz.kaillera.model.event.ServerEvent;
 
 @Component
 @V086ServerEvent(eventType = GameStatusChangedEvent.class)
-public final class GameStatusAction implements V086ServerEventHandler {
-    private static final Logger log = LoggerFactory.getLogger(GameStatusAction.class);
-    private static final String DESC = "GameStatusAction";
+public final class GameStatusEventRenderer implements V086ServerEventHandler {
+    private static final Logger log = LoggerFactory.getLogger(GameStatusEventRenderer.class);
+    private static final String DESC = "GameStatusEventRenderer";
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    public GameStatusAction() {
+    public GameStatusEventRenderer() {
     }
 
     public int getHandledEventCount() {
@@ -34,6 +34,7 @@ public final class GameStatusAction implements V086ServerEventHandler {
         return DESC;
     }
 
+    @Override
     public void handleEvent(ServerEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 
@@ -44,7 +45,7 @@ public final class GameStatusAction implements V086ServerEventHandler {
             clientHandler.send(new GameStatus(clientHandler.getNextMessageNumber(), game.getID(),
                     (short) 0, (byte) game.getStatus(), (byte) game.getNumPlayers(), (byte) 2));
         } catch (MessageFormatException e) {
-            log.error("Failed to contruct CreateGame_Notification message: " + e.getMessage(), e);
+            log.error("Failed to construct GameStatus message: " + e.getMessage(), e);
         }
     }
 }

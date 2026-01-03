@@ -15,13 +15,13 @@ import su.kidoz.kaillera.model.event.GameTimeoutEvent;
 
 @Component
 @V086GameEvent(eventType = GameTimeoutEvent.class)
-public final class GameTimeoutAction implements V086GameEventHandler {
-    private static final Logger log = LoggerFactory.getLogger(GameTimeoutAction.class);
-    private static final String DESC = "GameTimeoutAction";
+public final class GameTimeoutEventRenderer implements V086GameEventHandler {
+    private static final Logger log = LoggerFactory.getLogger(GameTimeoutEventRenderer.class);
+    private static final String DESC = "GameTimeoutEventRenderer";
 
     private final AtomicInteger handledCount = new AtomicInteger(0);
 
-    public GameTimeoutAction() {
+    public GameTimeoutEventRenderer() {
     }
 
     public int getHandledEventCount() {
@@ -32,6 +32,7 @@ public final class GameTimeoutAction implements V086GameEventHandler {
         return DESC;
     }
 
+    @Override
     public void handleEvent(GameEvent event, V086ClientHandler clientHandler) {
         handledCount.incrementAndGet();
 

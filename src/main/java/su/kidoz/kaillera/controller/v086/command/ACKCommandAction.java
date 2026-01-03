@@ -30,7 +30,7 @@ import su.kidoz.kaillera.model.exception.LoginException;
 public final class ACKCommandAction implements V086Action {
     private static final Logger log = LoggerFactory.getLogger(ACKCommandAction.class);
     private static final String DESC = "ACKCommandAction";
-    private static int numAcksForSpeedTest = 3;
+    private static final int NUM_ACKS_FOR_SPEED_TEST = 3;
 
     private final AtomicInteger actionCount = new AtomicInteger(0);
 
@@ -53,7 +53,7 @@ public final class ACKCommandAction implements V086Action {
 
         clientHandler.addSpeedMeasurement();
 
-        if (clientHandler.getSpeedMeasurementCount() > numAcksForSpeedTest) {
+        if (clientHandler.getSpeedMeasurementCount() > NUM_ACKS_FOR_SPEED_TEST) {
             // Use best (lowest) ping for the user's displayed ping value
             user.setPing(clientHandler.getBestNetworkSpeed());
 

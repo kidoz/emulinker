@@ -33,6 +33,7 @@ public final class GameKickAction implements V086Action {
         return DESC;
     }
 
+    @Override
     public void performAction(V086Message message, V086ClientHandler clientHandler)
             throws FatalActionException {
         actionCount.incrementAndGet();
