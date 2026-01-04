@@ -2,6 +2,7 @@ package su.kidoz.kaillera.service.impl;
 
 import su.kidoz.kaillera.model.KailleraServer;
 import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.model.event.InfoMessageEvent;
 import su.kidoz.kaillera.model.exception.ChatException;
 import su.kidoz.kaillera.model.exception.FloodException;
 import su.kidoz.kaillera.model.exception.GameChatException;
@@ -51,8 +52,10 @@ public class CommunicationServiceImpl implements CommunicationService {
             return false;
         }
 
-        // Private messages are implemented via the event system in the existing code.
-        // For now, we just verify the user exists.
+        // Format as private message and deliver via event system
+        String formattedMessage = "<" + from.getName() + "> (private): " + message;
+        target.addEvent(new InfoMessageEvent(target, formattedMessage));
+
         log.info("Private message from {} to {}: {}", from.getName(), target.getName(), message);
         return true;
     }

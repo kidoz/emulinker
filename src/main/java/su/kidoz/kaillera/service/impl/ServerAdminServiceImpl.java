@@ -191,13 +191,11 @@ public class ServerAdminServiceImpl implements ServerAdminService {
             return false;
         }
 
-        if (game.getNumPlayers() > 0) {
-            log.warn("Cannot clear game {} with {} players", gameId, game.getNumPlayers());
-            return false;
+        boolean closed = server.closeEmptyGame(gameId);
+        if (closed) {
+            log.info("Admin {} cleared game {}", admin.getName(), game.getRomName());
         }
-
-        log.info("Admin {} cleared game {}", admin.getName(), game.getRomName());
-        return true;
+        return closed;
     }
 
     @Override

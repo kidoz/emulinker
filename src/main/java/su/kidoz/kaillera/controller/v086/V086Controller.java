@@ -197,6 +197,7 @@ public final class V086Controller implements KailleraServerController, SmartLife
             user = server.newConnection(clientSocketAddress, protocol,
                     clientHandler.getEventDispatcher());
         } catch (NewConnectionException e) {
+            // Catches both NewConnectionException and ServerFullException (subclass)
             clientHandler.stop();
             throw e;
         }

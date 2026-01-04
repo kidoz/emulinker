@@ -589,6 +589,29 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
     }
 
     @Override
+    public boolean closeEmptyGame(int gameId) {
+        gameLock.lock();
+        try {
+            KailleraGame game = gameManager.getGame(gameId);
+            if (game == null) {
+                return false;
+            }
+
+            if (game.getNumPlayers() > 0) {
+                log.warn("Cannot close game {} with {} active players", gameId, game.getNumPlayers());
+                return false;
+            }
+
+            gameManager.removeGame(gameId);
+            log.info("Admin closed empty game: {}", game.getRomName());
+            addEvent(new GameClosedEvent(this, game));
+            return true;
+        } finally {
+            gameLock.unlock();
+        }
+    }
+
+    @Override
     public void announce(String announcement, boolean gamesAlso) {
         announcementService.announce(announcement, gamesAlso, getUsers(), getGames());
     }
