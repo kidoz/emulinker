@@ -1,9 +1,27 @@
 package su.kidoz.kaillera.admin;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import su.kidoz.kaillera.admin.dto.ActionResultDTO;
 import su.kidoz.kaillera.admin.dto.ControllerDTO;
 import su.kidoz.kaillera.admin.dto.EventMetricsDTO;
@@ -18,19 +36,19 @@ import su.kidoz.kaillera.release.KailleraServerReleaseInfo;
 import su.kidoz.kaillera.service.GameService;
 import su.kidoz.kaillera.service.UserService;
 import su.kidoz.util.EmuLinkerExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller for server administration operations.
+ *
+ * <p>
+ * Provides endpoints for monitoring server status, managing connected users,
+ * viewing active games, and performing administrative actions like kicking
+ * users.
+ */
 @RestController
 @RequestMapping({"/api/admin", "/api/v1/admin"})
+@SecurityRequirement(name = "basicAuth")
+@Tag(name = "Admin", description = "Server administration operations")
 public class AdminRestController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminRestController.class);
@@ -52,6 +70,11 @@ public class AdminRestController {
         this.executor = executor;
     }
 
+    @Operation(summary = "Get server information", description = "Returns comprehensive server status including version, uptime, "
+            + "user/game counts, connection statistics, and thread pool metrics.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Server information retrieved", content = @Content(schema = @Schema(implementation = ServerInfoDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content)})
     @GetMapping("/server-info")
     public ServerInfoDTO getServerInfo() {
         ServerInfoDTO.StatsDTO stats = new ServerInfoDTO.StatsDTO(
@@ -71,6 +94,11 @@ public class AdminRestController {
                 gameService.getMaxGames(), stats, threadPool);
     }
 
+    @Operation(summary = "List all connected users", description = "Returns a list of all users currently connected to the server, "
+            + "including their status, connection type, ping, and address.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User list retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDTO.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content)})
     @GetMapping("/users")
     public List<UserDTO> getUsers() {
         return userService.getAllUsers().stream().map(user -> {
@@ -87,6 +115,11 @@ public class AdminRestController {
         }).collect(Collectors.toList());
     }
 
+    @Operation(summary = "List all active games", description = "Returns a list of all games currently active on the server, "
+            + "including ROM name, owner, status, and player count.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Game list retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = GameDTO.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content)})
     @GetMapping("/games")
     public List<GameDTO> getGames() {
         return gameService.getAllGames().stream()
@@ -95,6 +128,11 @@ public class AdminRestController {
                 .collect(Collectors.toList());
     }
 
+    @Operation(summary = "List protocol controllers", description = "Returns information about active protocol controllers, "
+            + "including version, buffer size, client count, and supported client types.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Controller list retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ControllerDTO.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content)})
     @GetMapping("/controllers")
     public List<ControllerDTO> getControllers() {
         return connectController.getControllers().stream()
@@ -109,6 +147,11 @@ public class AdminRestController {
      *
      * @return list of event metrics for each user
      */
+    @Operation(summary = "Get event metrics for all users", description = "Returns event queue metrics for all connected users, "
+            + "including queue size, dropped events, and utilization percentage.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Event metrics retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EventMetricsDTO.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content)})
     @GetMapping("/event-metrics")
     public List<EventMetricsDTO> getAllEventMetrics() {
         return userService.getAllUsers().stream()
@@ -124,8 +167,14 @@ public class AdminRestController {
      *            the user ID
      * @return event metrics for the user, or 404 if not found
      */
+    @Operation(summary = "Get event metrics for a specific user", description = "Returns event queue metrics for a single user by ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Event metrics retrieved", content = @Content(schema = @Schema(implementation = EventMetricsDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)})
     @GetMapping("/users/{userId}/events")
-    public ResponseEntity<EventMetricsDTO> getUserEventMetrics(@PathVariable int userId) {
+    public ResponseEntity<EventMetricsDTO> getUserEventMetrics(
+            @Parameter(description = "User ID", example = "1") @PathVariable int userId) {
         var userOpt = userService.findUser(userId);
 
         if (userOpt.isEmpty()) {
@@ -146,9 +195,16 @@ public class AdminRestController {
      *            the kick request containing the reason
      * @return result indicating success or failure
      */
+    @Operation(summary = "Kick a user from the server", description = "Disconnects a user from the server with an optional reason message.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User kicked successfully", content = @Content(schema = @Schema(implementation = ActionResultDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Failed to kick user", content = @Content(schema = @Schema(implementation = ActionResultDTO.class)))})
     @PostMapping("/users/{userId}/kick")
-    public ResponseEntity<ActionResultDTO> kickUser(@PathVariable int userId,
-            @RequestBody KickUserRequest request) {
+    public ResponseEntity<ActionResultDTO> kickUser(
+            @Parameter(description = "User ID to kick", example = "1") @PathVariable int userId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Kick request with optional reason", content = @Content(schema = @Schema(implementation = KickUserRequest.class))) @RequestBody KickUserRequest request) {
         var userOpt = userService.findUser(userId);
 
         if (userOpt.isEmpty()) {

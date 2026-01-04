@@ -40,6 +40,9 @@ dependencies {
     // Validation support for @ConfigurationProperties
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // OpenAPI/Swagger documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
+
     // Logging: SLF4J + Logback (Spring Boot includes Logback by default)
     // Bridge for libraries that still use commons-logging API
     implementation 'org.slf4j:jcl-over-slf4j:2.0.17'
