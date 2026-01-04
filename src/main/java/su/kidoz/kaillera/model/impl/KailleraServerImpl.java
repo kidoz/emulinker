@@ -339,7 +339,7 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
         log.info(user + ": login request: delay=" + loginDelay + "ms, clientAddress="
                 + EmuUtil.formatSocketAddress(user.getSocketAddress()) + ", name=" + user.getName()
                 + ", ping=" + user.getPing() + ", client=" + user.getClientType() + ", connection="
-                + KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
+                + KailleraUser.getConnectionTypeName(user.getConnectionType()));
 
         int userID = user.getID();
 

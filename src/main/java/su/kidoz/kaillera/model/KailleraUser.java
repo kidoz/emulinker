@@ -60,6 +60,16 @@ public interface KailleraUser {
     String[] CONNECTION_TYPE_NAMES = {"DISABLED", "Lan", "Excellent", "Good", "Average", "Low",
             "Bad"};
 
+    /**
+     * Returns the connection type name for the given type, or "Unknown(n)" for invalid values.
+     */
+    static String getConnectionTypeName(int connectionType) {
+        if (connectionType >= 0 && connectionType < CONNECTION_TYPE_NAMES.length) {
+            return CONNECTION_TYPE_NAMES[connectionType];
+        }
+        return "Unknown(" + connectionType + ")";
+    }
+
     /** User is currently playing in a game. */
     byte STATUS_PLAYING = 0;
     /** User is in the server lobby, not in a game. */

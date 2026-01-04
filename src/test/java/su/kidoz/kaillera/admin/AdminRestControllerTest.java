@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import su.kidoz.kaillera.controller.KailleraServerController;
 import su.kidoz.kaillera.controller.connectcontroller.ConnectController;
@@ -62,7 +63,7 @@ class AdminRestControllerTest {
     @BeforeEach
     void setUp() {
         AdminRestController controller = new AdminRestController(userService, gameService,
-                releaseInfo, connectController, executor);
+                releaseInfo, connectController, executor, Optional.empty(), Optional.empty());
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

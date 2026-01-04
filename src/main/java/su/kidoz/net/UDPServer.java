@@ -165,8 +165,9 @@ public abstract class UDPServer implements Executable {
 
         try {
             while (!stopFlag) {
+                ByteBuffer buffer = null;
                 try {
-                    ByteBuffer buffer = getBuffer();
+                    buffer = getBuffer();
                     InetSocketAddress fromSocketAddress = (InetSocketAddress) channel
                             .receive(buffer);
 
@@ -179,7 +180,6 @@ public abstract class UDPServer implements Executable {
 
                     buffer.flip();
                     handleReceived(buffer, fromSocketAddress);
-                    releaseBuffer(buffer);
                 } catch (ClosedChannelException e) {
                     // Channel was closed (expected during shutdown)
                     // Note: AsynchronousCloseException is a subclass of ClosedChannelException
@@ -195,6 +195,10 @@ public abstract class UDPServer implements Executable {
                         break;
 
                     log.error("Failed to receive on port " + getBindPort() + ": " + e.getMessage());
+                } finally {
+                    if (buffer != null) {
+                        releaseBuffer(buffer);
+                    }
                 }
             }
         } catch (Throwable e) {

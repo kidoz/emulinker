@@ -98,10 +98,10 @@ public class LoginValidator {
         if (access == AccessManager.ACCESS_NORMAL
                 && !serverConfig.isConnectionTypeAllowed(user.getConnectionType())) {
             log.info("{} login denied: Connection {} Not Allowed", user,
-                    KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]);
+                    KailleraUser.getConnectionTypeName(user.getConnectionType()));
             throw new LoginException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedConnectionTypeDenied",
-                            KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()]));
+                            KailleraUser.getConnectionTypeName(user.getConnectionType())));
         }
     }
 
@@ -133,8 +133,9 @@ public class LoginValidator {
      * Validates client/emulator name length.
      */
     public void validateClientName(KailleraUser user, int access) throws UserNameException {
-        if (access == AccessManager.ACCESS_NORMAL && maxClientNameLength > 0
-                && user.getClientType().length() > maxClientNameLength) {
+        String clientType = user.getClientType();
+        if (access == AccessManager.ACCESS_NORMAL && maxClientNameLength > 0 && clientType != null
+                && clientType.length() > maxClientNameLength) {
             log.info("{} login denied: Client Name Length > {}", user, maxClientNameLength);
             throw new UserNameException(
                     EmuLang.getString("KailleraServerImpl.LoginDeniedEmulatorNameTooLong"));

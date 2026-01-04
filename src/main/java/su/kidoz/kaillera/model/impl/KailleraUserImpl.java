@@ -301,9 +301,7 @@ public final class KailleraUserImpl implements KailleraUser, Executable {
         sb.append(getPing());
         sb.append(" connectionType=");
         int connTypeIdx = getConnectionType();
-        sb.append(connTypeIdx >= 0 && connTypeIdx < KailleraUser.CONNECTION_TYPE_NAMES.length
-                ? KailleraUser.CONNECTION_TYPE_NAMES[connTypeIdx]
-                : "Unknown(" + connTypeIdx + ")");
+        sb.append(KailleraUser.getConnectionTypeName(connTypeIdx));
         sb.append(" remoteAddress=");
         sb.append((getSocketAddress() == null
                 ? EmuUtil.formatSocketAddress(getConnectSocketAddress())

@@ -56,7 +56,7 @@ public class UserInformation extends V086Message {
 
     public String toString() {
         return getInfoString() + "[userName=" + userName + " clientType=" + clientType
-                + " connectionType=" + KailleraUser.CONNECTION_TYPE_NAMES[connectionType] + "]";
+                + " connectionType=" + KailleraUser.getConnectionTypeName(connectionType) + "]";
     }
 
     public void writeBodyTo(ByteBuffer buffer) {

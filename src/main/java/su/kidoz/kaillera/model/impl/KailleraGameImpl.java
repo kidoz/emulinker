@@ -332,7 +332,7 @@ public final class KailleraGameImpl implements KailleraGame {
                         + ": All players must use the same connection type");
                 addEvent(new GameInfoEvent(this,
                         EmuLang.getString("KailleraGameImpl.StartGameConnectionTypeMismatchInfo",
-                                KailleraUser.CONNECTION_TYPE_NAMES[owner.getConnectionType()])));
+                                KailleraUser.getConnectionTypeName(owner.getConnectionType()))));
                 //
                 throw new StartGameException(EmuLang
                         .getString("KailleraGameImpl.StartGameDeniedConnectionTypeMismatch"));

@@ -119,7 +119,7 @@ public class AdminRestController {
             }
             return new UserDTO(user.getID(), user.getName(),
                     KailleraUser.STATUS_NAMES[user.getStatus()],
-                    KailleraUser.CONNECTION_TYPE_NAMES[user.getConnectionType()], user.getPing(),
+                    KailleraUser.getConnectionTypeName(user.getConnectionType()), user.getPing(),
                     address, user.getConnectTime());
         }).collect(Collectors.toList());
     }

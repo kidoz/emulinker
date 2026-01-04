@@ -219,7 +219,7 @@ public class ServerStatus extends V086Message {
             return "[userName=" + userName + " ping=" + ping + " status="
                     + su.kidoz.kaillera.model.KailleraUser.STATUS_NAMES[status] + " userID="
                     + userID + " connectionType="
-                    + su.kidoz.kaillera.model.KailleraUser.CONNECTION_TYPE_NAMES[connectionType]
+                    + su.kidoz.kaillera.model.KailleraUser.getConnectionTypeName(connectionType)
                     + "]";
         }
 

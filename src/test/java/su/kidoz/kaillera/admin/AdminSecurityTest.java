@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import su.kidoz.config.SecurityConfig;
 import su.kidoz.kaillera.controller.connectcontroller.ConnectController;
@@ -58,7 +59,7 @@ class AdminSecurityTest {
     @BeforeEach
     void setUp() {
         AdminRestController controller = new AdminRestController(userService, gameService,
-                releaseInfo, connectController, executor);
+                releaseInfo, connectController, executor, Optional.empty(), Optional.empty());
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

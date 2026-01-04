@@ -155,7 +155,7 @@ public class PlayerInformation extends V086Message {
         public String toString() {
             return "[userName=" + userName + " ping=" + ping + " userID=" + userID
                     + " connectionType="
-                    + su.kidoz.kaillera.model.KailleraUser.CONNECTION_TYPE_NAMES[connectionType]
+                    + su.kidoz.kaillera.model.KailleraUser.getConnectionTypeName(connectionType)
                     + "]";
         }
 

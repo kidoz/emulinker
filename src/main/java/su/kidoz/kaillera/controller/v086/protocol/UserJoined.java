@@ -69,7 +69,7 @@ public class UserJoined extends V086Message {
     public String toString() {
         return getInfoString() + "[userName=" + userName + " userID=" + userID + " ping=" + ping
                 + " connectionType="
-                + su.kidoz.kaillera.model.KailleraUser.CONNECTION_TYPE_NAMES[connectionType] + "]";
+                + su.kidoz.kaillera.model.KailleraUser.getConnectionTypeName(connectionType) + "]";
     }
 
     public int getBodyLength() {

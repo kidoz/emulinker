@@ -74,13 +74,19 @@ public class EmuLinkerExecutor implements ExecutorService {
     public void execute(Runnable command) {
         totalSubmitted.incrementAndGet();
         activeCount.incrementAndGet();
-        delegate.execute(() -> {
-            try {
-                command.run();
-            } finally {
-                activeCount.decrementAndGet();
-            }
-        });
+        try {
+            delegate.execute(() -> {
+                try {
+                    command.run();
+                } finally {
+                    activeCount.decrementAndGet();
+                }
+            });
+        } catch (RuntimeException e) {
+            // Submission failed (e.g., RejectedExecutionException after shutdown)
+            activeCount.decrementAndGet();
+            throw e;
+        }
     }
 
     @Override
@@ -112,39 +118,54 @@ public class EmuLinkerExecutor implements ExecutorService {
     public <T> Future<T> submit(Callable<T> task) {
         totalSubmitted.incrementAndGet();
         activeCount.incrementAndGet();
-        return delegate.submit(() -> {
-            try {
-                return task.call();
-            } finally {
-                activeCount.decrementAndGet();
-            }
-        });
+        try {
+            return delegate.submit(() -> {
+                try {
+                    return task.call();
+                } finally {
+                    activeCount.decrementAndGet();
+                }
+            });
+        } catch (RuntimeException e) {
+            activeCount.decrementAndGet();
+            throw e;
+        }
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
         totalSubmitted.incrementAndGet();
         activeCount.incrementAndGet();
-        return delegate.submit(() -> {
-            try {
-                task.run();
-            } finally {
-                activeCount.decrementAndGet();
-            }
-        }, result);
+        try {
+            return delegate.submit(() -> {
+                try {
+                    task.run();
+                } finally {
+                    activeCount.decrementAndGet();
+                }
+            }, result);
+        } catch (RuntimeException e) {
+            activeCount.decrementAndGet();
+            throw e;
+        }
     }
 
     @Override
     public Future<?> submit(Runnable task) {
         totalSubmitted.incrementAndGet();
         activeCount.incrementAndGet();
-        return delegate.submit(() -> {
-            try {
-                task.run();
-            } finally {
-                activeCount.decrementAndGet();
-            }
-        });
+        try {
+            return delegate.submit(() -> {
+                try {
+                    task.run();
+                } finally {
+                    activeCount.decrementAndGet();
+                }
+            });
+        } catch (RuntimeException e) {
+            activeCount.decrementAndGet();
+            throw e;
+        }
     }
 
     @Override
