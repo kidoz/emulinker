@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,16 +23,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import su.kidoz.config.RelayConfig;
 import su.kidoz.kaillera.admin.dto.ActionResultDTO;
 import su.kidoz.kaillera.admin.dto.ControllerDTO;
 import su.kidoz.kaillera.admin.dto.EventMetricsDTO;
 import su.kidoz.kaillera.admin.dto.GameDTO;
 import su.kidoz.kaillera.admin.dto.KickUserRequest;
+import su.kidoz.kaillera.admin.dto.RelayStatusDTO;
 import su.kidoz.kaillera.admin.dto.ServerInfoDTO;
 import su.kidoz.kaillera.admin.dto.UserDTO;
 import su.kidoz.kaillera.controller.connectcontroller.ConnectController;
 import su.kidoz.kaillera.model.KailleraGame;
 import su.kidoz.kaillera.model.KailleraUser;
+import su.kidoz.kaillera.relay.KailleraRelayController;
 import su.kidoz.kaillera.release.KailleraServerReleaseInfo;
 import su.kidoz.kaillera.service.GameService;
 import su.kidoz.kaillera.service.UserService;
@@ -58,16 +62,21 @@ public class AdminRestController {
     private final KailleraServerReleaseInfo releaseInfo;
     private final ConnectController connectController;
     private final EmuLinkerExecutor executor;
+    private final Optional<KailleraRelayController> relayController;
+    private final Optional<RelayConfig> relayConfig;
 
     @Autowired
     public AdminRestController(UserService userService, GameService gameService,
             KailleraServerReleaseInfo releaseInfo, ConnectController connectController,
-            EmuLinkerExecutor executor) {
+            EmuLinkerExecutor executor, Optional<KailleraRelayController> relayController,
+            Optional<RelayConfig> relayConfig) {
         this.userService = userService;
         this.gameService = gameService;
         this.releaseInfo = releaseInfo;
         this.connectController = connectController;
         this.executor = executor;
+        this.relayController = relayController;
+        this.relayConfig = relayConfig;
     }
 
     @Operation(summary = "Get server information", description = "Returns comprehensive server status including version, uptime, "
@@ -227,5 +236,42 @@ public class AdminRestController {
             return ResponseEntity.internalServerError()
                     .body(ActionResultDTO.error("Failed to kick user: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Returns the current relay status and statistics.
+     *
+     * @return relay status information
+     */
+    @Operation(summary = "Get relay status", description = "Returns relay mode status and statistics including active connections, "
+            + "bytes relayed, and V086 relay ports. Returns disabled status if relay mode "
+            + "is not enabled.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Relay status retrieved", content = @Content(schema = @Schema(implementation = RelayStatusDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid credentials", content = @Content)})
+    @GetMapping("/relay")
+    public RelayStatusDTO getRelayStatus() {
+        if (relayController.isEmpty() || relayConfig.isEmpty()) {
+            return RelayStatusDTO.disabled();
+        }
+
+        KailleraRelayController relay = relayController.get();
+        RelayConfig config = relayConfig.get();
+
+        List<RelayStatusDTO.V086RelayDTO> v086Relays = relay.getV086Relays().entrySet().stream()
+                .map(entry -> new RelayStatusDTO.V086RelayDTO(entry.getKey(),
+                        entry.getValue().getActiveConnections(),
+                        entry.getValue().getLastClientMessageNumber(),
+                        entry.getValue().getLastServerMessageNumber()))
+                .collect(Collectors.toList());
+
+        long uptimeMinutes = relay.isRunning()
+                ? (System.currentTimeMillis() - relay.getStartTime()) / 60000
+                : 0;
+
+        return new RelayStatusDTO(config.isEnabled(), relay.isRunning(), relay.getListenPort(),
+                config.getBackendHost(), config.getBackendPort(), relay.getActiveConnections(),
+                relay.getTotalConnections(), relay.getBytesRelayed(), relay.getParseErrors(),
+                uptimeMinutes, v086Relays);
     }
 }
