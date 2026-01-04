@@ -42,6 +42,17 @@ public final class CachedGameDataAction implements V086Action {
         try {
             int key = ((CachedGameData) message).getKey();
             byte[] data = clientHandler.getClientGameDataCache().get(key);
+            if (data == null) {
+                log.error("Cached game data key {} not found in cache", key);
+                try {
+                    clientHandler.send(new GameChat_Notification(
+                            clientHandler.getNextMessageNumber(), "Error",
+                            "Game Data Error! Cached key not found. Game state may be inconsistent."));
+                } catch (MessageFormatException e) {
+                    log.error("Failed to construct GameChat_Notification", e);
+                }
+                return;
+            }
             clientHandler.getUser().addGameData(data);
         } catch (GameDataException e) {
             log.debug("Game data error: " + e.getMessage());
