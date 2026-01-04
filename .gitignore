@@ -14,3 +14,9 @@ bin/
 # OS
 .DS_Store
 Thumbs.db
+
+# Runtime configuration (use src/main/resources/access.cfg as template)
+/access.cfg
+
+# Logs
+*.log

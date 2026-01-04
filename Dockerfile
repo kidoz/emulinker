@@ -1,5 +1,20 @@
-# Build stage
-FROM eclipse-temurin:25-jdk-noble AS build
+# Admin UI build stage
+FROM node:24-alpine@sha256:c921b97d4b74f51744057454b306b418cf693865e73b8100559189605f6955b8 AS admin-build
+WORKDIR /app/admin
+
+# Copy package files for caching
+COPY src/main/resources/static/admin/package.json .
+COPY src/main/resources/static/admin/package-lock.json* .
+
+# Install dependencies
+RUN npm ci
+
+# Copy source and build
+COPY src/main/resources/static/admin .
+RUN npm run build
+
+# Java build stage
+FROM eclipse-temurin:25-jdk-noble@sha256:45266f9f6b93d2d3325404efceebf5b04ab4c27d54afc6e8e84bb7997365d8a0 AS build
 WORKDIR /app
 
 # Copy gradle files for caching
@@ -14,20 +29,28 @@ RUN chmod +x gradlew
 # Download dependencies (cache layer)
 RUN ./gradlew dependencies --no-daemon
 
-# Copy source and build
+# Copy source
 COPY src src
+
+# Copy built admin UI from admin-build stage
+COPY --from=admin-build /app/admin/dist src/main/resources/static/admin/dist
+
+# Build the application
 RUN ./gradlew bootJar --no-daemon
 
 # Run stage
-FROM eclipse-temurin:25-jre-noble
+FROM eclipse-temurin:25-jre-noble@sha256:d8dd4342b7dbb5a9c06d0499eecca86315346acc6a20026080642610344ceb2c
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Copy the executable jar from the build stage
 COPY --from=build /app/build/kaillux.jar .
 
-# Copy configuration (expected to be present in the project root)
-# If custom config files aren't in src/main/resources, they need to be provided
-# For now, we'll assume the jar contains the defaults from src/main/resources
+# Copy configuration files to working directory (required for hot-reload support)
+COPY --from=build /app/src/main/resources/access.cfg .
+
+# Use IPv4 only (avoids dual-stack bind conflicts in container environments)
+ENV CONTROLLERS_BIND_ADDRESSES=0.0.0.0
 
 # Admin UI
 EXPOSE 8080/tcp
