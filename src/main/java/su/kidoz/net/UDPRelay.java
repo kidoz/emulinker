@@ -1,6 +1,5 @@
 package su.kidoz.net;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -54,6 +53,7 @@ public abstract class UDPRelay implements SmartLifecycle, Runnable {
 
     // Metrics
     private final AtomicLong startTime = new AtomicLong(0);
+    private final AtomicLong lastActivityTime = new AtomicLong(0);
     private final AtomicInteger totalConnections = new AtomicInteger(0);
     private final AtomicLong bytesRelayed = new AtomicLong(0);
     private final AtomicInteger parseErrors = new AtomicInteger(0);
@@ -161,6 +161,30 @@ public abstract class UDPRelay implements SmartLifecycle, Runnable {
     }
 
     /**
+     * Returns the last activity time in milliseconds since epoch.
+     */
+    public long getLastActivityTime() {
+        return lastActivityTime.get();
+    }
+
+    /**
+     * Returns true if this relay has been idle for longer than the specified
+     * timeout. A relay is idle if no packets have been relayed for the duration.
+     *
+     * @param timeoutMs
+     *            idle timeout in milliseconds
+     * @return true if idle for longer than timeout
+     */
+    public boolean isIdle(long timeoutMs) {
+        long lastActivity = lastActivityTime.get();
+        if (lastActivity == 0) {
+            // Never had activity, use start time
+            lastActivity = startTime.get();
+        }
+        return lastActivity > 0 && (System.currentTimeMillis() - lastActivity) > timeoutMs;
+    }
+
+    /**
      * Increments the parse error counter.
      */
     protected void incrementParseErrors() {
@@ -219,9 +243,9 @@ public abstract class UDPRelay implements SmartLifecycle, Runnable {
 
         try {
             listenChannel = DatagramChannel.open();
-            listenChannel.socket()
-                    .bind(new InetSocketAddress(InetAddress.getLocalHost(), listenPort));
-            log.info("{} bound to port {}", this, listenPort);
+            // Bind to wildcard address (0.0.0.0) to accept connections on all interfaces
+            listenChannel.socket().bind(new InetSocketAddress(listenPort));
+            log.info("{} bound to port {} on all interfaces", this, listenPort);
 
             running = true;
             stopFlag = false;
@@ -372,6 +396,7 @@ public abstract class UDPRelay implements SmartLifecycle, Runnable {
             if (newBuffer != null) {
                 int bytes = clientChannel.send(newBuffer, serverSocketAddress);
                 bytesRelayed.addAndGet(bytes);
+                lastActivityTime.set(System.currentTimeMillis());
             }
         }
 
@@ -402,7 +427,9 @@ public abstract class UDPRelay implements SmartLifecycle, Runnable {
                         continue;
                     }
 
-                    if (!receiveAddress.getAddress().equals(serverSocketAddress.getAddress())) {
+                    // Validate both address AND port to prevent injection from other
+                    // processes on the backend host
+                    if (!receiveAddress.equals(serverSocketAddress)) {
                         continue;
                     }
 
@@ -413,6 +440,7 @@ public abstract class UDPRelay implements SmartLifecycle, Runnable {
                     if (newBuffer != null) {
                         int bytes = listenChannel.send(newBuffer, clientSocketAddress);
                         bytesRelayed.addAndGet(bytes);
+                        lastActivityTime.set(System.currentTimeMillis());
                     }
                 }
             } catch (Exception e) {

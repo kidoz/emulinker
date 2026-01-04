@@ -2,9 +2,13 @@ package su.kidoz.kaillera.relay;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,23 +46,32 @@ public class KailleraRelayController extends UDPRelay {
     private static final Logger log = LoggerFactory.getLogger(KailleraRelayController.class);
 
     private final ExecutorService threadPool;
+    private final ScheduledExecutorService scheduler;
     private final RelayConfig config;
     private final Map<Integer, V086RelayController> v086Relays = new ConcurrentHashMap<>();
+    private final long idleTimeoutMs;
+
+    private ScheduledFuture<?> cleanupTask;
 
     /**
      * Creates a new Kaillera relay controller.
      *
      * @param threadPool
      *            the executor service for handling connections
+     * @param scheduler
+     *            the scheduler for periodic cleanup tasks
      * @param config
      *            the relay configuration
      */
-    public KailleraRelayController(ExecutorService threadPool, RelayConfig config) {
+    public KailleraRelayController(ExecutorService threadPool, ScheduledExecutorService scheduler,
+            RelayConfig config) {
         super(threadPool, config.getListenPort(),
                 new InetSocketAddress(config.getBackendHost(), config.getBackendPort()),
                 config.getMaxConnections(), config.getBufferSize());
         this.threadPool = threadPool;
+        this.scheduler = scheduler;
         this.config = config;
+        this.idleTimeoutMs = config.getIdleTimeoutSeconds() * 1000L;
     }
 
     /**
@@ -75,8 +88,28 @@ public class KailleraRelayController extends UDPRelay {
     }
 
     @Override
+    public void start() {
+        super.start();
+
+        // Start periodic cleanup task if idle timeout is enabled
+        if (idleTimeoutMs > 0 && config.getCleanupIntervalSeconds() > 0) {
+            cleanupTask = scheduler.scheduleAtFixedRate(this::cleanupIdleRelays,
+                    config.getCleanupIntervalSeconds(), config.getCleanupIntervalSeconds(),
+                    TimeUnit.SECONDS);
+            log.info("Relay cleanup task started: interval={}s, idleTimeout={}s",
+                    config.getCleanupIntervalSeconds(), config.getIdleTimeoutSeconds());
+        }
+    }
+
+    @Override
     public void stop() {
-        // Stop all spawned V086 relays first
+        // Cancel cleanup task first
+        if (cleanupTask != null) {
+            cleanupTask.cancel(false);
+            cleanupTask = null;
+        }
+
+        // Stop all spawned V086 relays
         for (V086RelayController relay : v086Relays.values()) {
             try {
                 relay.stop();
@@ -88,6 +121,36 @@ public class KailleraRelayController extends UDPRelay {
         v086Relays.clear();
 
         super.stop();
+    }
+
+    /**
+     * Cleans up V086 relay controllers that have been idle for longer than the
+     * configured timeout.
+     */
+    private void cleanupIdleRelays() {
+        if (idleTimeoutMs <= 0) {
+            return;
+        }
+
+        Iterator<Map.Entry<Integer, V086RelayController>> iterator = v086Relays.entrySet()
+                .iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, V086RelayController> entry = iterator.next();
+            V086RelayController relay = entry.getValue();
+
+            if (relay.isIdle(idleTimeoutMs)) {
+                log.info("Removing idle V086 relay on port {} (idle for >{}s)",
+                        relay.getListenPort(), config.getIdleTimeoutSeconds());
+                try {
+                    relay.stop();
+                } catch (Exception e) {
+                    log.warn("Error stopping idle V086 relay on port {}: {}", relay.getListenPort(),
+                            e.getMessage());
+                }
+                iterator.remove();
+            }
+        }
     }
 
     @Override

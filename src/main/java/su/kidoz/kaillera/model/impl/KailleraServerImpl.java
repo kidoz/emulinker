@@ -598,7 +598,8 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
             }
 
             if (game.getNumPlayers() > 0) {
-                log.warn("Cannot close game {} with {} active players", gameId, game.getNumPlayers());
+                log.warn("Cannot close game {} with {} active players", gameId,
+                        game.getNumPlayers());
                 return false;
             }
 

@@ -1,5 +1,8 @@
 package su.kidoz.config;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,6 +37,20 @@ public class RelayConfiguration {
     private static final Logger log = LoggerFactory.getLogger(RelayConfiguration.class);
 
     /**
+     * Creates a scheduled executor for relay cleanup tasks.
+     *
+     * @return the scheduled executor service
+     */
+    @Bean(destroyMethod = "shutdown")
+    public ScheduledExecutorService relayCleanupScheduler() {
+        return Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "relay-cleanup");
+            t.setDaemon(true);
+            return t;
+        });
+    }
+
+    /**
      * Creates the main Kaillera relay controller.
      *
      * <p>
@@ -43,16 +60,18 @@ public class RelayConfiguration {
      *
      * @param executor
      *            the executor service for handling connections
+     * @param scheduler
+     *            the scheduler for periodic cleanup tasks
      * @param config
      *            the relay configuration
      * @return the configured relay controller
      */
     @Bean
     public KailleraRelayController kailleraRelayController(EmuLinkerExecutor executor,
-            RelayConfig config) {
+            ScheduledExecutorService scheduler, RelayConfig config) {
         log.info("Relay mode enabled: listening on port {}, forwarding to {}:{}",
                 config.getListenPort(), config.getBackendHost(), config.getBackendPort());
 
-        return new KailleraRelayController(executor, config);
+        return new KailleraRelayController(executor, scheduler, config);
     }
 }

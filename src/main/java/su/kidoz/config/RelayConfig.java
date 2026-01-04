@@ -64,6 +64,22 @@ public class RelayConfig {
     @Max(65536)
     private int bufferSize = 2048;
 
+    /**
+     * Idle timeout in seconds for V086 relay controllers. Relays with no traffic
+     * for this duration will be automatically stopped and removed. Set to 0 to
+     * disable cleanup (not recommended).
+     */
+    @Min(0)
+    @Max(86400)
+    private int idleTimeoutSeconds = 300; // 5 minutes default
+
+    /**
+     * Interval in seconds between idle relay cleanup checks.
+     */
+    @Min(10)
+    @Max(3600)
+    private int cleanupIntervalSeconds = 60;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -110,5 +126,21 @@ public class RelayConfig {
 
     public void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
+    }
+
+    public int getIdleTimeoutSeconds() {
+        return idleTimeoutSeconds;
+    }
+
+    public void setIdleTimeoutSeconds(int idleTimeoutSeconds) {
+        this.idleTimeoutSeconds = idleTimeoutSeconds;
+    }
+
+    public int getCleanupIntervalSeconds() {
+        return cleanupIntervalSeconds;
+    }
+
+    public void setCleanupIntervalSeconds(int cleanupIntervalSeconds) {
+        this.cleanupIntervalSeconds = cleanupIntervalSeconds;
     }
 }

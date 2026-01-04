@@ -131,8 +131,8 @@ public interface KailleraServer {
     KailleraGame getGame(int gameID);
 
     /**
-     * Closes and removes an empty game from the server. This is an admin
-     * operation that only succeeds if the game has no players.
+     * Closes and removes an empty game from the server. This is an admin operation
+     * that only succeeds if the game has no players.
      *
      * @param gameId
      *            the game's unique identifier
