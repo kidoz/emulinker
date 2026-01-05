@@ -14,9 +14,11 @@ import su.kidoz.kaillera.controller.v086.action.V086UserEventHandler;
 import su.kidoz.kaillera.master.MasterListStatsCollector;
 import su.kidoz.kaillera.master.client.MasterListUpdaterImpl;
 import su.kidoz.kaillera.metrics.GameMetricsCollector;
+import su.kidoz.kaillera.metrics.ServerMetrics;
 import su.kidoz.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import su.kidoz.kaillera.model.impl.KailleraServerImpl;
 import su.kidoz.kaillera.release.KailleraServerReleaseInfo;
+import su.kidoz.kaillera.service.ServerPolicyServices;
 
 import su.kidoz.kaillera.model.impl.GameManager;
 import su.kidoz.kaillera.model.impl.UserManager;
@@ -115,17 +117,36 @@ public class EmuLinkerConfig {
     }
 
     @Bean
-    public KailleraServerImpl kailleraServerImpl(EmuLinkerExecutor executor,
-            FileBasedAccessManager accessManager, ServerConfig serverConfig, GameConfig gameConfig,
-            MasterListConfig masterListConfig, MasterListStatsCollector statsCollector,
-            KailleraServerReleaseInfo releaseInfo, AutoFireDetectorFactoryImpl autoFireFactory,
-            LoginValidator loginValidator, ChatModerationService chatModerationService,
-            AnnouncementService announcementService, UserManager userManager,
-            GameManager gameManager, GameMetricsCollector gameMetricsCollector) throws Exception {
-        return new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
-                masterListConfig, statsCollector, releaseInfo, autoFireFactory, loginValidator,
-                chatModerationService, announcementService, userManager, gameManager,
-                gameMetricsCollector);
+    public ServerInfrastructure serverInfrastructure(EmuLinkerExecutor executor,
+            FileBasedAccessManager accessManager, KailleraServerReleaseInfo releaseInfo) {
+        return new ServerInfrastructure(executor, accessManager, releaseInfo);
+    }
+
+    @Bean
+    public ServerPolicyServices serverPolicyServices(LoginValidator loginValidator,
+            ChatModerationService chatModerationService, AnnouncementService announcementService) {
+        return new ServerPolicyServices(loginValidator, chatModerationService, announcementService);
+    }
+
+    @Bean
+    public ServerMetrics serverMetrics(MasterListStatsCollector statsCollector,
+            GameMetricsCollector gameMetricsCollector) {
+        return new ServerMetrics(statsCollector, gameMetricsCollector);
+    }
+
+    @Bean
+    public ServerConfigs serverConfigs(ServerConfig serverConfig, GameConfig gameConfig,
+            MasterListConfig masterListConfig) {
+        return new ServerConfigs(serverConfig, gameConfig, masterListConfig);
+    }
+
+    @Bean
+    public KailleraServerImpl kailleraServerImpl(ServerInfrastructure infrastructure,
+            ServerConfigs configs, ServerPolicyServices policyServices, ServerMetrics metrics,
+            AutoFireDetectorFactoryImpl autoFireFactory, UserManager userManager,
+            GameManager gameManager) throws Exception {
+        return new KailleraServerImpl(infrastructure, configs, policyServices, metrics,
+                autoFireFactory, userManager, gameManager);
     }
 
     @Bean

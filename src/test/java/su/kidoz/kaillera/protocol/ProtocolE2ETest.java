@@ -11,7 +11,11 @@ import su.kidoz.config.ControllersConfig;
 import su.kidoz.config.GameConfig;
 import su.kidoz.config.MasterListConfig;
 import su.kidoz.config.ServerConfig;
+import su.kidoz.config.ServerConfigs;
+import su.kidoz.config.ServerInfrastructure;
 import su.kidoz.kaillera.access.AccessManager;
+import su.kidoz.kaillera.metrics.ServerMetrics;
+import su.kidoz.kaillera.service.ServerPolicyServices;
 import su.kidoz.kaillera.controller.KailleraServerController;
 import su.kidoz.kaillera.controller.connectcontroller.ConnectController;
 import su.kidoz.kaillera.controller.v086.V086Controller;
@@ -114,11 +118,17 @@ class ProtocolE2ETest {
         UserManager userManager = new UserManager(serverConfig.getMaxUsers());
         GameManager gameManager = new GameManager(serverConfig.getMaxUsers());
 
+        // Create record bundles
+        ServerInfrastructure infrastructure = new ServerInfrastructure(executor, accessManager,
+                new KailleraServerReleaseInfo());
+        ServerConfigs configs = new ServerConfigs(serverConfig, gameConfig, masterListConfig);
+        ServerPolicyServices policyServices = new ServerPolicyServices(loginValidator,
+                chatModerationService, announcementService);
+        ServerMetrics serverMetrics = new ServerMetrics(new TestStatsCollector(), null);
+
         // Create server
-        server = new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
-                masterListConfig, new TestStatsCollector(), new KailleraServerReleaseInfo(),
-                new AutoFireDetectorFactoryImpl(), loginValidator, chatModerationService,
-                announcementService, userManager, gameManager, null);
+        server = new KailleraServerImpl(infrastructure, configs, policyServices, serverMetrics,
+                new AutoFireDetectorFactoryImpl(), userManager, gameManager);
         server.start();
 
         // Create action router

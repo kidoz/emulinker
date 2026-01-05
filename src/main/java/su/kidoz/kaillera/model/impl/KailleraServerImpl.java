@@ -8,8 +8,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import su.kidoz.config.GameConfig;
-import su.kidoz.config.MasterListConfig;
 import su.kidoz.config.ServerConfig;
+import su.kidoz.config.ServerConfigs;
 import su.kidoz.kaillera.access.AccessManager;
 import su.kidoz.kaillera.master.StatsCollector;
 import su.kidoz.kaillera.model.KailleraGame;
@@ -46,10 +46,13 @@ import org.springframework.context.SmartLifecycle;
 import su.kidoz.kaillera.model.event.LoginProgressEvent;
 
 import su.kidoz.kaillera.metrics.GameMetricsCollector;
+import su.kidoz.kaillera.metrics.ServerMetrics;
 import su.kidoz.kaillera.model.LoginNotificationState;
 import su.kidoz.kaillera.model.validation.LoginValidator;
 import su.kidoz.kaillera.service.AnnouncementService;
 import su.kidoz.kaillera.service.ChatModerationService;
+import su.kidoz.kaillera.service.ServerPolicyServices;
+import su.kidoz.config.ServerInfrastructure;
 
 /**
  * Main implementation of the Kaillera server. Manages users, games, and
@@ -100,54 +103,47 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
     /**
      * Creates a new Kaillera server instance.
      *
-     * @param threadPool
-     *            executor for virtual threads
-     * @param accessManager
-     *            handles user access control and banning
-     * @param serverConfig
-     *            server configuration (max users, timeouts, etc.)
-     * @param gameConfig
-     *            game configuration (buffer size, timeouts)
-     * @param masterListConfig
-     *            master server list configuration
-     * @param statsCollector
-     *            collects statistics for master list reporting
-     * @param releaseInfo
-     *            version and release information
+     * @param infrastructure
+     *            infrastructure dependencies (thread pool, access manager, release
+     *            info)
+     * @param configs
+     *            server configuration bundle (server, game, master list)
+     * @param policyServices
+     *            policy enforcement services (login, chat, announcements)
+     * @param metrics
+     *            metrics collectors (stats, game metrics)
      * @param autoFireDetectorFactory
      *            factory for creating auto-fire detectors
-     * @param loginValidator
-     *            validates user login requests
-     * @param chatModerationService
-     *            handles chat validation and flood control
-     * @param announcementService
-     *            sends announcements to users
      * @param userManager
      *            manages user storage and lifecycle
      * @param gameManager
      *            manages game storage and lifecycle
-     * @param gameMetricsCollector
-     *            collects game-level metrics for Prometheus
      */
-    public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
-            ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
-            StatsCollector statsCollector, ReleaseInfo releaseInfo,
-            AutoFireDetectorFactory autoFireDetectorFactory, LoginValidator loginValidator,
-            ChatModerationService chatModerationService, AnnouncementService announcementService,
-            UserManager userManager, GameManager gameManager,
-            GameMetricsCollector gameMetricsCollector) {
-        this.threadPool = threadPool;
-        this.accessManager = accessManager;
-        this.releaseInfo = releaseInfo;
+    public KailleraServerImpl(ServerInfrastructure infrastructure, ServerConfigs configs,
+            ServerPolicyServices policyServices, ServerMetrics metrics,
+            AutoFireDetectorFactory autoFireDetectorFactory, UserManager userManager,
+            GameManager gameManager) {
+        // Extract from infrastructure bundle
+        this.threadPool = infrastructure.threadPool();
+        this.accessManager = infrastructure.accessManager();
+        this.releaseInfo = infrastructure.releaseInfo();
+
+        // Extract from configs bundle
+        this.serverConfig = configs.server();
+        this.gameConfig = configs.game();
+
+        // Extract from policy services bundle
+        this.loginValidator = policyServices.loginValidator();
+        this.chatModerationService = policyServices.chatModerationService();
+        this.announcementService = policyServices.announcementService();
+
+        // Extract from metrics bundle
+        this.gameMetricsCollector = metrics.gameMetricsCollector();
+
+        // Direct parameters
         this.autoFireDetectorFactory = autoFireDetectorFactory;
-        this.serverConfig = serverConfig;
-        this.gameConfig = gameConfig;
-        this.loginValidator = loginValidator;
-        this.chatModerationService = chatModerationService;
-        this.announcementService = announcementService;
         this.userManager = userManager;
         this.gameManager = gameManager;
-        this.gameMetricsCollector = gameMetricsCollector;
 
         // Load login messages from language bundle
         for (int i = 1; i <= 999; i++) {
@@ -158,8 +154,8 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
         }
 
         // Master list config
-        if (masterListConfig.isTouchKaillera())
-            this.statsCollector = statsCollector;
+        if (configs.masterList().isTouchKaillera())
+            this.statsCollector = metrics.statsCollector();
     }
 
     @Override
