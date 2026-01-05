@@ -4,6 +4,7 @@ import su.kidoz.kaillera.controller.v086.action.FatalActionException;
 import su.kidoz.kaillera.controller.v086.action.V086Action;
 import su.kidoz.kaillera.controller.v086.annotation.V086Command;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -46,9 +47,18 @@ public final class LoginCommandAction implements V086Action {
 
         UserInformation userInfo = (UserInformation) message;
         KailleraUser user = clientHandler.getUser();
+        if (user == null) {
+            throw new FatalActionException("User not initialized for login");
+        }
+
+        InetSocketAddress socketAddress = clientHandler.getRemoteSocketAddress();
+        if (socketAddress == null) {
+            throw new FatalActionException("Remote socket address not available");
+        }
+
         user.setName(userInfo.getUserName());
         user.setClientType(userInfo.getClientType());
-        user.setSocketAddress(clientHandler.getRemoteSocketAddress());
+        user.setSocketAddress(socketAddress);
         user.setConnectionType(userInfo.getConnectionType());
         clientHandler.startSpeedTest();
 
