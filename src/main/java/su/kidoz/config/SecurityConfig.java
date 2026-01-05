@@ -100,8 +100,8 @@ public class SecurityConfig {
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Admin API requires authentication
-                        .requestMatchers("/api/admin/**").authenticated()
+                        // Admin API requires authentication (both prefixes)
+                        .requestMatchers("/api/admin/**", "/api/v1/admin/**").authenticated()
                         // Exposed actuator endpoints when base-path is "/"
                         .requestMatchers("/metrics", "/healthz").permitAll()
                         // Actuator endpoints - health/info are public, others require auth

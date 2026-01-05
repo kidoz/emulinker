@@ -17,6 +17,10 @@ import org.slf4j.LoggerFactory;
 public class ServerMaintenanceTask implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(ServerMaintenanceTask.class);
 
+    // Minimum sleep interval to prevent tight spin loop if maxPing is 0 or
+    // misconfigured
+    private static final long MIN_SLEEP_INTERVAL_MS = 1000;
+
     private final UserManager userManager;
     private final AccessManager accessManager;
     private final int maxPing;
@@ -57,9 +61,10 @@ public class ServerMaintenanceTask implements Runnable {
         try {
             while (!stopFlag) {
                 try {
-                    Thread.sleep((long) (maxPing * 3));
+                    long sleepTime = Math.max(MIN_SLEEP_INTERVAL_MS, (long) maxPing * 3);
+                    Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    log.error("Sleep Interrupted!", e);
+                    log.debug("Sleep interrupted", e);
                 }
 
                 if (stopFlag) {

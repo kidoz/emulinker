@@ -233,27 +233,20 @@ public class EmuUtil {
     }
 
     public static String readString(ByteBuffer buffer, int stopByte, Charset charset) {
-        // ByteBuffer tempBuffer = ByteBuffer.allocate(buffer.remaining());
-        char[] tempArray = new char[buffer.remaining()];
+        ByteBuffer tempBuffer = ByteBuffer.allocate(buffer.remaining());
         byte b;
-        int i;
-        // while (buffer.hasRemaining())
-        for (i = 0; i < tempArray.length; i++) {
+        while (buffer.hasRemaining()) {
             b = buffer.get();
             if (b == stopByte)
                 break;
-            // tempBuffer.put(b);
-            tempArray[i] = (char) b;
+            tempBuffer.put(b);
         }
-        // return charset.decode((ByteBuffer) tempBuffer.flip()).toString();
-        return new String(tempArray, 0, i);
+        tempBuffer.flip();
+        return charset.decode(tempBuffer).toString();
     }
 
     public static void writeString(ByteBuffer buffer, String s, int stopByte, Charset charset) {
-        // buffer.put(charset.encode(s));
-        char[] tempArray = s.toCharArray();
-        for (int i = 0; i < tempArray.length; i++)
-            buffer.put((byte) tempArray[i]);
+        buffer.put(charset.encode(s));
         buffer.put((byte) stopByte);
     }
 
