@@ -151,7 +151,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.25 // Increased from 10% - aim for higher coverage
+                minimum = 0.40 // Increased from 25% - improved test coverage
             }
         }
     }

@@ -13,6 +13,7 @@ import su.kidoz.kaillera.controller.v086.action.V086ServerEventHandler;
 import su.kidoz.kaillera.controller.v086.action.V086UserEventHandler;
 import su.kidoz.kaillera.master.MasterListStatsCollector;
 import su.kidoz.kaillera.master.client.MasterListUpdaterImpl;
+import su.kidoz.kaillera.metrics.GameMetricsCollector;
 import su.kidoz.kaillera.model.impl.AutoFireDetectorFactoryImpl;
 import su.kidoz.kaillera.model.impl.KailleraServerImpl;
 import su.kidoz.kaillera.release.KailleraServerReleaseInfo;
@@ -120,10 +121,11 @@ public class EmuLinkerConfig {
             KailleraServerReleaseInfo releaseInfo, AutoFireDetectorFactoryImpl autoFireFactory,
             LoginValidator loginValidator, ChatModerationService chatModerationService,
             AnnouncementService announcementService, UserManager userManager,
-            GameManager gameManager) throws Exception {
+            GameManager gameManager, GameMetricsCollector gameMetricsCollector) throws Exception {
         return new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
                 masterListConfig, statsCollector, releaseInfo, autoFireFactory, loginValidator,
-                chatModerationService, announcementService, userManager, gameManager);
+                chatModerationService, announcementService, userManager, gameManager,
+                gameMetricsCollector);
     }
 
     @Bean

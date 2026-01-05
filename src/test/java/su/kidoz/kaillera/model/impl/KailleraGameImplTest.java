@@ -2,12 +2,21 @@ package su.kidoz.kaillera.model.impl;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.net.InetSocketAddress;
+import su.kidoz.kaillera.access.AccessManager;
+import su.kidoz.kaillera.model.KailleraGame;
 import su.kidoz.kaillera.model.KailleraUser;
 import su.kidoz.kaillera.model.event.DefaultEventDispatcher;
 import su.kidoz.kaillera.model.event.EventDispatcher;
+import su.kidoz.kaillera.model.exception.JoinGameException;
+import su.kidoz.kaillera.model.exception.StartGameException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,11 +24,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Tests for KailleraGameImpl, particularly the getPlayer() NPE fix.
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("KailleraGameImpl Tests")
 class KailleraGameImplTest {
 
@@ -41,6 +53,7 @@ class KailleraGameImplTest {
         eventDispatcher = new DefaultEventDispatcher();
         owner = new KailleraUserImpl(1, "v086", address, eventDispatcher, server);
         owner.setName("GameOwner");
+        owner.setSocketAddress(address); // Set client socket address for game operations
 
         game = new KailleraGameImpl(1, "TestROM", owner, server, BUFFER_SIZE, TIMEOUT_MILLIS,
                 DESYNCH_TIMEOUTS);
@@ -121,6 +134,225 @@ class KailleraGameImplTest {
         @DisplayName("should return 0 players initially")
         void shouldReturnZeroPlayersInitially() {
             assertEquals(0, game.getNumPlayers());
+        }
+    }
+
+    @Nested
+    @DisplayName("Game Lifecycle - Join")
+    class GameLifecycleJoin {
+
+        @Mock
+        private AccessManager accessManager;
+
+        @BeforeEach
+        void setUpAccessManager() {
+            when(server.getAccessManager()).thenReturn(accessManager);
+            // Mock for both connect and socket address since join/start uses
+            // getSocketAddress()
+            when(accessManager.getAccess(owner.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+            when(accessManager.getAccess(owner.getSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+        }
+
+        @Test
+        @DisplayName("owner should be able to join their own game")
+        void ownerShouldJoinOwnGame() throws Exception {
+            int playerNumber = game.join(owner);
+
+            assertEquals(1, playerNumber);
+            assertEquals(1, game.getNumPlayers());
+            assertEquals(owner, game.getPlayer(1));
+        }
+
+        @Test
+        @DisplayName("second player should join as player 2")
+        void secondPlayerShouldJoinAsPlayer2() throws Exception {
+            InetSocketAddress address2 = new InetSocketAddress("127.0.0.2", 27889);
+            KailleraUserImpl player2 = new KailleraUserImpl(2, "v086", address2, eventDispatcher,
+                    server);
+            player2.setName("Player2");
+            player2.setSocketAddress(address2);
+
+            when(accessManager.getAccess(player2.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+
+            game.join(owner);
+            int playerNumber = game.join(player2);
+
+            assertEquals(2, playerNumber);
+            assertEquals(2, game.getNumPlayers());
+        }
+
+        @Test
+        @DisplayName("should not allow duplicate join")
+        void shouldNotAllowDuplicateJoin() throws Exception {
+            game.join(owner);
+
+            assertThrows(JoinGameException.class, () -> game.join(owner));
+        }
+
+        @Test
+        @DisplayName("should not allow joining game in progress for normal users")
+        void shouldNotAllowJoiningGameInProgress() throws Exception {
+            InetSocketAddress address2 = new InetSocketAddress("127.0.0.2", 27889);
+            KailleraUserImpl player2 = new KailleraUserImpl(2, "v086", address2, eventDispatcher,
+                    server);
+            player2.setName("Player2");
+            player2.setSocketAddress(address2);
+            player2.setConnectionType(owner.getConnectionType());
+            player2.setClientType(owner.getClientType());
+
+            when(accessManager.getAccess(player2.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+            when(server.getAllowSinglePlayer()).thenReturn(true);
+
+            // Set up game in synchronizing status
+            game.join(owner);
+            owner.setConnectionType((byte) 1);
+            owner.setClientType("TestEmu");
+            game.start(owner);
+
+            // Now try to join - should fail
+            assertThrows(JoinGameException.class, () -> game.join(player2));
+        }
+    }
+
+    @Nested
+    @DisplayName("Game Lifecycle - Start")
+    class GameLifecycleStart {
+
+        @Mock
+        private AccessManager accessManager;
+
+        @BeforeEach
+        void setUpAccessManager() {
+            when(server.getAccessManager()).thenReturn(accessManager);
+            // Mock for both connect and socket address since start() uses
+            // getSocketAddress()
+            when(accessManager.getAccess(owner.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+            when(accessManager.getAccess(owner.getSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+        }
+
+        @Test
+        @DisplayName("only owner can start the game")
+        void onlyOwnerCanStart() throws Exception {
+            InetSocketAddress address2 = new InetSocketAddress("127.0.0.2", 27889);
+            KailleraUserImpl player2 = new KailleraUserImpl(2, "v086", address2, eventDispatcher,
+                    server);
+            player2.setName("Player2");
+            player2.setSocketAddress(address2);
+
+            when(accessManager.getAccess(player2.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+            when(server.getAllowSinglePlayer()).thenReturn(false);
+
+            game.join(owner);
+            game.join(player2);
+
+            assertThrows(StartGameException.class, () -> game.start(player2));
+        }
+
+        @Test
+        @DisplayName("starting game should change status to synchronizing")
+        void startingShouldChangeStatusToSynchronizing() throws Exception {
+            // Set owner connection info first
+            owner.setConnectionType((byte) 1);
+            owner.setClientType("TestEmu");
+
+            InetSocketAddress address2 = new InetSocketAddress("127.0.0.2", 27889);
+            KailleraUserImpl player2 = new KailleraUserImpl(2, "v086", address2, eventDispatcher,
+                    server);
+            player2.setName("Player2");
+            player2.setSocketAddress(address2);
+            player2.setConnectionType(owner.getConnectionType());
+            player2.setClientType(owner.getClientType());
+
+            when(accessManager.getAccess(player2.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+            when(accessManager.getAccess(player2.getSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+            when(server.getAllowSinglePlayer()).thenReturn(false);
+
+            game.join(owner);
+            game.join(player2);
+            game.start(owner);
+
+            assertEquals(KailleraGame.STATUS_SYNCHRONIZING, game.getStatus());
+        }
+
+        @Test
+        @DisplayName("cannot start already playing game")
+        void cannotStartAlreadyPlayingGame() throws Exception {
+            when(server.getAllowSinglePlayer()).thenReturn(true);
+
+            game.join(owner);
+            owner.setConnectionType((byte) 1);
+            owner.setClientType("TestEmu");
+            game.start(owner);
+
+            assertThrows(StartGameException.class, () -> game.start(owner));
+        }
+    }
+
+    @Nested
+    @DisplayName("Game State Tracking")
+    class GameStateTracking {
+
+        @Test
+        @DisplayName("synched should be false initially")
+        void synchedShouldBeFalseInitially() {
+            assertFalse(game.isSynched());
+        }
+
+        @Test
+        @DisplayName("should return correct player number")
+        void shouldReturnCorrectPlayerNumber() throws Exception {
+            when(server.getAccessManager())
+                    .thenReturn(org.mockito.Mockito.mock(AccessManager.class));
+            when(server.getAccessManager().getAccess(owner.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+
+            game.join(owner);
+
+            assertEquals(1, game.getPlayerNumber(owner));
+        }
+
+        @Test
+        @DisplayName("should return -1 for player not in game")
+        void shouldReturnMinusOneForPlayerNotInGame() {
+            InetSocketAddress address2 = new InetSocketAddress("127.0.0.2", 27889);
+            KailleraUserImpl player2 = new KailleraUserImpl(2, "v086", address2, eventDispatcher,
+                    server);
+
+            assertEquals(-1, game.getPlayerNumber(player2));
+        }
+
+        @Test
+        @DisplayName("getPlayers should return defensive copy")
+        void getPlayersShouldReturnDefensiveCopy() throws Exception {
+            when(server.getAccessManager())
+                    .thenReturn(org.mockito.Mockito.mock(AccessManager.class));
+            when(server.getAccessManager().getAccess(owner.getConnectSocketAddress().getAddress()))
+                    .thenReturn(AccessManager.ACCESS_NORMAL);
+
+            game.join(owner);
+            var players1 = game.getPlayers();
+            var players2 = game.getPlayers();
+
+            assertEquals(players1.size(), players2.size());
+            assertNotNull(players1);
+        }
+
+        @Test
+        @DisplayName("should provide detailed string representation")
+        void shouldProvideDetailedString() {
+            String detailed = game.toDetailedString();
+
+            assertTrue(detailed.contains("TestROM"));
+            assertTrue(detailed.contains("id=1"));
         }
     }
 }

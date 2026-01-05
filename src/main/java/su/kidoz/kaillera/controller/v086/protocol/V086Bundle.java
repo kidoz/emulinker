@@ -9,6 +9,47 @@ import su.kidoz.kaillera.controller.messaging.ParseException;
 import su.kidoz.util.EmuUtil;
 import su.kidoz.util.UnsignedUtil;
 
+/**
+ * Container for multiple V086 protocol messages in a single UDP packet.
+ *
+ * <p>
+ * Message bundling is used to improve efficiency by packing multiple protocol
+ * messages into a single UDP datagram, reducing network overhead. This is
+ * particularly important for game data messages which are sent at high
+ * frequency during gameplay.
+ *
+ * <h2>Bundle Format</h2>
+ *
+ * <pre>
+ * +---------------+------------+------------+-----+------------+
+ * | Message Count | Message 1  | Message 2  | ... | Message N  |
+ * |   (1 byte)    | (variable) | (variable) |     | (variable) |
+ * +---------------+------------+------------+-----+------------+
+ * </pre>
+ *
+ * <ul>
+ * <li><b>Message Count</b>: Number of messages in the bundle (1-32)</li>
+ * <li><b>Messages</b>: Concatenated {@link V086Message} instances, each with
+ * their own header (number, length, ID) and body</li>
+ * </ul>
+ *
+ * <h2>Constraints</h2>
+ * <ul>
+ * <li>Minimum buffer size: 5 bytes (1 count + 4 bytes for smallest message
+ * header)</li>
+ * <li>Maximum messages per bundle: 32</li>
+ * <li>Each message requires at least 6 bytes (2 number + 2 length + 1 ID + 1
+ * body)</li>
+ * </ul>
+ *
+ * <h2>Message Filtering</h2>
+ * <p>
+ * When parsing, a {@code lastMessageID} can be specified to filter out
+ * already-processed messages. Messages with numbers less than or equal to this
+ * value are skipped for efficiency.
+ *
+ * @see V086Message
+ */
 public class V086Bundle extends ByteBufferMessage {
     public static final String DESC = "Kaillera v.086 Message Bundle";
 

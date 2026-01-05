@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
 import su.kidoz.kaillera.model.event.LoginProgressEvent;
 
+import su.kidoz.kaillera.metrics.GameMetricsCollector;
 import su.kidoz.kaillera.model.LoginNotificationState;
 import su.kidoz.kaillera.model.validation.LoginValidator;
 import su.kidoz.kaillera.service.AnnouncementService;
@@ -88,6 +89,7 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
     private final AnnouncementService announcementService;
     private final UserManager userManager;
     private final GameManager gameManager;
+    private final GameMetricsCollector gameMetricsCollector;
     private ServerMaintenanceTask maintenanceTask;
 
     // Fine-grained locks replacing coarse synchronized(this)
@@ -124,13 +126,16 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
      *            manages user storage and lifecycle
      * @param gameManager
      *            manages game storage and lifecycle
+     * @param gameMetricsCollector
+     *            collects game-level metrics for Prometheus
      */
     public KailleraServerImpl(EmuLinkerExecutor threadPool, AccessManager accessManager,
             ServerConfig serverConfig, GameConfig gameConfig, MasterListConfig masterListConfig,
             StatsCollector statsCollector, ReleaseInfo releaseInfo,
             AutoFireDetectorFactory autoFireDetectorFactory, LoginValidator loginValidator,
             ChatModerationService chatModerationService, AnnouncementService announcementService,
-            UserManager userManager, GameManager gameManager) {
+            UserManager userManager, GameManager gameManager,
+            GameMetricsCollector gameMetricsCollector) {
         this.threadPool = threadPool;
         this.accessManager = accessManager;
         this.releaseInfo = releaseInfo;
@@ -142,6 +147,7 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
         this.announcementService = announcementService;
         this.userManager = userManager;
         this.gameManager = gameManager;
+        this.gameMetricsCollector = gameMetricsCollector;
 
         // Load login messages from language bundle
         for (int i = 1; i <= 999; i++) {
@@ -269,6 +275,10 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
 
     StatsCollector getStatsCollector() {
         return statsCollector;
+    }
+
+    GameMetricsCollector getGameMetricsCollector() {
+        return gameMetricsCollector;
     }
 
     AutoFireDetector getAutoFireDetector(KailleraGame game) {
@@ -543,6 +553,7 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
                     this, gameConfig.getBufferSize(), gameConfig.getTimeoutMillis(),
                     gameConfig.getDesynchTimeouts());
             gameManager.addGame(game);
+            gameMetricsCollector.recordGameCreated();
 
             addEvent(new GameCreatedEvent(this, game));
 
@@ -580,6 +591,7 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
 
             ((KailleraGameImpl) game).close(user);
             gameManager.removeGame(game.getID());
+            gameMetricsCollector.recordGameCompleted(game.getID());
 
             log.info(user + " closed: " + game);
             addEvent(new GameClosedEvent(this, game));
@@ -604,6 +616,7 @@ public class KailleraServerImpl implements KailleraServer, Runnable, SmartLifecy
             }
 
             gameManager.removeGame(gameId);
+            gameMetricsCollector.recordGameCompleted(gameId);
             log.info("Admin closed empty game: {}", game.getRomName());
             addEvent(new GameClosedEvent(this, game));
             return true;

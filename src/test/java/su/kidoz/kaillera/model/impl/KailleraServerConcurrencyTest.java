@@ -70,7 +70,7 @@ class KailleraServerConcurrencyTest {
         server = new KailleraServerImpl(executor, accessManager, serverConfig, gameConfig,
                 masterListConfig, new TestStatsCollector(), new KailleraServerReleaseInfo(),
                 new AutoFireDetectorFactoryImpl(), loginValidator, chatModerationService,
-                announcementService, userManager, gameManager);
+                announcementService, userManager, gameManager, null);
 
     }
 

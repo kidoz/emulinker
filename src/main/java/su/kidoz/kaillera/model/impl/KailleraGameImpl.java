@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import su.kidoz.kaillera.access.AccessManager;
 import su.kidoz.kaillera.master.StatsCollector;
+import su.kidoz.kaillera.metrics.GameMetricsCollector;
 import su.kidoz.kaillera.model.KailleraGame;
 import su.kidoz.kaillera.model.KailleraUser;
 import su.kidoz.kaillera.model.event.AllReadyEvent;
@@ -57,6 +58,7 @@ public final class KailleraGameImpl implements KailleraGame {
     private final KailleraUserImpl owner;
     private List<KailleraUserImpl> players = new CopyOnWriteArrayList<KailleraUserImpl>();
     private StatsCollector statsCollector;
+    private GameMetricsCollector gameMetricsCollector;
 
     private List<Integer> kickedUsers = new CopyOnWriteArrayList<Integer>();
 
@@ -82,6 +84,7 @@ public final class KailleraGameImpl implements KailleraGame {
         startDate = new Date();
 
         statsCollector = server.getStatsCollector();
+        gameMetricsCollector = server.getGameMetricsCollector();
         autoFireDetector = server.getAutoFireDetector(this);
     }
 
@@ -409,6 +412,8 @@ public final class KailleraGameImpl implements KailleraGame {
 
             if (statsCollector != null)
                 statsCollector.gameStarted(server, this);
+            if (gameMetricsCollector != null)
+                gameMetricsCollector.recordGameStarted(id);
 
             addEvent(new GameStartedEvent(this));
         } finally {
@@ -452,6 +457,8 @@ public final class KailleraGameImpl implements KailleraGame {
 
                 setStatus(KailleraGame.STATUS_PLAYING);
                 synched = true;
+                if (gameMetricsCollector != null)
+                    gameMetricsCollector.recordPlayersSynced();
                 addEvent(new AllReadyEvent(this));
             }
         } finally {
@@ -482,6 +489,8 @@ public final class KailleraGameImpl implements KailleraGame {
 
             log.info(user + " dropped: " + this);
             playerActionQueues[(playerNumber - 1)].setSynched(false);
+            if (gameMetricsCollector != null)
+                gameMetricsCollector.recordPlayerDropped();
 
             if (getSynchedCount() < 2 && synched) {
                 synched = false;
@@ -572,6 +581,8 @@ public final class KailleraGameImpl implements KailleraGame {
                     && playerActionQueues[(playerNumber - 1)].isSynched()) {
                 playerActionQueues[(playerNumber - 1)].setSynched(false);
                 log.info(this + ": " + user + ": player desynched: dropped a packet!");
+                if (gameMetricsCollector != null)
+                    gameMetricsCollector.recordPlayerDesynced();
                 addEvent(new PlayerDesynchEvent(this, user, EmuLang.getString(
                         "KailleraGameImpl.DesynchDetectedDroppedPacket", user.getName())));
 
@@ -698,6 +709,8 @@ public final class KailleraGameImpl implements KailleraGame {
                 log.info(this + ": " + player + ": Timeout #" + timeoutNumber);
                 playerActionQueue.setSynched(false);
                 log.info(this + ": " + player + ": player desynched: Lagged!");
+                if (gameMetricsCollector != null)
+                    gameMetricsCollector.recordPlayerDesynced();
                 addEvent(new PlayerDesynchEvent(this, player, EmuLang.getString(
                         "KailleraGameImpl.DesynchDetectedPlayerLagged", player.getName())));
 
